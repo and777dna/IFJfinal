@@ -336,7 +336,7 @@ int getNextToken(string *attr){
 
             case 18:
                 if (isspace(c)) return INT;
-                else if (c == '.') {state = 19;}
+                else if (c == '.') state = 19;
                 else if (c == ')' || c == ',' || c == ')'){
                   ungetc(c, source);
                   state = 0;

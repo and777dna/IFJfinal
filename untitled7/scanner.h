@@ -55,7 +55,7 @@
 #define END_OF_LINE    61
 
 //chybove hlasky
-#define LEX_ERROR    -1
+#define LEX_ERROR      1
 #define FILE_ERROR    -1
 
 #define STR_LEN_INC 8
@@ -63,7 +63,7 @@
 // pokud nacitame retezec znak po znaku, pamet se postupne bude alkokovat na
 // nasobky tohoto cisla
 
-#define STR_ERROR   1
+#define STR_ERROR   -2
 #define STR_SUCCESS 0
 
 //FILE* source;

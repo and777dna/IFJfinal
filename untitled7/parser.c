@@ -337,7 +337,7 @@ bool functionBodyIsOK()
                             // }
                             
                             break;
-                        
+
                         default:
                             break;
                         }
@@ -347,6 +347,12 @@ bool functionBodyIsOK()
             }
             return false;
             break;
+        case WHILE:
+            
+        break;
+        case IF:
+
+        break;    
         
         default:
             break;

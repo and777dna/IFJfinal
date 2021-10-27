@@ -1,0 +1,1 @@
+#define PREC_TABLE_SIZE 18
