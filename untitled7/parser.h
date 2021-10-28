@@ -1,6 +1,7 @@
-#define SYNTAX_OK           1
+#define SYNTAX_OK           0
+#define LEX_ERROR           1
 #define SYNTAX_ERROR        2
-#define SEM_ERROR_NONDEF    3
+#define SEM_ERROR_DEFINE    3
 #define SEM_ERROR_INCOMP    4
 #define SEM_ERROR_FUNCPARAM 5
 #define SEM_ERROR_VYRAZ     6

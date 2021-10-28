@@ -19,7 +19,7 @@ void setTable(symtable *st)
     table = st;
 }
 
-bool inputIsOK()
+int inputIsOK()
 {
     switch (token)
     {
@@ -44,22 +44,22 @@ bool inputIsOK()
                 else if(token == RIGHT_BRACKET)
                 {
                     printf("OKINPUT\n\n");
-                    return true;
+                    return SYNTAX_OK;
                 }
             }
         }
-        return false;
+        return SYNTAX_ERROR;
         break;  
     case RIGHT_BRACKET:
-        return true;
+        return SYNTAX_OK;
         break;
     default:
-        return false;
+        return SYNTAX_ERROR;
         break;
     }
 }
 
-bool GlobalinputIsOK()
+int GlobalinputIsOK()
 {
     switch (token)
     {
@@ -73,6 +73,7 @@ bool GlobalinputIsOK()
             {
                 return inputIsOK();
             }
+            //??
             token = getNextToken(&attr);
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
@@ -81,22 +82,21 @@ bool GlobalinputIsOK()
             else if(token == RIGHT_BRACKET)
             {
                 printf("OKINPUT\n\n");
-                return true;
+                return SYNTAX_OK;
             }
         }
-        return false;
+        return SYNTAX_ERROR;
         break;  
     case RIGHT_BRACKET:
-        return true;
+        return SYNTAX_OK;
         break;
     default:
-        return false;
+        return SYNTAX_ERROR;
         break;
     }
 }
 
-
-bool outputIsOK()
+int outputIsOK()
 {
     if (token == STRING || token == INTEGER || token == NUMBER)
     {
@@ -110,13 +110,13 @@ bool outputIsOK()
         else 
         {   
             printf("gvdfvjn%s\n\n", attr.str);
-            return true;
+            return SYNTAX_OK;
         }    
     }
-    else return false;
+    else return SEM_ERROR_FUNCPARAM;
 }
 
-bool GlobalCompare(funcs tmp)
+int GlobalCompare(funcs tmp)
 {
     //token = getNextToken(&attr);
     switch (token)
@@ -128,7 +128,7 @@ bool GlobalCompare(funcs tmp)
             token = getNextToken(&attr);
             if (token != tmp->in->type)
             {
-                return false;
+                return SEM_ERROR_FUNCPARAM;
             }
             if ((token = getNextToken(&attr)) == COMMA)
             {
@@ -138,36 +138,37 @@ bool GlobalCompare(funcs tmp)
                     tmp->in = tmp->in->next;
                     return GlobalCompare(tmp);
                 }
-                return false;
+                return SEM_ERROR_FUNCPARAM;
             }
             else if(token == RIGHT_BRACKET)
             {
                 printf("OKINPUT\n\n");
-                return true;
+                return SYNTAX_OK;
             }
         }
+        else return SEM_ERROR_DEFINE;
         break;
     case RIGHT_BRACKET:
         if (tmp->in == NULL)
         {
-            return true;
+            return SYNTAX_OK;
         }
-        return false;
+        return SEM_ERROR_FUNCPARAM;
         break;
     default:
-        return false;
+        return SYNTAX_ERROR;
         break;
     }
 }
 
-bool GlobalCompareOut(funcs tmp)
+int GlobalCompareOut(funcs tmp)
 {
     switch (token)
     {
     case (STRING || INTEGER || NUMBER):
         if (tmp->out->type != token)
         {
-            return false;
+            return SEM_ERROR_FUNCPARAM;
         }
         if ((token = getNextToken(&attr)) == COMMA)
         {
@@ -177,21 +178,21 @@ bool GlobalCompareOut(funcs tmp)
                 tmp->in = tmp->in->next;
                 return GlobalCompareOut(tmp);
             }
-            return false;
+            return SYNTAX_ERROR;
         }
-        return true;
+        return SYNTAX_OK;
         break;
     default:
-        return false;
+        return SEM_ERROR_FUNCPARAM;
         break;
     }
 }
 
-bool functionIsOK()
+int functionIsOK()
 {
     bool inputWasComplited;
     bool outputWasComplited;
-    bool u;
+    int u;
     int origin;
     if (token == FUNCTION){
         origin = 2;
@@ -209,9 +210,9 @@ bool functionIsOK()
                 token = getNextToken(&attr); //проверка
                 token = getNextToken(&attr);
                 u = GlobalCompare(tmp);
-                if (!u)
+                if (u != 0)
                 {
-                    return false;
+                    return u;
                 }
                 token = getNextToken(&attr);
                 if (token == COLUMN && tmp->out != NULL)
@@ -222,13 +223,13 @@ bool functionIsOK()
                 }
                 else if (token != COLUMN && tmp->out == NULL)
                 {
-                    return true;
+                    return SYNTAX_OK;
                 }
-                else return false;
+                else return SYNTAX_ERROR;
             }
             else if (tmp != NULL)
             {
-                return false;
+                return SEM_ERROR_DEFINE;
             }
             //funcs s = findFunc(table->func_tree, attr.str);
             name_func_save = attr.str;
@@ -236,9 +237,9 @@ bool functionIsOK()
             token = getNextToken(&attr);
             if (token == LEFT_BRACKET){
                 token = getNextToken(&attr);
-                if (!(inputWasComplited = inputIsOK()))
+                if (inputWasComplited = inputIsOK())
                 {
-                    return false;
+                    return SEM_ERROR_FUNCPARAM;
                 }
                 else
                 {
@@ -258,9 +259,9 @@ bool functionIsOK()
                 }
                 
             }
-            else return false; 
+            else return SYNTAX_ERROR; 
         }
-        else return false;
+        else return SYNTAX_ERROR;
     }
     else if (token == GLOBAL){
         origin = 1;
@@ -278,9 +279,9 @@ bool functionIsOK()
                     token = getNextToken(&attr);
                     if (token == LEFT_BRACKET){
                     token = getNextToken(&attr);
-                    if (!(inputWasComplited = GlobalinputIsOK()))
+                    if (inputWasComplited = GlobalinputIsOK())
                     {
-                        return false;
+                        return SYNTAX_ERROR;
                     }
                     else
                     {
@@ -299,13 +300,13 @@ bool functionIsOK()
                         }
                     }  
                 }
-                else return false;  
+                else return SYNTAX_ERROR;  
                 }
             }
         }
-        else return false;
+        else return SYNTAX_ERROR;
     }
-    return false;
+    return SYNTAX_ERROR;
 }
 
 bool functionBodyIsOK()
@@ -343,9 +344,9 @@ bool functionBodyIsOK()
                         }
                     }
                 }
-                else return false;
+                else return SYNTAX_ERROR;
             }
-            return false;
+            return SYNTAX_ERROR;
             break;
         case WHILE:
             
@@ -370,7 +371,7 @@ int program()
         if ((token == RETEZEC) && (!strCmpConstStr(&attr, "ifj21"))){
             token = getNextToken(&attr);
             result = functionIsOK();
-            if (!result)
+            if (result != 0)
             {
                 return SYNTAX_ERROR;
             }
