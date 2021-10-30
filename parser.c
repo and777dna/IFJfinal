@@ -50,6 +50,7 @@ bool inputIsOK()
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
                 insertInput(name_var_save, table->func_tree, name_func_save, token);
+                insertVar(&(table->var_tree), deep, name_var_save, token);
                 token = tryGetToken();
                 if (token == COMMA)
                 {
@@ -127,7 +128,7 @@ bool outputIsOK()
         }
         else 
         {   
-            printf("gvdfvjn%s\n\n", attr.str);
+            //printf("gvdfvjn%s\n\n", attr.str);
             return true;
         }    
     }
@@ -332,6 +333,7 @@ bool functionBodyIsOK()
         switch (token)
         {
         case LOCAL:
+            printf("LOCAL HELLO\n");
             token = tryGetToken();
             if (token == ID)
             {
@@ -349,12 +351,7 @@ bool functionBodyIsOK()
                         {
                         case ASSIGNED:
                             token = tryGetToken();
-                            // if (token == )
-                            // {
-                            //     /* code */
-                            // }
-
-                            
+                            token = express(token, &attr);
                             break;
 
                         default:
@@ -364,17 +361,46 @@ bool functionBodyIsOK()
                 }
                 else return false;
             }
-            return false;
+            else return false;
             break;
         case WHILE:
             
         break;
         case IF:
 
-        break;    
-        
+        break; 
+        case RETURN:
+            token = tryGetToken();
+            if (token == ID || token == INT || token == FLOAT || token == RETEZEC || token == LEFT_BRACKET){
+                if (token == ID){
+                    funcs tmp1 = findFunc(table->func_tree, attr.str);
+                    printf("BD\n");
+                    vars tmp2 = findVar(table->var_tree, deep, attr.str);
+                    printf("B]\n");
+                    if ((tmp1) == NULL){
+                        printf(">:(\n");
+                        break;
+                    }
+                    else if((tmp2) != NULL){
+                        printf("X>\n");
+                        token = express(token, &attr);
+                        printf("XD\n");
+                    }
+                    else {
+                        printf("P)\n");
+                        return SEM_ERROR_DEFINE;
+                    }
+                }
+                else{
+                    printf("Xb");
+                    token = express(token, &attr);
+                }
+            }  
+            
+        break;
         default:
-            break;
+            printf("DEFALT\n");
+                return false;
         }
     }
 }
@@ -395,14 +421,14 @@ int program()
             /*if (!result)
             {
                 return SYNTAX_ERROR;
-            }
-            result = functionBodyIsOK();*/
+            }*/
+            result = functionBodyIsOK();
              
-            printf("%d\n\n", table->func_tree->origin);
+            //printf("%d\n\n", table->func_tree->origin);
         }
         else changeError(2);
     }
     // pokud aktualni token je jiny nez vyse uvedene, jedna se o syntaktickou chybu
-    printf("\n%d\n\n", error_flag);
+    //printf("\n%d\n\n", error_flag);
     return error_flag;
 }

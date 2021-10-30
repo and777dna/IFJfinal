@@ -11,3 +11,4 @@
 #define MEM_ALLOC_ERROR 99
 
 int program();
+void changeError(int n);

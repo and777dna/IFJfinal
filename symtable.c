@@ -123,13 +123,13 @@ vars findVar(vars var_tree, int deep, char *name)
         }
         else
         {
-            printf("no\n");
+            printf("VARno\n");
             return NULL;
         }    
     }
     else
     {
-        printf("no\n");
+        printf("VARno\n");
         return NULL;
     }    
     
@@ -196,23 +196,29 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
 {
     if (func_tree != NULL)
     {
+        printf("BO\n");
         if (strcmp(func_tree->name, name) < 0)
         {
             findFunc(func_tree->L, name);
+            printf("Bb\n");
         }
         else if (strcmp(func_tree->name, name) > 0)
         {
             findFunc(func_tree->R, name);
+            printf("BC\n");
         }
         else if (strcmp(func_tree->name, name) == 0)
         {
             //printf("nasel\n");
+            printf("BJ\n");
             return func_tree;
         }
     }
-    else
-        printf("no\n");
-        return NULL;
+    else{
+        printf("FUNCno\n"); 
+    }
+    printf("B3\n");
+    return NULL;
     
 }
 

@@ -36,3 +36,6 @@ int main(){
 
     return 0;
 }
+
+
+//gcc main.c parser.c symtable.c scanner.c expression.c -o main && ./main
