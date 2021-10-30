@@ -1,6 +1,9 @@
+
 #include "scanner.h"
 #include "parser.h"
 #include "sym.h"
+//#include <stdbool.h>
+#include "expression.h"
 
 
 //tSymbolTable *table;// globalni promenna uchovavajici tabulku symbolu
@@ -12,29 +15,45 @@ char *name_var_save;
 int deep;
 int counterVar = 1;
 symtable *table;
+int error_flag;
+
+int tryGetToken()
+{
+    if ((token = getNextToken(&attr)) == -1)
+    {
+        changeError(1);
+    }
+    printf("%d   %s\n", token, attr.str);
+    return token;
+}
+
+void changeError(int n)
+{
+    error_flag = n;
+}
 
 void setTable(symtable *st)
 {
     table = st;
 }
 
-int inputIsOK()
+bool inputIsOK()
 {
     switch (token)
     {
     case ID:
         name_var_save = attr.str;
-        token = getNextToken(&attr);
+        token = tryGetToken();
         if (token == COLUMN)
         {
-            token = getNextToken(&attr);
+            token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
                 insertInput(name_var_save, table->func_tree, name_func_save, token);
-                token = getNextToken(&attr);
+                token = tryGetToken();
                 if (token == COMMA)
                 {
-                    token = getNextToken(&attr);
+                    token = tryGetToken();
                     if (token == ID)
                     {
                         return inputIsOK();
@@ -43,37 +62,36 @@ int inputIsOK()
                 else if(token == RIGHT_BRACKET)
                 {
                     printf("OKINPUT\n\n");
-                    return SYNTAX_OK;
+                    return true;
                 }
             }
         }
-        return SYNTAX_ERROR;
+        return false;
         break;  
     case RIGHT_BRACKET:
-        return SYNTAX_OK;
+        return true;
         break;
     default:
-        return SYNTAX_ERROR;
+        return false;
         break;
     }
 }
 
-int GlobalinputIsOK()
+bool GlobalinputIsOK()
 {
     switch (token)
     {
     case (STRING || INTEGER || NUMBER):
         name_var_save = attr.str;
-        token = getNextToken(&attr);
+        token = tryGetToken();
         if (token == COMMA)
         {
-            token = getNextToken(&attr);
+            token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
                 return inputIsOK();
             }
-            //??
-            token = getNextToken(&attr);
+            token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
                 insertInput(name_var_save, table->func_tree, name_func_save, token);
@@ -81,121 +99,121 @@ int GlobalinputIsOK()
             else if(token == RIGHT_BRACKET)
             {
                 printf("OKINPUT\n\n");
-                return SYNTAX_OK;
+                return true;
             }
         }
-        return SYNTAX_ERROR;
+        return false;
         break;  
     case RIGHT_BRACKET:
-        return SYNTAX_OK;
+        return true;
         break;
     default:
-        return SYNTAX_ERROR;
+        return false;
         break;
     }
 }
 
-int outputIsOK()
+
+bool outputIsOK()
 {
     if (token == STRING || token == INTEGER || token == NUMBER)
     {
         insertOutput(table->func_tree, token, name_func_save);
-        token = getNextToken(&attr);
+        token = tryGetToken();
         if (token == COMMA)
         {
-            token = getNextToken(&attr);
+            token = tryGetToken();
             return outputIsOK();
         }
         else 
         {   
             printf("gvdfvjn%s\n\n", attr.str);
-            return SYNTAX_OK;
+            return true;
         }    
     }
-    else return SEM_ERROR_FUNCPARAM;
+    else return false;
 }
 
-int GlobalCompare(funcs tmp)
+bool GlobalCompare(funcs tmp)
 {
-    //token = getNextToken(&attr);
+    //token = tryGetToken();
     switch (token)
     {
     case ID:
         tmp->in->name = attr.str;
-        if (token = getNextToken(&attr) == COLUMN)
+        if (token = tryGetToken() == COLUMN)
         {
-            token = getNextToken(&attr);
+            token = tryGetToken();
             if (token != tmp->in->type)
             {
-                return SEM_ERROR_FUNCPARAM;
+                return false;
             }
-            if ((token = getNextToken(&attr)) == COMMA)
+            if ((token = tryGetToken()) == COMMA)
             {
-                token = getNextToken(&attr);
+                token = tryGetToken();
                 if (token == ID)
                 {
                     tmp->in = tmp->in->next;
                     return GlobalCompare(tmp);
                 }
-                return SEM_ERROR_FUNCPARAM;
+                return false;
             }
             else if(token == RIGHT_BRACKET)
             {
                 printf("OKINPUT\n\n");
-                return SYNTAX_OK;
+                return true;
             }
         }
-        else return SEM_ERROR_DEFINE;
         break;
     case RIGHT_BRACKET:
         if (tmp->in == NULL)
         {
-            return SYNTAX_OK;
+            return true;
         }
-        return SEM_ERROR_FUNCPARAM;
+        return false;
         break;
     default:
-        return SYNTAX_ERROR;
+        return false;
         break;
     }
 }
 
-int GlobalCompareOut(funcs tmp)
+bool GlobalCompareOut(funcs tmp)
 {
     switch (token)
     {
     case (STRING || INTEGER || NUMBER):
         if (tmp->out->type != token)
         {
-            return SEM_ERROR_FUNCPARAM;
+            return false;
         }
-        if ((token = getNextToken(&attr)) == COMMA)
+        if ((token = tryGetToken()) == COMMA)
         {
-            token = getNextToken(&attr);
+            token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
                 tmp->in = tmp->in->next;
                 return GlobalCompareOut(tmp);
             }
-            return SYNTAX_ERROR;
+            return false;
         }
-        return SYNTAX_OK;
+        return true;
         break;
     default:
-        return SEM_ERROR_FUNCPARAM;
+        return false;
         break;
     }
 }
 
-int functionIsOK()
+bool functionIsOK()
 {
     bool inputWasComplited;
     bool outputWasComplited;
-    int u;
+    bool u;
     int origin;
     if (token == FUNCTION){
         origin = 2;
-        token = getNextToken(&attr);
+        token = tryGetToken();
         if (token == ID){
             //v tabulku
             funcs tmp = findFunc(table->func_tree, attr.str);
@@ -206,48 +224,48 @@ int functionIsOK()
             else if (tmp != NULL && tmp->origin == 1)
             {
                 tmp->origin = 2;
-                token = getNextToken(&attr); //проверка
-                token = getNextToken(&attr);
+                token = tryGetToken(); //проверка
+                token = tryGetToken();
                 u = GlobalCompare(tmp);
-                if (u != 0)
+                if (!u)
                 {
-                    return u;
+                    return false;
                 }
-                token = getNextToken(&attr);
+                token = tryGetToken();
                 if (token == COLUMN && tmp->out != NULL)
                 {
-                    token = getNextToken(&attr);
+                    token = tryGetToken();
                     u = GlobalCompareOut(tmp);
                     return u;
                 }
                 else if (token != COLUMN && tmp->out == NULL)
                 {
-                    return SYNTAX_OK;
+                    return true;
                 }
-                else return SYNTAX_ERROR;
+                else return false;
             }
             else if (tmp != NULL)
             {
-                return SEM_ERROR_DEFINE;
+                return false;
             }
             //funcs s = findFunc(table->func_tree, attr.str);
             name_func_save = attr.str;
             //printf("%s\n", s->name);
-            token = getNextToken(&attr);
+            token = tryGetToken();
             if (token == LEFT_BRACKET){
-                token = getNextToken(&attr);
-                if (inputWasComplited = inputIsOK())
+                token = tryGetToken();
+                if (!(inputWasComplited = inputIsOK()))
                 {
-                    return SEM_ERROR_FUNCPARAM;
+                    return false;
                 }
                 else
                 {
-                    token = getNextToken(&attr);
+                    token = tryGetToken();
                     switch (token)
                     {
                     case COLUMN:
                         printf("OKOK\n\n");
-                        token = getNextToken(&attr);
+                        token = tryGetToken();
                         outputWasComplited = outputIsOK();
                         return outputWasComplited;
                         break;
@@ -258,38 +276,38 @@ int functionIsOK()
                 }
                 
             }
-            else return SYNTAX_ERROR; 
+            else return false; 
         }
-        else return SYNTAX_ERROR;
+        else return false;
     }
     else if (token == GLOBAL){
         origin = 1;
-        token = getNextToken(&attr);
+        token = tryGetToken();
         if (token == ID){
             //v tabulku
             insertFunc(attr.str, &(table->func_tree), origin);
             //funcs s = findFunc(table->func_tree, attr.str);
             name_func_save = attr.str;
             //printf("%s\n", s->name);
-            token = getNextToken(&attr);
+            token = tryGetToken();
             if (token == COLUMN){
-                token = getNextToken(&attr);
+                token = tryGetToken();
                 if (token == FUNCTION){
-                    token = getNextToken(&attr);
+                    token = tryGetToken();
                     if (token == LEFT_BRACKET){
-                    token = getNextToken(&attr);
-                    if (inputWasComplited = GlobalinputIsOK())
+                    token = tryGetToken();
+                    if (!(inputWasComplited = GlobalinputIsOK()))
                     {
-                        return SYNTAX_ERROR;
+                        return false;
                     }
                     else
                     {
-                        token = getNextToken(&attr);
+                        token = tryGetToken();
                         switch (token)
                         {
                         case COLUMN:
                             printf("OKOK\n\n");
-                            token = getNextToken(&attr);
+                            token = tryGetToken();
                             outputWasComplited = outputIsOK();
                             return outputWasComplited;
                             break;
@@ -299,13 +317,13 @@ int functionIsOK()
                         }
                     }  
                 }
-                else return SYNTAX_ERROR;  
+                else return false;  
                 }
             }
         }
-        else return SYNTAX_ERROR;
+        else return false;
     }
-    return SYNTAX_ERROR;
+    return false;
 }
 
 bool functionBodyIsOK()
@@ -314,27 +332,28 @@ bool functionBodyIsOK()
         switch (token)
         {
         case LOCAL:
-            token = getNextToken(&attr);
+            token = tryGetToken();
             if (token == ID)
             {
                 name_var_save = attr.str;
-                token = getNextToken(&attr);
+                token = tryGetToken();
                 if (token == COLUMN)
                 {
-                    token = getNextToken(&attr);
+                    token = tryGetToken();
                     if (token == INTEGER || token == STRING || token == NUMBER)
                     {
                         insertVar(&(table->var_tree), deep, name_var_save, token);
                         int type = token;
-                        token = getNextToken(&attr);
+                        token = tryGetToken();
                         switch (token)
                         {
                         case ASSIGNED:
-                            token = getNextToken(&attr);
+                            token = tryGetToken();
                             // if (token == )
                             // {
                             //     /* code */
                             // }
+
                             
                             break;
 
@@ -343,9 +362,9 @@ bool functionBodyIsOK()
                         }
                     }
                 }
-                else return SYNTAX_ERROR;
+                else return false;
             }
-            return SYNTAX_ERROR;
+            return false;
             break;
         case WHILE:
             
@@ -360,26 +379,30 @@ bool functionBodyIsOK()
     }
 }
 
+
+
 int program()
 {
     deep = 0;
+    error_flag = 0;
     bool result;
-    token = getNextToken(&attr);
+    token = tryGetToken();
     if (token == REQUIRE){
-        token = getNextToken(&attr);
+        token = tryGetToken();
         if ((token == RETEZEC) && (!strCmpConstStr(&attr, "ifj21"))){
-            token = getNextToken(&attr);
+            token = tryGetToken();
             result = functionIsOK();
-            if (result != 0)
+            /*if (!result)
             {
                 return SYNTAX_ERROR;
             }
-            result = functionBodyIsOK();
+            result = functionBodyIsOK();*/
              
             printf("%d\n\n", table->func_tree->origin);
         }
-        else return SYNTAX_ERROR;
+        else changeError(2);
     }
     // pokud aktualni token je jiny nez vyse uvedene, jedna se o syntaktickou chybu
-    return SYNTAX_ERROR;
+    printf("\n%d\n\n", error_flag);
+    return error_flag;
 }
