@@ -1,6 +1,8 @@
 #include "expression.h"
 #include "stdbool.h"
+#include "parser.h"
 #include "stack.h"
+#include "stack.c"
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
@@ -8,7 +10,7 @@
 #include "scanner.h"
 
 
-Stack mystack;
+Stack_t *stack;
 
 char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
 {
@@ -33,26 +35,35 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'#', '#', '#', '#', '#', '#', '#', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '>'},  // ..
 };
 
-bool stack_init()
-{
-  mystack.top->attr = "$";
-  mystack.top->next = NULL;
+char TableCheck(Stack_t *stack, int token){
+    int stackVal = stack->type[stack->top] - 30;
+    int inputNum = token - 30;
+    if (token == ID || token == INT || token == FLOAT){
+        inputNum = 7;
+    }
+    else if (token == RETEZEC){
+        inputNum = 15;
+    }
+    if (stack->type[stack->top] == ID || stack->type[stack->top] == INT || stack->type[stack->top] == FLOAT){
+        stackVal = 7;
+    }
+    else if (stack->type[stack->top] == RETEZEC){
+        stackVal = 15;
+    }
+    return precTable[inputNum][stackVal];
 }
 
-void push(int token)
+int express(int token, char *attr)
 {
-  mystack.top->next = mystack.top;
-  mystack.top->token = token; 
-}
-
-bool expres(int token, char *attr)
-{
-  stack_init();
-  if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT)
-  {
-    
-  }
-  else return false;
+    createStack();
+    stack->top = '$';
+    if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT)
+    {
+        push(stack, attr, token);
+        token = getNextToken(&attr);
+        int action = TableCheck(stack, token);
+    }
+    else return SEM_ERROR_EXPRESS;
   
 
 }

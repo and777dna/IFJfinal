@@ -1,18 +1,5 @@
-
-/**
- * @struct Stack item represetation.
- */
-typedef struct stack_item
-{
-	char *attr;
-	int token; /// Data type used for semantic analysis.
-	struct stack_item *next; /// Pointer to next stack item.
-} Stack_item;
-
-/**
- * @struct Stack representation.
- */
-typedef struct 
-{
-	Stack_item *top; /// Pointer to stack item on top of stack.
-} Stack;
+#define STACK_OVERFLOW -100
+#define STACK_UNDERFLOW -101
+#define OUT_OF_MEMORY -102
+#define INIT_SIZE 15
+#define MULTIPLIER 2
