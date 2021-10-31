@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "sym.h"
 
-int main(){
+int main(int argc, char *argv[]){
 
     symtable *table;
     table = initST(table);

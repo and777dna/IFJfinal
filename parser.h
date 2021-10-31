@@ -12,3 +12,4 @@
 
 int program();
 void changeError(int n);
+int tryGetToken();

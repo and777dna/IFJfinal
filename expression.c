@@ -1,14 +1,12 @@
 #include "expression.h"
 #include "stdbool.h"
 #include "parser.h"
-//#include "stack.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
 #include <ctype.h>
 #include "scanner.h"
-
 
 //--------------Stack-----------
 
@@ -45,12 +43,12 @@ void resize(Stack_t *stack) {
     }
 }
 
-void push(Stack_t *stack, string *value, int type) {
+void push(Stack_t *stack, string value, int type) {
     if (stack->top >= stack->size) {
         resize(stack);
     }
     stack->top++;
-    stack->attr[stack->top].attr = value->str;
+    stack->attr[stack->top].attr = value.str;
     stack->attr[stack->top].type = type;
 }
 
@@ -94,7 +92,7 @@ int TableCheck(Stack_t *stack, int token, string *attr){
     if ((token < 10 || token > 24) && token != COMMA){
         int stackVal = stack->attr[stack->top].type - 30;
         int inputNum = token - 30;
-        printf("TOP:%s\n", stack->attr[stack->top]);
+        printf("TOP:%s ; %d\n", stack->attr[stack->top].attr, stack->attr[stack->top].type);
         if (token == ID || token == INT || token == FLOAT){
             inputNum = 7;
         }
@@ -111,23 +109,19 @@ int TableCheck(Stack_t *stack, int token, string *attr){
         printf("%c , %d , %d\n",precTable[stackVal][inputNum], stackVal, inputNum);
 
         if (precTable[stackVal][inputNum] == '<'){
-            push(stack, attr, token);
+            push(stack, *attr, token);
             token = tryGetToken();
-            printf("Push\n");
             TableCheck(stack, token, attr);
         }
         else if (precTable[stackVal][inputNum] == '>'){
             pop(stack);
-            printf("POP\n");
             TableCheck(stack, token, attr);
         }
         else if (precTable[stackVal][inputNum] == '='){
             pop(stack);
-            printf("POP\n");
             TableCheck(stack, token, attr);
         }
-        else{
-            printf("ERROOOOOOOR\n"); 
+        else{ 
             return SEM_ERROR_EXPRESS;
         }
     }
@@ -142,16 +136,13 @@ int TableCheck(Stack_t *stack, int token, string *attr){
         printf("%c , %d , %d\n",precTable[stackVal][8], stackVal, 8);
         if (precTable[stackVal][8] == '>'){
             pop(stack);
-            printf("POP\n");
             return token;
         }
         else if (precTable[stackVal][8] == '='){
             pop(stack);
-            printf("POP\n");
             return token;
         }
         else{
-            printf("ERROOOOOOOR\n"); 
             return SEM_ERROR_EXPRESS;
         }
     }
@@ -159,28 +150,24 @@ int TableCheck(Stack_t *stack, int token, string *attr){
 
 int express(int token, string *attr)
 {
-    
     Stack_t *stack = createStack();
-    string *buk;
-    buk->str = "$";
+    string buk;
+    buk.str = "$";
     push(stack, buk, 38);
     printf("top :%d\n", stack->top);
     if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT)
     {
-        push(stack, attr, token);
-        printf("pushed\n");
+        push(stack, *attr, token);
         token = getNextToken(attr);
-        printf("check\n");
         token = TableCheck(stack, token, attr);
         if (token > 10 && token < 24){
-            printf("END\n");
             printf("%d\n", token);
             if (stack != NULL){
                 free((stack)->attr);
                 free(stack);
                 stack = NULL;
             }
-            return token;
+            return token; 
         }
         else{
             if (stack != NULL){

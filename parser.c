@@ -19,6 +19,9 @@ int error_flag;
 
 int tryGetToken()
 {
+    if (attr.str != NULL){
+        strFree(&attr);
+    }
     if ((token = getNextToken(&attr)) == -1)
     {
         changeError(1);
@@ -113,7 +116,6 @@ bool GlobalinputIsOK()
         break;
     }
 }
-
 
 bool outputIsOK()
 {
@@ -349,13 +351,13 @@ bool functionBodyIsOK()
                         token = tryGetToken();
                         switch (token)
                         {
-                        case ASSIGNED:
-                            token = tryGetToken();
-                            token = express(token, &attr);
-                            break;
-
-                        default:
-                            break;
+                            case ASSIGNED:
+                                token = tryGetToken();
+                                //printf("asdfwad\n");
+                                token = express(token, &attr);
+                                break;
+                            default:
+                                break;
                         }
                     }
                 }
@@ -375,7 +377,7 @@ bool functionBodyIsOK()
             if (token == ID || token == INT || token == FLOAT || token == RETEZEC || token == LEFT_BRACKET){
                 if (token == ID){
                     funcs tmp1 = findFunc(table->func_tree, attr.str);
-                    printf("\n\nBD\n");
+                    printf("BD\n");
                     vars tmp2 = findVar(table->var_tree, deep, attr.str);
                     printf("B]\n");
                     if ((tmp1) != NULL){
@@ -384,6 +386,13 @@ bool functionBodyIsOK()
                     }
                     else if((tmp2) != NULL){
                         printf("X>\n");
+                        printf("%d\n", table->var_tree->type);
+                        if(table->var_tree->type == STRING){
+                            token = RETEZEC;
+                        }
+                        else if (table->var_tree->type == INTEGER || table->var_tree->type == NUMBER){
+                            token = INT;
+                        }
                         token = express(token, &attr);
                         printf("XD\n");
                     }
