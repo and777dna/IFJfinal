@@ -196,15 +196,15 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
 {
     if (func_tree != NULL)
     {
-        printf("BO\n");
+        printf("%s  BO\n", name);
         if (strcmp(func_tree->name, name) < 0)
         {
-            findFunc(func_tree->L, name);
+            return findFunc(func_tree->L, name);
             printf("Bb\n");
         }
         else if (strcmp(func_tree->name, name) > 0)
         {
-            findFunc(func_tree->R, name);
+            return findFunc(func_tree->R, name);
             printf("BC\n");
         }
         else if (strcmp(func_tree->name, name) == 0)
@@ -218,7 +218,8 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         printf("FUNCno\n"); 
     }
     printf("B3\n");
-    return NULL;
+    
+    return func_tree;
     
 }
 

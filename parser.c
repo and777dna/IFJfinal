@@ -370,14 +370,15 @@ bool functionBodyIsOK()
 
         break; 
         case RETURN:
+
             token = tryGetToken();
             if (token == ID || token == INT || token == FLOAT || token == RETEZEC || token == LEFT_BRACKET){
                 if (token == ID){
                     funcs tmp1 = findFunc(table->func_tree, attr.str);
-                    printf("BD\n");
+                    printf("\n\nBD\n");
                     vars tmp2 = findVar(table->var_tree, deep, attr.str);
                     printf("B]\n");
-                    if ((tmp1) == NULL){
+                    if ((tmp1) != NULL){
                         printf(">:(\n");
                         break;
                     }
@@ -392,7 +393,7 @@ bool functionBodyIsOK()
                     }
                 }
                 else{
-                    printf("Xb");
+                    printf("Xb\n");
                     token = express(token, &attr);
                 }
             }  
