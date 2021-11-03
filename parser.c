@@ -1,8 +1,8 @@
-
 #include "scanner.h"
 #include "parser.h"
 #include "sym.h"
 //#include <stdbool.h>
+#include <string.h>
 #include "expression.h"
 
 
@@ -16,6 +16,13 @@ int deep;
 int counterVar = 1;
 symtable *table;
 int error_flag;
+
+char *strcpy_(char *dst, char *src){
+    printf(";p\n");
+    while((*src++ = *dst++)!= '\0')
+    printf(";D\n");
+    return src;
+}
 
 int tryGetToken()
 {
@@ -252,7 +259,8 @@ bool functionIsOK()
                 return false;
             }
             //funcs s = findFunc(table->func_tree, attr.str);
-            name_func_save = attr.str;
+            // name_func_save = attr.str;
+            strcpy_(attr.str, name_func_save);
             //printf("%s\n", s->name);
             token = tryGetToken();
             if (token == LEFT_BRACKET){

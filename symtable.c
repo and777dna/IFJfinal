@@ -84,12 +84,13 @@ vars findVarFromTree(vars var_tree, int deep, char *name)
 {
     if (var_tree == NULL)
     {
+        printf("VARTREE == NULL\n");
         return NULL;
     }
     
     if (strcmp(name, var_tree->name) == 0)
     {
-        //printf("nasel %s %d\n", var_tree->name, var_tree->deepOfVar);
+        printf("nasel %s %d\n", var_tree->name, var_tree->deepOfVar);
         return var_tree;
     }
     else if (strcmp(name, var_tree->name) < 0)
@@ -107,11 +108,11 @@ vars findVar(vars var_tree, int deep, char *name)
     vars tmp = var_tree;
     if (var_tree != NULL)
     {
-        printf("\n\n%d\n\n", var_tree->deepOfVar);
+        printf("\\\\\\%d\n", var_tree->deepOfVar);
         if (deep <= var_tree->deepOfVar)
         {
             tmp = findVarFromTree(tmp, deep, name);
-            if (tmp == NULL)
+            if (tmp == NULL && deep > 0)
             {
                 findVar(var_tree->next, deep-1, name);
             }
@@ -199,32 +200,27 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         printf("%s  BO\n", name);
         if (strcmp(func_tree->name, name) < 0)
         {
-            return findFunc(func_tree->L, name);
-            printf("Bb\n");
+            findFunc(func_tree->L, name);
         }
         else if (strcmp(func_tree->name, name) > 0)
         {
-            return findFunc(func_tree->R, name);
-            printf("BC\n");
+            findFunc(func_tree->R, name);
         }
         else if (strcmp(func_tree->name, name) == 0)
         {
-            //printf("nasel\n");
-            printf("BJ\n");
             return func_tree;
         }
     }
     else{
         printf("FUNCno\n"); 
     }
-    printf("B3\n");
-    
-    return func_tree;
+    return NULL;
     
 }
 
 void insertInput(char *name_arg, funcs func, char *name_func, int type)
 {
+    printf("|||%s %s ||||\n", name_arg, name_func);
     funcs function = findFunc(func, name_func);
 
     if (function == NULL)

@@ -71,8 +71,8 @@ typedef struct Str
     char *str;     // misto pro dany retezec ukonceny znakem '\0'
     int length;    // skutecna delka retezce
     int allocSize; // velikost alokovane pameti
-    //int num;
-} string;
+    struct Str *next;
+}string;
 
 int strInit(string *s);
 void strFree(string *s);
