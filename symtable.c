@@ -136,8 +136,6 @@ vars findVar(vars var_tree, int deep, char *name)
     
 }
 
-
-
 void freeVarTree(vars var)
 {
     if (var == NULL)

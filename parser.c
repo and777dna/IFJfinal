@@ -1,7 +1,7 @@
 #include "scanner.h"
 #include "parser.h"
 #include "sym.h"
-//#include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include "expression.h"
 
@@ -17,10 +17,9 @@ int counterVar = 1;
 symtable *table;
 int error_flag;
 
-char *strcpy_(char *dst, char *src){
-    printf(";p\n");
-    while((*src++ = *dst++)!= '\0')
-    printf(";D\n");
+char *strcpy_(char *src, char *dst){
+    dst = malloc(strlen(src) + 1);  //? +1
+    src = strcpy(dst, src);
     return src;
 }
 
@@ -52,13 +51,14 @@ bool inputIsOK()
     switch (token)
     {
     case ID:
-        name_var_save = attr.str;
+        name_var_save = strcpy_(attr.str, name_var_save);
         token = tryGetToken();
         if (token == COLUMN)
         {
             token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
+                printf("FUNC_NAME %s , VAR_NAME %s\n", name_func_save, name_var_save);
                 insertInput(name_var_save, table->func_tree, name_func_save, token);
                 insertVar(&(table->var_tree), deep, name_var_save, token);
                 token = tryGetToken();
@@ -93,7 +93,7 @@ bool GlobalinputIsOK()
     switch (token)
     {
     case (STRING || INTEGER || NUMBER):
-        name_var_save = attr.str;
+        name_var_save = strcpy_(attr.str, name_var_save);
         token = tryGetToken();
         if (token == COMMA)
         {
@@ -258,13 +258,13 @@ bool functionIsOK()
             {
                 return false;
             }
-            //funcs s = findFunc(table->func_tree, attr.str);
-            // name_func_save = attr.str;
-            strcpy_(attr.str, name_func_save);
-            //printf("%s\n", s->name);
+            name_func_save = strcpy_(attr.str, name_func_save);
+            printf("%s :*)\n", name_func_save);
             token = tryGetToken();
+            printf("%s :*)\n", name_func_save);
             if (token == LEFT_BRACKET){
                 token = tryGetToken();
+                printf("%s :*)\n", name_func_save);
                 if (!(inputWasComplited = inputIsOK()))
                 {
                     return false;
@@ -295,11 +295,8 @@ bool functionIsOK()
         origin = 1;
         token = tryGetToken();
         if (token == ID){
-            //v tabulku
             insertFunc(attr.str, &(table->func_tree), origin);
-            //funcs s = findFunc(table->func_tree, attr.str);
-            name_func_save = attr.str;
-            //printf("%s\n", s->name);
+            name_func_save = strcpy_(attr.str, name_func_save);
             token = tryGetToken();
             if (token == COLUMN){
                 token = tryGetToken();
@@ -347,7 +344,7 @@ bool functionBodyIsOK()
             token = tryGetToken();
             if (token == ID)
             {
-                name_var_save = attr.str;
+                name_var_save = strcpy_(attr.str, name_var_save);
                 token = tryGetToken();
                 if (token == COLUMN)
                 {
@@ -361,7 +358,6 @@ bool functionBodyIsOK()
                         {
                             case ASSIGNED:
                                 token = tryGetToken();
-                                //printf("asdfwad\n");
                                 token = express(token, &attr);
                                 break;
                             default:
@@ -384,15 +380,15 @@ bool functionBodyIsOK()
             token = tryGetToken();
             if (token == ID || token == INT || token == FLOAT || token == RETEZEC || token == LEFT_BRACKET){
                 if (token == ID){
+                    
+                    printf("FUNC_NAME %s , VAR_NAME %s , ATTR %s\n", name_func_save, name_var_save, attr.str);
                     funcs tmp1 = findFunc(table->func_tree, attr.str);
-                    printf("BD\n");
                     vars tmp2 = findVar(table->var_tree, deep, attr.str);
-                    printf("B]\n");
-                    if ((tmp1) != NULL){
+                    if (tmp1 != NULL){
                         printf(">:(\n");
                         break;
                     }
-                    else if((tmp2) != NULL){
+                    else if(tmp2 != NULL){
                         printf("X>\n");
                         printf("%d\n", table->var_tree->type);
                         if(table->var_tree->type == STRING){
@@ -448,5 +444,7 @@ int program()
     }
     // pokud aktualni token je jiny nez vyse uvedene, jedna se o syntaktickou chybu
     //printf("\n%d\n\n", error_flag);
+    free(name_func_save);
+    free(name_var_save);
     return error_flag;
 }

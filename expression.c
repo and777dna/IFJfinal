@@ -7,6 +7,9 @@
 #include <malloc.h>
 #include <ctype.h>
 #include "scanner.h"
+#include "sym.h"
+
+symtable *table;
 
 //--------------Stack-----------
 
@@ -96,7 +99,7 @@ int TableCheck(Stack_t *stack, int token, string *attr){
         if (token == ID || token == INT || token == FLOAT){
             inputNum = 7;
         }
-        else if (token == RETEZEC){
+        else if (token == RETEZEC || token == STRING){
             inputNum = 15;
         }
         if (stack->attr[stack->top].type == ID || stack->attr[stack->top].type == INT || stack->attr[stack->top].type == FLOAT){
@@ -158,7 +161,7 @@ int express(int token, string *attr)
     if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT)
     {
         push(stack, *attr, token);
-        token = getNextToken(attr);
+        token = tryGetToken(attr);
         token = TableCheck(stack, token, attr);
         if (token > 10 && token < 24){
             printf("%d\n", token);
