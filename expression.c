@@ -7,9 +7,7 @@
 #include <malloc.h>
 #include <ctype.h>
 #include "scanner.h"
-#include "sym.h"
 
-symtable *table;
 
 //--------------Stack-----------
 
@@ -91,11 +89,10 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'#', '#', '#', '#', '#', '#', '#', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '>'},  // ..
 };
 
-int TableCheck(Stack_t *stack, int token, string *attr){
+int TableCheck(Stack_t *stack, int token, string *attr, vars vartree){
     if ((token < 10 || token > 24) && token != COMMA){
         int stackVal = stack->attr[stack->top].type - 30;
         int inputNum = token - 30;
-        printf("TOP:%s ; %d\n", stack->attr[stack->top].attr, stack->attr[stack->top].type);
         if (token == ID || token == INT || token == FLOAT){
             inputNum = 7;
         }
@@ -109,20 +106,31 @@ int TableCheck(Stack_t *stack, int token, string *attr){
             stackVal = 15;
         }
 //---------------PrecTable Check------------
-        printf("%c , %d , %d\n",precTable[stackVal][inputNum], stackVal, inputNum);
-
         if (precTable[stackVal][inputNum] == '<'){
             push(stack, *attr, token);
             token = tryGetToken();
-            TableCheck(stack, token, attr);
+            if(token == ID){
+                vars tmp2 = findVar(vartree, 0, attr->str);
+                if (tmp2 == NULL)
+                {
+                    return SEM_ERROR_EXPRESS;
+                }
+                if(tmp2->type == STRING){
+                    token = 3;
+                }
+                else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
+                    token = 0;
+                }
+            }
+            TableCheck(stack, token, attr, vartree);
         }
         else if (precTable[stackVal][inputNum] == '>'){
             pop(stack);
-            TableCheck(stack, token, attr);
+            TableCheck(stack, token, attr, vartree);
         }
         else if (precTable[stackVal][inputNum] == '='){
             pop(stack);
-            TableCheck(stack, token, attr);
+            TableCheck(stack, token, attr, vartree);
         }
         else{ 
             return SEM_ERROR_EXPRESS;
@@ -136,7 +144,6 @@ int TableCheck(Stack_t *stack, int token, string *attr){
         else if (stack->attr[stack->top].type == RETEZEC){
             stackVal = 15;
         }
-        printf("%c , %d , %d\n",precTable[stackVal][8], stackVal, 8);
         if (precTable[stackVal][8] == '>'){
             pop(stack);
             return token;
@@ -151,38 +158,39 @@ int TableCheck(Stack_t *stack, int token, string *attr){
     }
 }
 
-int express(int token, string *attr)
+int express(int token, string *attr, vars vartree)
 {
     Stack_t *stack = createStack();
     string buk;
     buk.str = "$";
     push(stack, buk, 38);
-    printf("top :%d\n", stack->top);
     if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT)
     {
         push(stack, *attr, token);
-        token = tryGetToken(attr);
-        token = TableCheck(stack, token, attr);
-        if (token > 10 && token < 24){
-            printf("%d\n", token);
-            if (stack != NULL){
-                free((stack)->attr);
-                free(stack);
-                stack = NULL;
-            }
-            return token; 
+        token = tryGetToken();
+        token = TableCheck(stack, token, attr, vartree);
+        if (token == COMMA){
+            token = tryGetToken();
+            token = express(token, attr, vartree);
         }
         else{
-            if (stack != NULL){
-                free((stack)->attr);
-                free(stack);
-                stack = NULL;
+            if (token > 10 && token < 24){
+                if (stack != NULL){
+                    free((stack)->attr);
+                    free(stack);
+                    stack = NULL;
+                }
+                return token; 
             }
-            return SEM_ERROR_EXPRESS;
+            else{
+                if (stack != NULL){
+                    free((stack)->attr);
+                    free(stack);
+                    stack = NULL;
+                }
+                return SEM_ERROR_EXPRESS;
+            }
         }
-
     }
     else return SEM_ERROR_EXPRESS;
-  
-
 }

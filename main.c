@@ -1,7 +1,6 @@
 #include "scanner.h"
 #include "parser.h"
 #include <stdlib.h>
-#include "sym.h"
 
 int main(int argc, char *argv[]){
 

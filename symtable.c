@@ -1,4 +1,4 @@
-#include "sym.h"
+#include "scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -120,7 +120,6 @@ vars findVar(vars var_tree, int deep, char *name)
             {
                 return tmp;
             }
-            
         }
         else
         {
@@ -176,6 +175,7 @@ void insertFunc(char *name, funcs *func, int orig)
         (*func)->R = NULL;
         (*func)->in = NULL;
         (*func)->out = NULL;
+        printf("dobavil %s\n", (*func)->name);
         return;
     }
     else if (strcmp((*func)->name, name) < 0)
@@ -196,6 +196,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
     if (func_tree != NULL)
     {
         printf("%s  BO\n", name);
+        printf("--------------functree %s\n", func_tree->name);
         if (strcmp(func_tree->name, name) < 0)
         {
             findFunc(func_tree->L, name);
@@ -206,6 +207,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         }
         else if (strcmp(func_tree->name, name) == 0)
         {
+            printf("nasel func\n");
             return func_tree;
         }
     }
@@ -218,9 +220,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
 
 void insertInput(char *name_arg, funcs func, char *name_func, int type)
 {
-    printf("|||%s %s ||||\n", name_arg, name_func);
     funcs function = findFunc(func, name_func);
-
     if (function == NULL)
     {
         return;

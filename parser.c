@@ -1,6 +1,5 @@
 #include "scanner.h"
 #include "parser.h"
-#include "sym.h"
 #include <stdlib.h>
 #include <string.h>
 #include "expression.h"
@@ -16,12 +15,47 @@ int deep;
 int counterVar = 1;
 symtable *table;
 int error_flag;
+SeznamOfVars *seznam;
 
-char *strcpy_(char *src, char *dst){
-    dst = malloc(strlen(src) + 1);  //? +1
-    src = strcpy(dst, src);
-    return src;
+void strcpy_(char *src){
+    
+    seznam->name = malloc(strlen(src) + 1);  //? +1
+    src = strcpy(seznam->name, src);
+
+    return;
 }
+
+void initSeznam()
+{
+    seznam = malloc(sizeof(struct seznam));
+    if (seznam == NULL)
+    {
+        return;
+    }
+    seznam->name = NULL;
+    seznam->next = NULL;
+    return;
+}
+
+void freeSeznam()
+{
+    if (seznam != NULL)
+    {
+        SeznamOfVars *tmp = seznam;
+        while(tmp != NULL)
+        {
+            SeznamOfVars *tmp2;
+            tmp2 = tmp->next;
+            free(tmp);
+            tmp = tmp2;
+        }
+        seznam->name = NULL;
+        seznam->next = NULL;
+    }  
+    return;
+}
+
+
 
 int tryGetToken()
 {
@@ -58,7 +92,6 @@ bool inputIsOK()
             token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
-                printf("FUNC_NAME %s , VAR_NAME %s\n", name_func_save, name_var_save);
                 insertInput(name_var_save, table->func_tree, name_func_save, token);
                 insertVar(&(table->var_tree), deep, name_var_save, token);
                 token = tryGetToken();
@@ -137,7 +170,6 @@ bool outputIsOK()
         }
         else 
         {   
-            //printf("gvdfvjn%s\n\n", attr.str);
             return true;
         }    
     }
@@ -146,7 +178,6 @@ bool outputIsOK()
 
 bool GlobalCompare(funcs tmp)
 {
-    //token = tryGetToken();
     switch (token)
     {
     case ID:
@@ -226,15 +257,19 @@ bool functionIsOK()
         token = tryGetToken();
         if (token == ID){
             //v tabulku
-            funcs tmp = findFunc(table->func_tree, attr.str);
+            name_func_save = strcpy_(attr.str, name_func_save);
+            funcs tmp = findFunc(table->func_tree, name_func_save);
             if (tmp == NULL)
             {
-                insertFunc(attr.str, &(table->func_tree), origin);
+                printf("dobavil\n");
+                insertFunc(name_func_save, &(table->func_tree), origin);
             }
             else if (tmp != NULL && tmp->origin == 1)
             {
                 tmp->origin = 2;
-                token = tryGetToken(); //проверка
+                if((token = tryGetToken()) != LEFT_BRACKET){
+                    return SYNTAX_ERROR; 
+                }
                 token = tryGetToken();
                 u = GlobalCompare(tmp);
                 if (!u)
@@ -259,12 +294,9 @@ bool functionIsOK()
                 return false;
             }
             name_func_save = strcpy_(attr.str, name_func_save);
-            printf("%s :*)\n", name_func_save);
             token = tryGetToken();
-            printf("%s :*)\n", name_func_save);
             if (token == LEFT_BRACKET){
                 token = tryGetToken();
-                printf("%s :*)\n", name_func_save);
                 if (!(inputWasComplited = inputIsOK()))
                 {
                     return false;
@@ -295,8 +327,8 @@ bool functionIsOK()
         origin = 1;
         token = tryGetToken();
         if (token == ID){
-            insertFunc(attr.str, &(table->func_tree), origin);
             name_func_save = strcpy_(attr.str, name_func_save);
+            insertFunc(name_func_save, &(table->func_tree), origin);
             token = tryGetToken();
             if (token == COLUMN){
                 token = tryGetToken();
@@ -336,7 +368,7 @@ bool functionIsOK()
 
 bool functionBodyIsOK()
 {
-    while (token != END){
+    while ((token != END) && deep == 0){
         switch (token)
         {
         case LOCAL:
@@ -344,6 +376,7 @@ bool functionBodyIsOK()
             token = tryGetToken();
             if (token == ID)
             {
+                
                 name_var_save = strcpy_(attr.str, name_var_save);
                 token = tryGetToken();
                 if (token == COLUMN)
@@ -358,7 +391,7 @@ bool functionBodyIsOK()
                         {
                             case ASSIGNED:
                                 token = tryGetToken();
-                                token = express(token, &attr);
+                                token = express(token, &attr, table->var_tree);
                                 break;
                             default:
                                 break;
@@ -370,18 +403,35 @@ bool functionBodyIsOK()
             else return false;
             break;
         case WHILE:
-            
-        break;
+            token = tryGetToken();
+            token = express(token, &attr, table->var_tree);
+            if (token != DO)
+            {
+                return SYNTAX_ERROR;
+            }
+            deep = deep + 1;
+            token = tryGetToken();
+            bool func = functionBodyIsOK();
+            break;
         case IF:
+            token = tryGetToken();
+            token = express(token, &attr, table->var_tree);
+            if (token != THEN)
+            {
+                return SYNTAX_ERROR;
+            }
+            deep = deep + 1;
+            token = tryGetToken();
+            bool func = functionBodyIsOK();
+            break; 
+        case ID:
 
-        break; 
+
+            break;
         case RETURN:
-
             token = tryGetToken();
             if (token == ID || token == INT || token == FLOAT || token == RETEZEC || token == LEFT_BRACKET){
                 if (token == ID){
-                    
-                    printf("FUNC_NAME %s , VAR_NAME %s , ATTR %s\n", name_func_save, name_var_save, attr.str);
                     funcs tmp1 = findFunc(table->func_tree, attr.str);
                     vars tmp2 = findVar(table->var_tree, deep, attr.str);
                     if (tmp1 != NULL){
@@ -389,25 +439,20 @@ bool functionBodyIsOK()
                         break;
                     }
                     else if(tmp2 != NULL){
-                        printf("X>\n");
-                        printf("%d\n", table->var_tree->type);
                         if(table->var_tree->type == STRING){
                             token = RETEZEC;
                         }
                         else if (table->var_tree->type == INTEGER || table->var_tree->type == NUMBER){
                             token = INT;
                         }
-                        token = express(token, &attr);
-                        printf("XD\n");
+                        token = express(token, &attr, table->var_tree);
                     }
                     else {
-                        printf("P)\n");
                         return SEM_ERROR_DEFINE;
                     }
                 }
                 else{
-                    printf("Xb\n");
-                    token = express(token, &attr);
+                    token = express(token, &attr, table->var_tree);
                 }
             }  
             
@@ -426,6 +471,7 @@ int program()
     deep = 0;
     error_flag = 0;
     bool result;
+    initSeznam();
     token = tryGetToken();
     if (token == REQUIRE){
         token = tryGetToken();
