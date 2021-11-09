@@ -127,6 +127,7 @@ typedef struct token {
 typedef struct seznam {
     char *name;
     struct seznam *next;
+    struct seznam *first;
 } SeznamOfVars;
 
 void setTable(symtable *st);

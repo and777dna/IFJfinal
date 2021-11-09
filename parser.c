@@ -16,24 +16,53 @@ int counterVar = 1;
 symtable *table;
 int error_flag;
 SeznamOfVars *seznam;
+SeznamOfVars *head;
 
-void strcpy_(char *src){
-    
-    seznam->name = malloc(strlen(src) + 1);  //? +1
-    src = strcpy(seznam->name, src);
+void strcpy_for_var(char *src)
+{
 
+    SeznamOfVars *tmp = malloc(sizeof (struct seznam));
+    if(tmp == NULL){
+        return;
+    }
+    tmp->name = malloc(strlen(src) + 1);
+    tmp->next = NULL;
+    src = strcpy(tmp->name, src);
+
+    if (seznam == NULL)
+    {
+        seznam = tmp;
+        head = tmp;
+    }
+    else
+    {
+        while (seznam != NULL)
+        {
+            seznam = seznam->next;
+        }
+        seznam = tmp;
+    }
     return;
+}
+
+char *strcpy_for_func(char *src, char *dst)
+{
+    dst = malloc(strlen(src) + 1);
+    src = strcpy(dst, src);
+    return src;
 }
 
 void initSeznam()
 {
-    seznam = malloc(sizeof(struct seznam));
-    if (seznam == NULL)
-    {
-        return;
-    }
-    seznam->name = NULL;
-    seznam->next = NULL;
+    // seznam = malloc(sizeof(struct seznam));
+    // if (seznam == NULL)
+    // {
+    //     return;
+    // }
+    seznam = NULL;
+    // seznam->name = NULL;
+    // seznam->next = NULL;
+    // seznam->first = NULL;
     return;
 }
 
@@ -85,15 +114,19 @@ bool inputIsOK()
     switch (token)
     {
     case ID:
-        name_var_save = strcpy_(attr.str, name_var_save);
+
+                        
+        strcpy_for_var(attr.str);printf("OKOKOOOOOOOOO\n\n");
         token = tryGetToken();
         if (token == COLUMN)
         {
             token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
-                insertInput(name_var_save, table->func_tree, name_func_save, token);
-                insertVar(&(table->var_tree), deep, name_var_save, token);
+                insertInput(seznam->name, table->func_tree, name_func_save, token);
+                printf("ggwp\n");
+                insertVar(&(table->var_tree), deep, seznam->name, token);
+                
                 token = tryGetToken();
                 if (token == COMMA)
                 {
@@ -126,7 +159,7 @@ bool GlobalinputIsOK()
     switch (token)
     {
     case (STRING || INTEGER || NUMBER):
-        name_var_save = strcpy_(attr.str, name_var_save);
+        strcpy_for_var(attr.str);
         token = tryGetToken();
         if (token == COMMA)
         {
@@ -138,7 +171,7 @@ bool GlobalinputIsOK()
             token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER)
             {
-                insertInput(name_var_save, table->func_tree, name_func_save, token);
+                insertInput(seznam->name, table->func_tree, name_func_save, token);
             }
             else if(token == RIGHT_BRACKET)
             {
@@ -257,7 +290,7 @@ bool functionIsOK()
         token = tryGetToken();
         if (token == ID){
             //v tabulku
-            name_func_save = strcpy_(attr.str, name_func_save);
+            name_func_save = strcpy_for_func(attr.str, name_func_save);
             funcs tmp = findFunc(table->func_tree, name_func_save);
             if (tmp == NULL)
             {
@@ -293,10 +326,12 @@ bool functionIsOK()
             {
                 return false;
             }
-            name_func_save = strcpy_(attr.str, name_func_save);
+            name_func_save = strcpy_for_func(attr.str, name_func_save);
             token = tryGetToken();
             if (token == LEFT_BRACKET){
                 token = tryGetToken();
+
+                        printf("OKOK\n\n");
                 if (!(inputWasComplited = inputIsOK()))
                 {
                     return false;
@@ -327,7 +362,7 @@ bool functionIsOK()
         origin = 1;
         token = tryGetToken();
         if (token == ID){
-            name_func_save = strcpy_(attr.str, name_func_save);
+            name_func_save = strcpy_for_func(attr.str, name_func_save);
             insertFunc(name_func_save, &(table->func_tree), origin);
             token = tryGetToken();
             if (token == COLUMN){
@@ -377,14 +412,14 @@ bool functionBodyIsOK()
             if (token == ID)
             {
                 
-                name_var_save = strcpy_(attr.str, name_var_save);
+                strcpy_for_var(attr.str);
                 token = tryGetToken();
                 if (token == COLUMN)
                 {
                     token = tryGetToken();
                     if (token == INTEGER || token == STRING || token == NUMBER)
                     {
-                        insertVar(&(table->var_tree), deep, name_var_save, token);
+                        insertVar(&(table->var_tree), deep, seznam->name, token);
                         int type = token;
                         token = tryGetToken();
                         switch (token)
@@ -422,7 +457,7 @@ bool functionBodyIsOK()
             }
             deep = deep + 1;
             token = tryGetToken();
-            bool func = functionBodyIsOK();
+            //bool func = functionBodyIsOK();
             break; 
         case ID:
 
@@ -488,6 +523,13 @@ int program()
         }
         else changeError(2);
     }
+    while (head)
+    {
+        printf("%s----->", head->name);
+        head = head->next;
+    }
+    printf("\n");
+    
     // pokud aktualni token je jiny nez vyse uvedene, jedna se o syntaktickou chybu
     //printf("\n%d\n\n", error_flag);
     free(name_func_save);
