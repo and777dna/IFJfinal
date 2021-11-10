@@ -14,12 +14,12 @@
 #define GLOBAL 14
 #define IF 15
 #define INTEGER 16
-#define LOCAL 17
-#define NIL 18
-#define NUMBER 19
-#define REQUIRE 20
-#define RETURN 21
-#define STRING 22
+#define NUMBER 17
+#define STRING 18
+#define LOCAL 19
+#define NIL 20
+#define REQUIRE 21
+#define RETURN 22
 #define THEN 23
 #define WHILE 24
 
@@ -160,4 +160,4 @@ int strGetLength(string *s);
 //hlavicka funkce simulujici lexikalni analyzator
 void setSourceFile(FILE *f);
 int getNextToken(string *attr);
-int express(int token, string *attr, vars var);
+int express(int token, string *attr, vars var, funcs funcs);

@@ -1,6 +1,7 @@
 require "ifj21"
 function concat (x : string, y : string) : string, integer
-local y : integer = 2 * 2
+local z : integer = 2 * 2
+concat("r","e")
 return x .. y, 0 end
 function main()
 local x : string
