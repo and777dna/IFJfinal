@@ -4,7 +4,7 @@
 #include <string.h>
 #include "expression.h"
 
-
+//------------Global variables------------------------
 //tSymbolTable *table;// globalni promenna uchovavajici tabulku symbolu
 //tListOfInstr *list; // globalni promenna uchovavajici seznam instrukci
 int token;          // globalni promenna, ve ktere bude ulozen aktualni token
@@ -17,6 +17,8 @@ symtable *table;
 int error_flag;
 SeznamOfVars *seznam;
 SeznamOfVars *head;
+
+//-------------
 
 void initSeznam()
 {
@@ -35,12 +37,10 @@ void strcpy_for_var(char *src)
 {
 
     SeznamOfVars *tmp = malloc(sizeof (struct seznam));
-    printf("PAPAPAPAPAP\n");
     if(tmp == NULL){
         return;
     }
     tmp->name = malloc(strlen(src) + 1);
-    printf("LALALALALALALAL\n");
     tmp->next = NULL;
     src = strcpy(tmp->name, src);
     if (head == NULL)
@@ -85,7 +85,7 @@ void freeSeznam()
     return;
 }
 
-
+//-------------Input check-----------------
 
 int tryGetToken()
 {
@@ -302,6 +302,7 @@ bool functionIsOK()
             {
                 tmp->origin = 2;
                 if((token = tryGetToken()) != LEFT_BRACKET){
+                                printf("Return: SYNTAX_ERROR\n");
                     return SYNTAX_ERROR; 
                 }
                 token = tryGetToken();
@@ -412,7 +413,6 @@ bool functionBodyIsOK()
             token = tryGetToken();
             if (token == ID)
             {
-                
                 strcpy_for_var(attr.str);
                 token = tryGetToken();
                 if (token == COLUMN)
@@ -435,6 +435,36 @@ bool functionBodyIsOK()
                         }
                     }
                 }
+                else if(token == COMMA){
+                    printf("adadad\n");
+                    while (token != COLUMN){
+                        if(token == COMMA){
+                            token = tryGetToken();
+                        }
+                        strcpy_for_var(attr.str);
+                        token = tryGetToken();
+                    }
+                    if (token == COLUMN)
+                    {
+                        token = tryGetToken();
+                        if (token == INTEGER || token == STRING || token == NUMBER)
+                        {
+                            insertVar(&(table->var_tree), deep, seznam->name, token);
+                            freeSeznam();
+                            int type = token;
+                            token = tryGetToken();
+                            switch (token)
+                            {
+                                case ASSIGNED:
+                                    token = tryGetToken();
+                                    token = express(token, &attr, table->var_tree, table->func_tree);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
                 else return false;
             }
             else return false;
@@ -444,6 +474,7 @@ bool functionBodyIsOK()
             token = express(token, &attr, table->var_tree, table->func_tree);
             if (token != DO)
             {
+                printf("Return: SYNTAX_ERROR\n");
                 return SYNTAX_ERROR;
             }
             deep = deep + 1;
@@ -455,13 +486,14 @@ bool functionBodyIsOK()
             token = express(token, &attr, table->var_tree, table->func_tree);
             if (token != THEN)
             {
+                printf("Return: SYNTAX_ERROR\n");
                 return SYNTAX_ERROR;
             }
             deep = deep + 1;
             token = tryGetToken();
             //bool func = functionBodyIsOK();
             break; 
-        case ID:
+        case ID:;
             funcs maybefunc = findFunc(table->func_tree, attr.str);
             if (maybefunc != NULL)
             {
@@ -469,6 +501,7 @@ bool functionBodyIsOK()
                 if (token != LEFT_BRACKET)
                 {
                     changeError(2);
+                    printf("Return: SYNTAX_ERROR\n");
                     return SYNTAX_ERROR;
                     //sintax error
                 }
@@ -483,6 +516,7 @@ bool functionBodyIsOK()
                     }
                     else if (typeCheck != maybefunc->in->type)
                     {
+                        printf("Return: SEM_ERROR_FUNCPARAM\n");
                         return SEM_ERROR_FUNCPARAM;
                     }
                     maybefunc->in = maybefunc->in->next;
@@ -500,32 +534,45 @@ bool functionBodyIsOK()
                     }
                     else if (token != ASSIGNED){
                         changeError(2);
+                        printf("Return: SYNTAX_ERROR\n");
                         return SYNTAX_ERROR;
                     }
                     else{
                         token = tryGetToken();
                         if (token == ID){
-                            funcs maybefunc2 = findFunc(table->func_tree, attr.str);
-                            if (maybefunc != NULL)
-                            {
-                                do{
-                                    vars varCheck = findVar(table->var_tree, deep, seznam->name);
-                                    if (varCheck->type == maybefunc2->out->type){
-                                        seznam = seznam->next;
-                                        maybefunc2->out = maybefunc2->out->next;
-                                        continue;
-                                    }
-                                    else{
-                                        return SEM_ERROR_FUNCPARAM;
-                                    }
-                                }while(seznam->next != NULL);
-                                continue;
+                            funcs maybefunc = findFunc(table->func_tree, attr.str);
+                            token = tryGetToken();
+                            if (token != LEFT_BRACKET){
+                                printf("Return: SYNTAX_ERROR\n");
+                                return SYNTAX_ERROR;
                             }
-                            else {
-                                token = express(token, &attr, table->var_tree, table->func_tree);
-                                if (token == COMMA){
+                            else{
+                                token = tryGetToken();
+                                if (maybefunc != NULL)
+                                {
+                                    while(token != RIGHT_BRACKET){
+                                        if (token+15 == maybefunc->in->type){
+                                            maybefunc->in = maybefunc->in->next;
+                                            token = tryGetToken();
+                                        }
+                                        else if(token == COMMA){
+                                            token = tryGetToken();
+                                            continue;
+                                        }
+                                        else{
+                                            printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                            return SEM_ERROR_FUNCPARAM;
+                                        }
+                                    }
                                     token = tryGetToken();
                                     continue;
+                                }
+                                else {
+                                    token = express(token, &attr, table->var_tree, table->func_tree);
+                                    if (token == COMMA){
+                                        token = tryGetToken();
+                                        continue;
+                                    }
                                 }
                             }
                         }
@@ -559,6 +606,7 @@ bool functionBodyIsOK()
                             token = INT;
                         }
                         token = express(token, &attr, table->var_tree, table->func_tree);
+                        continue;
                     }
                     else {
                         return SEM_ERROR_DEFINE;
@@ -566,13 +614,16 @@ bool functionBodyIsOK()
                 }
                 else{
                     token = express(token, &attr, table->var_tree, table->func_tree);
+                    continue;
                 }
             }  
             
         break;
+        case COMMA:
+            break;
         default:
-            printf("DEFALT\n");
-                return false;
+            printf("DEFALT with %d\n", token);
+            return false;
         }
     }
 }

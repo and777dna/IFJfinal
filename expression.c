@@ -64,7 +64,8 @@ void implode(Stack_t *stack) {
     stack->size = stack->top;
     stack->attr = realloc(stack->attr, stack->size * sizeof(T));
 }
-//----------------------------------------------
+
+//-----------------PrecTable----------------------
 
 char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
 {
@@ -136,8 +137,20 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             TableCheck(stack, token, attr, vartree, functree);
         }
         else{ 
+            funcs tmp = findFunc(functree, attr->str);
+            vars tmp2 = findVar(vartree, 0, attr->str);
+            if (tmp != NULL || tmp2 != NULL){
+                token = ID;
+                return token;
+            }
+            printf("%s:%d -- %d\n",attr->str, inputNum, stackVal);
+            printf("3 %d\n", token);
+            printf("Return: SEM_ERROR_EXPRESS\n");
             return SEM_ERROR_EXPRESS;
         }
+    }
+    else if(token == COMMA){
+        return token;
     }
     else{
         int stackVal = stack->attr[stack->top].type - 30;
@@ -156,6 +169,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             return token;
         }
         else{
+            printf("Return: SEM_ERROR_EXPRESS\n");
             return SEM_ERROR_EXPRESS;
         }
     }
@@ -191,9 +205,13 @@ int express(int token, string *attr, vars vartree, funcs functree)
                     free(stack);
                     stack = NULL;
                 }
+                printf("Return: SEM_ERROR_EXPRESS\n");
                 return SEM_ERROR_EXPRESS;
             }
         }
     }
-    else return SEM_ERROR_EXPRESS;
+    else{
+        printf("Return: SEM_ERROR_EXPRESS\n");
+        return SEM_ERROR_EXPRESS;
+    }
 }
