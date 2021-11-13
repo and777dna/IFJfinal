@@ -536,6 +536,47 @@ int functionBodyIsOK()
                         token = tryGetToken();
                         if (token == ID){
                             funcs maybefunc = findFunc(table->func_tree, attr.str);
+                            if (maybefunc != NULL){
+                                seznam = seznam->first;
+                                maybefunc->out = maybefunc->out->first;
+                                while(seznam != NULL && maybefunc->out != NULL){
+                                    if (maybefunc->out->next == NULL){
+                                        vars varfind = findVar(table->var_tree, deep, seznam->name);
+                                        printf("SEZNAM: %s|%d == OUT: %d\n",seznam->name, varfind->type, maybefunc->out->type);
+                                        if(varfind->type == maybefunc->out->type){
+                                            if((seznam->next == NULL && maybefunc->out->next != NULL) 
+                                            || (seznam->next != NULL && maybefunc->out->next == NULL)){
+                                                    printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                                    return SEM_ERROR_FUNCPARAM;
+                                            }
+                                        }
+                                        else{
+                                            printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                            return SEM_ERROR_FUNCPARAM;
+                                        }
+                                        break;
+                                    }
+                                    vars varfind = findVar(table->var_tree, deep, seznam->name);
+                                    printf("SEZNAM: %s|%d == OUT: %d\n",seznam->name, varfind->type, maybefunc->out->type);
+                                    if(varfind->type == maybefunc->out->type){
+                                        if(seznam->next != NULL){
+                                            seznam = seznam->next;
+                                        }
+                                        //if(maybefunc->out->next != NULL){
+                                            maybefunc->out = maybefunc->out->next;
+                                        //}
+                                        if((seznam->next == NULL && maybefunc->out->next != NULL) 
+                                        || (seznam->next != NULL && maybefunc->out->next == NULL)){
+                                                printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                                return SEM_ERROR_FUNCPARAM;
+                                        }
+                                    }
+                                    else{
+                                        printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                        return SEM_ERROR_FUNCPARAM;
+                                    }
+                                }
+                            }
                             token = tryGetToken();
                             if (token != LEFT_BRACKET){
                                 printf("Return: SYNTAX_ERROR\n");
@@ -545,11 +586,9 @@ int functionBodyIsOK()
                                 token = tryGetToken();
                                 if (maybefunc != NULL)
                                 {
-                                    //printf("AFAFAF %s\n", maybefunc->in->name);
                                     maybefunc->in = maybefunc->in->first;
                                     while(token != RIGHT_BRACKET){
                                         if (token+15 == maybefunc->in->type){
-                                        printf("ADSADASDSADAD0\n");
                                             if(maybefunc->in->next != NULL){
                                                 maybefunc->in = maybefunc->in->next;
                                             }
@@ -621,6 +660,8 @@ int functionBodyIsOK()
         break;
         case COMMA:
             break;
+        case END:
+            break;
         default:
             printf("DEFALT with %d\n", token);
             return false;
@@ -637,7 +678,10 @@ int syntaxCheck(){
                 return result;
             }
             result = functionBodyIsOK();
-            if (token != END){
+            if (result != 0){
+                return result;
+            }
+            else if (token != END){
                 printf("Return: SYNTAX_ERROR\n");
                 return SYNTAX_ERROR;
             }

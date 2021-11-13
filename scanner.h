@@ -87,6 +87,7 @@ typedef struct outputFunc
 {
     int type;
     struct outputFunc *next;
+    struct outputFunc *first;
 } * outPar;
 
 typedef struct Func_tree

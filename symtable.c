@@ -6,6 +6,7 @@
 symtable *ST;
 
 struct inputFunc *start;
+struct outputFunc *startOut;
 
 symtable *initST(symtable *ST)
 {
@@ -274,9 +275,16 @@ void insertOutput(funcs func, int type, char *name)
         {
             return;
         }
-        
+        if (function->out == NULL)
+        {
+            return;
+        }
         function->out->next = NULL;
         function->out->type = type;
+        if (startOut == NULL){
+            startOut = function->out;
+        }
+        function->out->first = startOut;
         return;
     }
     else
