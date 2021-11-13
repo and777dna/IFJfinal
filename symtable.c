@@ -5,6 +5,8 @@
 
 symtable *ST;
 
+struct inputFunc *start;
+
 symtable *initST(symtable *ST)
 {
 
@@ -212,9 +214,9 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         }
     }
     else{
-        printf("FUNCno\n"); 
+        printf("FUNCno\n");  
+        return NULL;
     }
-    return NULL;
     
 }
 
@@ -225,7 +227,6 @@ void insertInput(char *name_arg, funcs func, char *name_func, int type)
     {
         return;
     }
-
     if (function->in == NULL)
     {
         function->in = malloc(sizeof(struct inputFunc));
@@ -236,15 +237,17 @@ void insertInput(char *name_arg, funcs func, char *name_func, int type)
         function->in->name = name_arg;
         function->in->next = NULL;
         function->in->type = type;
+        if (start == NULL){
+            start = function->in;
+        }
+        function->in->first = start;
         return;
     }
-
     inPar new_param = function->in;
     while (new_param->next != NULL)
     {
         new_param = new_param->next;
     }
-
     new_param->next = malloc(sizeof(struct inputFunc));
     if (new_param->next == NULL)
     {
@@ -254,6 +257,7 @@ void insertInput(char *name_arg, funcs func, char *name_func, int type)
     new_param->name = name_arg;
     new_param->next = NULL;
     new_param->type = type;
+    new_param->first = start;
 }
 
 void insertOutput(funcs func, int type, char *name)

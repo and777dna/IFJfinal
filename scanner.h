@@ -80,6 +80,7 @@ typedef struct inputFunc
     char *name;
     int type;
     struct inputFunc *next;
+    struct inputFunc *first;
 } * inPar;
 
 typedef struct outputFunc

@@ -27,6 +27,7 @@ int main(int argc, char *argv[]){
     }*/
     setTable(table);
     a = program();
+    changeError(a);
     printf("%d\n", a);
     freeFunc(table->func_tree);
     free(token);

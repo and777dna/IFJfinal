@@ -35,7 +35,6 @@ void initSeznam()
 
 void strcpy_for_var(char *src)
 {
-
     SeznamOfVars *tmp = malloc(sizeof (struct seznam));
     if(tmp == NULL){
         return;
@@ -178,13 +177,13 @@ int GlobalinputIsOK()
                 return SYNTAX_OK;
             }
         }
-        return false;
+        return SEM_ERROR_FUNCPARAM;
         break;  
     case RIGHT_BRACKET:
         return SYNTAX_OK;
         break;
     default:
-        return false;
+        return SEM_ERROR_FUNCPARAM;
         break;
     }
 }
@@ -205,7 +204,7 @@ int outputIsOK()
             return SYNTAX_OK;
         }    
     }
-    else return false;
+    else return SYNTAX_ERROR;
 }
 
 int GlobalCompare(funcs tmp)
@@ -280,9 +279,9 @@ int GlobalCompareOut(funcs tmp)
 
 int functionIsOK()
 {
-    bool inputWasComplited;
-    bool outputWasComplited;
-    bool u;
+    int inputWasComplited;
+    int outputWasComplited;
+    int globalCheck;
     int origin;
     if (token == FUNCTION){
         origin = 2;
@@ -304,8 +303,8 @@ int functionIsOK()
                     return SYNTAX_ERROR; 
                 }
                 token = tryGetToken();
-                u = GlobalCompare(tmp);
-                if (!u)
+                globalCheck = GlobalCompare(tmp);
+                if (globalCheck)
                 {
                     return false;
                 }
@@ -313,8 +312,8 @@ int functionIsOK()
                 if (token == COLUMN && tmp->out != NULL)
                 {
                     token = tryGetToken();
-                    u = GlobalCompareOut(tmp);
-                    return u;
+                    globalCheck = GlobalCompareOut(tmp);
+                    return globalCheck;
                 }
                 else if (token != COLUMN && tmp->out == NULL)
                 {
@@ -354,9 +353,9 @@ int functionIsOK()
                 }
                 
             }
-            else return false; 
+            else return SYNTAX_ERROR; 
         }
-        else return false;
+        else return SYNTAX_ERROR;
     }
     else if (token == GLOBAL){
         origin = 1;
@@ -371,9 +370,9 @@ int functionIsOK()
                     token = tryGetToken();
                     if (token == LEFT_BRACKET){
                     token = tryGetToken();
-                    if (!(inputWasComplited = GlobalinputIsOK()))
+                    if ((inputWasComplited = GlobalinputIsOK()) != SYNTAX_OK)    
                     {
-                        return false;
+                        return SYNTAX_ERROR;
                     }
                     else
                     {
@@ -503,7 +502,7 @@ int functionBodyIsOK()
                 }
                 token = tryGetToken();
                 while (token != RIGHT_BRACKET)
-                {
+                {   
                     int typeCheck = token + 15;
                     if (token == COMMA)
                     {
@@ -546,9 +545,14 @@ int functionBodyIsOK()
                                 token = tryGetToken();
                                 if (maybefunc != NULL)
                                 {
+                                    //printf("AFAFAF %s\n", maybefunc->in->name);
+                                    maybefunc->in = maybefunc->in->first;
                                     while(token != RIGHT_BRACKET){
                                         if (token+15 == maybefunc->in->type){
-                                            maybefunc->in = maybefunc->in->next;
+                                        printf("ADSADASDSADAD0\n");
+                                            if(maybefunc->in->next != NULL){
+                                                maybefunc->in = maybefunc->in->next;
+                                            }
                                             token = tryGetToken();
                                         }
                                         else if(token == COMMA){
@@ -625,13 +629,15 @@ int functionBodyIsOK()
 }
 
 int syntaxCheck(){
-    while(token != EOF){  
-        bool result;
+    while(token != END_OF_FILE){  
+        int result;
         if (token == FUNCTION){
-            token = functionIsOK();
-            token = functionBodyIsOK();
+            result = functionIsOK();
+            if (result != 0){
+                return result;
+            }
+            result = functionBodyIsOK();
             if (token != END){
-                printf("AFAFAFF %d\n", token);
                 printf("Return: SYNTAX_ERROR\n");
                 return SYNTAX_ERROR;
             }
@@ -665,7 +671,7 @@ int syntaxCheck(){
                     token = tryGetToken();
                 }
             }
-            else{
+            else if (maybefunc == NULL){
                 printf("Return: SYNTAX_ERROR\n");
                 return SYNTAX_ERROR;
             }
@@ -676,6 +682,7 @@ int syntaxCheck(){
         }
         token = tryGetToken();
     }
+    return SYNTAX_OK;
 }
 
 int program()
