@@ -110,7 +110,7 @@ void setTable(symtable *st)
     table = st;
 }
 
-bool inputIsOK()
+int inputIsOK()
 {
     switch (token)
     {
@@ -155,7 +155,7 @@ bool inputIsOK()
     }
 }
 
-bool GlobalinputIsOK()
+int GlobalinputIsOK()
 {
     switch (token)
     {
@@ -191,7 +191,7 @@ bool GlobalinputIsOK()
     }
 }
 
-bool outputIsOK()
+int outputIsOK()
 {
     if (token == STRING || token == INTEGER || token == NUMBER)
     {
@@ -210,7 +210,7 @@ bool outputIsOK()
     else return false;
 }
 
-bool GlobalCompare(funcs tmp)
+int GlobalCompare(funcs tmp)
 {
     switch (token)
     {
@@ -253,7 +253,7 @@ bool GlobalCompare(funcs tmp)
     }
 }
 
-bool GlobalCompareOut(funcs tmp)
+int GlobalCompareOut(funcs tmp)
 {
     switch (token)
     {
@@ -280,7 +280,7 @@ bool GlobalCompareOut(funcs tmp)
     }
 }
 
-bool functionIsOK()
+int functionIsOK()
 {
     bool inputWasComplited;
     bool outputWasComplited;
@@ -403,7 +403,7 @@ bool functionIsOK()
     return false;
 }
 
-bool functionBodyIsOK()
+int functionBodyIsOK()
 {
     while ((token != END) && deep == 0){
         switch (token)
@@ -428,7 +428,7 @@ bool functionBodyIsOK()
                         {
                             case ASSIGNED:
                                 token = tryGetToken();
-                                token = express(token, &attr, table->var_tree, table->func_tree);
+                                token = express(token, &attr, table->var_tree, table->func_tree, deep);
                                 break;
                             default:
                                 break;
@@ -457,7 +457,7 @@ bool functionBodyIsOK()
                             {
                                 case ASSIGNED:
                                     token = tryGetToken();
-                                    token = express(token, &attr, table->var_tree, table->func_tree);
+                                    token = express(token, &attr, table->var_tree, table->func_tree, deep);
                                     break;
                                 default:
                                     break;
@@ -471,7 +471,7 @@ bool functionBodyIsOK()
             break;
         case WHILE:
             token = tryGetToken();
-            token = express(token, &attr, table->var_tree, table->func_tree);
+            token = express(token, &attr, table->var_tree, table->func_tree, deep);
             if (token != DO)
             {
                 printf("Return: SYNTAX_ERROR\n");
@@ -483,7 +483,7 @@ bool functionBodyIsOK()
             break;
         case IF:
             token = tryGetToken();
-            token = express(token, &attr, table->var_tree, table->func_tree);
+            token = express(token, &attr, table->var_tree, table->func_tree, deep);
             if (token != THEN)
             {
                 printf("Return: SYNTAX_ERROR\n");
@@ -491,7 +491,6 @@ bool functionBodyIsOK()
             }
             deep = deep + 1;
             token = tryGetToken();
-            //bool func = functionBodyIsOK();
             break; 
         case ID:;
             funcs maybefunc = findFunc(table->func_tree, attr.str);
@@ -503,7 +502,6 @@ bool functionBodyIsOK()
                     changeError(2);
                     printf("Return: SYNTAX_ERROR\n");
                     return SYNTAX_ERROR;
-                    //sintax error
                 }
                 token = tryGetToken();
                 while (token != RIGHT_BRACKET)
@@ -568,7 +566,7 @@ bool functionBodyIsOK()
                                     continue;
                                 }
                                 else {
-                                    token = express(token, &attr, table->var_tree, table->func_tree);
+                                    token = express(token, &attr, table->var_tree, table->func_tree, deep);
                                     if (token == COMMA){
                                         token = tryGetToken();
                                         continue;
@@ -577,7 +575,7 @@ bool functionBodyIsOK()
                             }
                         }
                         else{
-                            token = express(token, &attr, table->var_tree, table->func_tree);
+                            token = express(token, &attr, table->var_tree, table->func_tree, deep);
                             if (token == COMMA){
                                 token = tryGetToken();
                                 continue;
@@ -605,7 +603,7 @@ bool functionBodyIsOK()
                         else if (table->var_tree->type == INTEGER || table->var_tree->type == NUMBER){
                             token = INT;
                         }
-                        token = express(token, &attr, table->var_tree, table->func_tree);
+                        token = express(token, &attr, table->var_tree, table->func_tree, deep);
                         continue;
                     }
                     else {
@@ -613,7 +611,7 @@ bool functionBodyIsOK()
                     }
                 }
                 else{
-                    token = express(token, &attr, table->var_tree, table->func_tree);
+                    token = express(token, &attr, table->var_tree, table->func_tree, deep);
                     continue;
                 }
             }  
@@ -628,20 +626,72 @@ bool functionBodyIsOK()
     }
 }
 
-
+int syntaxCheck(){
+    while(token != EOF){  
+        bool result;
+        if (token == FUNCTION){
+            token = functionIsOK();
+            token = functionBodyIsOK();
+            if (token != END){
+                printf("AFAFAFF %d\n", token);
+                printf("Return: SYNTAX_ERROR\n");
+                return SYNTAX_ERROR;
+            }
+        }
+        else if(token == ID){
+            funcs maybefunc = findFunc(table->func_tree, attr.str);
+            if (maybefunc != NULL)
+            {
+                token = tryGetToken();
+                if (token != LEFT_BRACKET)
+                {
+                    changeError(2);
+                    printf("Return: SYNTAX_ERROR\n");
+                    return SYNTAX_ERROR;
+                }
+                token = tryGetToken();
+                while (token != RIGHT_BRACKET)
+                {
+                    int typeCheck = token + 15;
+                    if (token == COMMA)
+                    {
+                        token = tryGetToken();
+                        continue;
+                    }
+                    else if (typeCheck != maybefunc->in->type)
+                    {
+                        printf("Return: SEM_ERROR_FUNCPARAM\n");
+                        return SEM_ERROR_FUNCPARAM;
+                    }
+                    maybefunc->in = maybefunc->in->next;
+                    token = tryGetToken();
+                }
+            }
+            else{
+                printf("Return: SYNTAX_ERROR\n");
+                return SYNTAX_ERROR;
+            }
+        }
+        else{
+            printf("Return: SYNTAX_ERROR\n");
+            return SYNTAX_ERROR;
+        }
+        token = tryGetToken();
+    }
+}
 
 int program()
 {
     deep = 0;
     error_flag = 0;
-    bool result;
+    int error_flag = 0;
     token = tryGetToken();
     if (token == REQUIRE){
         token = tryGetToken();
         if ((token == RETEZEC) && (!strCmpConstStr(&attr, "ifj21"))){
             token = tryGetToken();
-            result = functionIsOK();
-            result = functionBodyIsOK();
+            error_flag = syntaxCheck();
+            changeError(error_flag);
         }
         else changeError(2);
     }

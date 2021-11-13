@@ -73,20 +73,20 @@ typedef struct Str
     int length;    // skutecna delka retezce
     int allocSize; // velikost alokovane pameti
     struct Str *next;
-}string;
+} string;
 
 typedef struct inputFunc
 {
-	char *name;
-	int type;
-	struct inputFunc *next;	
-}*inPar;
+    char *name;
+    int type;
+    struct inputFunc *next;
+} * inPar;
 
 typedef struct outputFunc
 {
-	int type;
-	struct outputFunc *next;	
-}*outPar;
+    int type;
+    struct outputFunc *next;
+} * outPar;
 
 typedef struct Func_tree
 {
@@ -96,35 +96,35 @@ typedef struct Func_tree
     struct Func_tree *L;
     struct Func_tree *R;
     outPar out;
-	inPar in;
-} *funcs;
-
+    inPar in;
+} * funcs;
 
 typedef struct Var_tree
 {
     int deepOfVar;
     char *name;
-    int type;     // 16 : int, 22 : str, 19 : number
+    int type; // 16 : int, 22 : str, 19 : number
     struct Var_tree *L;
     struct Var_tree *R;
     struct Var_tree *next;
-    
-} *vars;
+
+} * vars;
 
 typedef struct Symtable
 {
     vars var_tree;
     funcs func_tree;
-}symtable;
+} symtable;
 
-
-typedef struct token {
+typedef struct token
+{
     int type;
     char *data;
     int size;
 } Token;
 
-typedef struct seznam {
+typedef struct seznam
+{
     char *name;
     struct seznam *next;
     struct seznam *first;
@@ -142,7 +142,7 @@ void insertFunc(char *name, funcs *func, int orig);
 funcs findFunc(funcs func_tree, char *name);
 void insertInput(char *name_arg, funcs func, char *name_func, int type);
 void insertOutput(funcs func, int type, char *name);
-void freeFunc (funcs func);
+void freeFunc(funcs func);
 void insertInbuiltFuncs(funcs func);
 
 int strInit(string *s);
@@ -160,4 +160,4 @@ int strGetLength(string *s);
 //hlavicka funkce simulujici lexikalni analyzator
 void setSourceFile(FILE *f);
 int getNextToken(string *attr);
-int express(int token, string *attr, vars var, funcs funcs);
+int express(int token, string *attr, vars var, funcs funcs, int deep);

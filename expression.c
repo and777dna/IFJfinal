@@ -90,7 +90,7 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'#', '#', '#', '#', '#', '#', '#', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '>'},  // ..
 };
 
-int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree){
+int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep){
     if ((token < 10 || token > 24) && token != COMMA){
         int stackVal = stack->attr[stack->top].type - 30;
         int inputNum = token - 30;
@@ -115,7 +115,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 if (tmp != NULL){
                     return token;
                 }
-                vars tmp2 = findVar(vartree, 0, attr->str);
+                vars tmp2 = findVar(vartree, deep, attr->str);
                 if (tmp2 == NULL){
                     return SEM_ERROR_EXPRESS;
                 }
@@ -126,19 +126,19 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                     token = 0;
                 }
             }
-            TableCheck(stack, token, attr, vartree, functree);
+            TableCheck(stack, token, attr, vartree, functree, deep);
         }
         else if (precTable[stackVal][inputNum] == '>'){
             pop(stack);
-            TableCheck(stack, token, attr, vartree, functree);
+            TableCheck(stack, token, attr, vartree, functree, deep);
         }
         else if (precTable[stackVal][inputNum] == '='){
             pop(stack);
-            TableCheck(stack, token, attr, vartree, functree);
+            TableCheck(stack, token, attr, vartree, functree, deep);
         }
         else{ 
             funcs tmp = findFunc(functree, attr->str);
-            vars tmp2 = findVar(vartree, 0, attr->str);
+            vars tmp2 = findVar(vartree, deep, attr->str);
             if (tmp != NULL || tmp2 != NULL){
                 token = ID;
                 return token;
@@ -175,7 +175,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
     }
 }
 
-int express(int token, string *attr, vars vartree, funcs functree)
+int express(int token, string *attr, vars vartree, funcs functree, int deep)
 {
     Stack_t *stack = createStack();
     string buk;
@@ -185,10 +185,10 @@ int express(int token, string *attr, vars vartree, funcs functree)
     {
         push(stack, *attr, token);
         token = tryGetToken();
-        token = TableCheck(stack, token, attr, vartree, functree);
+        token = TableCheck(stack, token, attr, vartree, functree, deep);
         if (token == COMMA){
             token = tryGetToken();
-            token = express(token, attr, vartree, functree);
+            token = express(token, attr, vartree, functree, deep);
         }
         else{
             if ((token > 10 && token < 24) || token == ID){
