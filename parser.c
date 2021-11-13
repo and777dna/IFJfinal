@@ -737,7 +737,8 @@ int program()
     token = tryGetToken();
     if (token == REQUIRE){
         token = tryGetToken();
-        if ((token == RETEZEC) && (!strCmpConstStr(&attr, "ifj21"))){
+        if ((token == RETEZEC) && (!strCmpConstStr(&attr, "ifj21")))
+        {
             token = tryGetToken();
             error_flag = syntaxCheck();
             changeError(error_flag);
