@@ -17,14 +17,7 @@ int main(int argc, char *argv[]){
     setSourceFile(f);
     string *token;
     token = malloc(sizeof(struct Str));
-    //strInit(token);
     int a;
-
-    /*for(int i = 0; i < 30; i++){
-        a = getNextToken(token);
-        printf("%d  :  %s\n",a, token->str);
-        //printf("%s\n",*token);
-    }*/
     setTable(table);
     a = program();
     changeError(a);

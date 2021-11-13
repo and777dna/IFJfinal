@@ -150,7 +150,6 @@ void freeVarTree(vars var)
     free(var);
     var = tmp;
     return;
-    
 }
 
 void freeAllVars(vars var)
@@ -159,7 +158,6 @@ void freeAllVars(vars var)
     {
         freeVarTree(var);
     }
-    
 }
 ////-------------------------------------FUNCTION-----------------------------------------/////
 
