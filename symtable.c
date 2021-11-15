@@ -32,13 +32,12 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
             printf("net pameti\n");
             return false;
         }
-
         (*var_tree)->name = name;
         (*var_tree)->deepOfVar = deep;
         (*var_tree)->L = NULL;
         (*var_tree)->R = NULL;
         (*var_tree)->next = NULL;
-        (*var_tree)->type = type;  
+        (*var_tree)->type = type;
         return true;
     }
     else if ((*var_tree != NULL)&&(deep > (*var_tree)->deepOfVar))
@@ -48,14 +47,22 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         {
             return false;
         }
+        tmp->deepOfVar = (*var_tree)->deepOfVar;
+        tmp->name = (*var_tree)->name;
+        tmp->L = (*var_tree)->L;
+        tmp->next = NULL;
+        tmp->type = (*var_tree)->type;
+        printf("----------------VARno with deep %d and deepvar %d\n", deep, tmp->deepOfVar);
+        (*var_tree)->name = name;
+        (*var_tree)->deepOfVar = deep;
+        printf("----------------VARno with deep %d and deepvar %d\n", deep, (*var_tree)->deepOfVar);
+        (*var_tree)->L = NULL;
+        (*var_tree)->R = NULL;
+        (*var_tree)->next = tmp;
+        (*var_tree)->type = type;
+        // *var_tree = tmp;
+        printf("-----------NEXT VARno with deep %d and deepvar %d\n", deep, (*var_tree)->next->deepOfVar);
         
-        tmp->name = name;
-        tmp->deepOfVar = deep;
-        tmp->L = NULL;
-        tmp->R = NULL;
-        tmp->next = (*var_tree);
-        tmp->type = type; 
-        *var_tree = tmp;
         return true;
     }
     else if (strcmp(name, (*var_tree)->name) < 0)
@@ -70,24 +77,13 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         printf("yze est'\n");
         return false;
     }
-    /*
-       ret = strcmp(str1, str2);
-
-   if(ret < 0) {
-      printf("str1 is less than str2");
-   } else if(ret > 0) {
-      printf("str2 is less than str1");
-   } else {
-      printf("str1 is equal to str2");
-   }    */
-    
 }
 
 vars findVarFromTree(vars var_tree, int deep, char *name)
 {
     if (var_tree == NULL)
     {
-        printf("VARTREE == NULL\n");
+        printf("VAR_NOT FIND\n");
         return NULL;
     }
     
@@ -111,7 +107,7 @@ vars findVar(vars var_tree, int deep, char *name)
     vars tmp = var_tree;
     if (var_tree != NULL)
     {
-        printf("\\\\\\%d\n", var_tree->deepOfVar);
+        printf("deepVar\\\\\\%d        deep %d \n", var_tree->deepOfVar, deep);
         if (deep <= var_tree->deepOfVar)
         {
             tmp = findVarFromTree(tmp, deep, name);
@@ -126,7 +122,7 @@ vars findVar(vars var_tree, int deep, char *name)
         }
         else
         {
-            printf("VARno\n");
+            printf("VARno with deep %d and deepvar %d\n", deep, var_tree->deepOfVar);
             return NULL;
         }    
     }
@@ -138,26 +134,33 @@ vars findVar(vars var_tree, int deep, char *name)
     
 }
 
-void freeVarTree(vars var)
+vars freeVarTree(vars var)
 {
     if (var == NULL)
     {
-        return;
+        return var;
     }
-    vars tmp = var->next;
-    freeVarTree(var->L);
-    freeVarTree(var->R);
-    free(var);
-    var = tmp;
-    return;
+    vars tmp = var;
+    var = tmp->next;
+    printf("TMP FIRST NAME %s\n", var->name);
+    if(tmp->L != NULL){
+        tmp = freeVarTree(var->L);
+    }
+    if(tmp->R != NULL){
+        tmp = freeVarTree(var->R);
+    }
+    tmp = NULL;
+    free(tmp);
+    return var;
 }
 
-void freeAllVars(vars var)
+vars freeAllVars(vars var)
 {
     while (var != NULL)
     {
-        freeVarTree(var);
+        var = freeVarTree(var);
     }
+    return var;
 }
 ////-------------------------------------FUNCTION-----------------------------------------/////
 
@@ -196,8 +199,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
 {
     if (func_tree != NULL)
     {
-        printf("%s  BO\n", name);
-        printf("--------------functree %s\n", func_tree->name);
+        printf("%s func--------------functree %s\n", name, func_tree->name);
         if (strcmp(func_tree->name, name) < 0)
         {
             findFunc(func_tree->L, name);
@@ -297,6 +299,7 @@ void insertOutput(funcs func, int type, char *name)
         new_param = new_param->next;
         new_param->next = NULL;
         new_param->type = type;
+        new_param->first = startOut;
     }
     
 }
@@ -326,7 +329,7 @@ void freeFunc (funcs func)
         tmp3 = tmp4;
     }   
     
-    free(func);
+    // free(func);
     func = NULL;
     return;
     
