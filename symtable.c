@@ -4,7 +4,7 @@
 #include <string.h>
 
 symtable *ST;
-
+static int i = 0;
 struct inputFunc *start;
 struct outputFunc *startOut;
 
@@ -25,8 +25,8 @@ symtable *initST(symtable *ST)
 
 bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(ST->var_tree),...)
 {
+    
     if(*var_tree == NULL){
-
         *var_tree = malloc(sizeof(struct Var_tree));
         if(*var_tree == NULL){
             printf("net pameti\n");
@@ -38,6 +38,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->R = NULL;
         (*var_tree)->next = NULL;
         (*var_tree)->type = type;
+        printf("%s var--------------%d !DEEP\n", (*var_tree)->name, (*var_tree)->deepOfVar);
         return true;
     }
     else if ((*var_tree != NULL)&&(deep > (*var_tree)->deepOfVar))
@@ -52,17 +53,12 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         tmp->L = (*var_tree)->L;
         tmp->next = NULL;
         tmp->type = (*var_tree)->type;
-        printf("----------------VARno with deep %d and deepvar %d\n", deep, tmp->deepOfVar);
         (*var_tree)->name = name;
         (*var_tree)->deepOfVar = deep;
-        printf("----------------VARno with deep %d and deepvar %d\n", deep, (*var_tree)->deepOfVar);
         (*var_tree)->L = NULL;
         (*var_tree)->R = NULL;
         (*var_tree)->next = tmp;
         (*var_tree)->type = type;
-        // *var_tree = tmp;
-        printf("-----------NEXT VARno with deep %d and deepvar %d\n", deep, (*var_tree)->next->deepOfVar);
-        
         return true;
     }
     else if (strcmp(name, (*var_tree)->name) < 0)
@@ -151,7 +147,7 @@ vars freeVarTree(vars var)
     }
     tmp = NULL;
     free(tmp);
-    return var;
+    return var; 
 }
 
 vars freeAllVars(vars var)

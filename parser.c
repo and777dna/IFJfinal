@@ -39,13 +39,18 @@ void strcpy_for_var(char *src)
     if(tmp == NULL){
         return;
     }
-    tmp->name = malloc(strlen(src) + 1);
-    tmp->next = NULL;
-    src = strcpy(tmp->name, src);
-    if (head == NULL)
-    {
+    if (head == NULL){
         initSeznam();
-        head = tmp;
+    }
+    tmp->name = calloc(strlen(src) + 1, sizeof(char));
+    tmp->next = NULL;
+    strcpy(tmp->name, src);
+    if (head == NULL)
+    {   
+        head = malloc(sizeof (struct seznam));
+        head->name = calloc(strlen(src) + 1, sizeof(char));
+        strcpy(head->name, src);
+        head->next = NULL;
         seznam = tmp;
         seznam->first = head;
     }
@@ -54,7 +59,14 @@ void strcpy_for_var(char *src)
         seznam->next = tmp;
         seznam = seznam->next;
         seznam->first = head;
+        if (head->next == NULL){
+            head->next = seznam;
+        }
     }
+    if (head->next != NULL){
+        printf("SEZNAM-HEAD_NEXT: %s \n",head->next->name);
+    }
+    printf("SEZNAM: %s \n",seznam->name);
     return;
 }
 
@@ -81,6 +93,7 @@ void freeSeznam()
         seznam->next = NULL;
     } 
     head = NULL;
+    free(seznam);
     return;
 }
 
@@ -123,6 +136,10 @@ int inputIsOK()
             {
                 insertInput(seznam->name, table->func_tree, name_func_save, token);
                 insertVar(&(table->var_tree), deep, seznam->name, token);
+            while (table->var_tree != NULL){
+                printf("%s var--------------%d DEEP\n",table->var_tree->name, table->var_tree->deepOfVar);
+                table->var_tree = table->var_tree->next;
+            }
                 freeSeznam();
                 token = tryGetToken();
                 if (token == COMMA)
@@ -222,6 +239,10 @@ int GlobalCompare(funcs tmp)
                 return SEM_ERROR_FUNCPARAM;
             }
             insertVar(&(table->var_tree), deep, seznam->name, token);
+            while (table->var_tree != NULL){
+                printf("%s var--------------%d DEEP\n",table->var_tree->name, table->var_tree->deepOfVar);
+                table->var_tree = table->var_tree->next;
+            }
             if ((token = tryGetToken()) == COMMA)
             {
                 token = tryGetToken();
@@ -477,6 +498,7 @@ int functionBodyIsOK()
                 else return SYNTAX_ERROR;
             }
             else return SYNTAX_ERROR;
+            
             break;
         case WHILE:
             token = tryGetToken();
@@ -532,9 +554,7 @@ int functionBodyIsOK()
             }
             else{
                 vars maybevar = findVar(table->var_tree, deep, attr.str);
-                        printf("1111111111111111111111111111\n");
                 strcpy_for_var(attr.str);
-                        printf("22222222222222222222222222222222\n");
                 if (maybevar != NULL){
                     token = tryGetToken();
                     if (token == COMMA){
@@ -678,8 +698,8 @@ int functionBodyIsOK()
             break;
         case END:
             table->var_tree = freeVarTree(table->var_tree);
-            printf("VAR NAME %s\n", table->var_tree->name);
             deep--;
+            freeSeznam();
             printf("DEEP %d\n", deep);
             token = tryGetToken();
             break;
@@ -688,7 +708,7 @@ int functionBodyIsOK()
             return SYNTAX_ERROR;
         }
     }
-        printf("-------------%d    %d----------\n", token, deep);
+    printf("-------------%d    %d----------\n", token, deep);
     return SYNTAX_OK;
 }
 
