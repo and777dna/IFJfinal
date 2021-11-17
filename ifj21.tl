@@ -4,7 +4,7 @@ function concat (x : string, y : string) : string, integer
 local z,f : integer = 2 * 2 , 5 + 5
 if 4 == 4 then
 local h : integer = 2
-h = 7
+h = readi()
 end 
 x,f = concat("r","e")
 return x .. y, 0 end

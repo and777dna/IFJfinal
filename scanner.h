@@ -140,12 +140,12 @@ vars findVarFromTree(vars var_tree, int deep, char *name);
 vars findVar(vars var_tree, int deep, char *name);
 vars freeVarTree(vars var);
 vars freeAllVars(vars var);
-void insertFunc(char *name, funcs *func, int orig);
+funcs insertFunc(char *name, funcs *func, int orig);
 funcs findFunc(funcs func_tree, char *name);
 void insertInput(char *name_arg, funcs func, char *name_func, int type);
 void insertOutput(funcs func, int type, char *name);
 void freeFunc(funcs func);
-void insertInbuiltFuncs(funcs func);
+funcs insertInbuiltFuncs(funcs func);
 
 int strInit(string *s);
 void strFree(string *s);

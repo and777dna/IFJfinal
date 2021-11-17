@@ -14,13 +14,14 @@ Stack_t* createStack() {
     Stack_t *out;
     out = malloc(sizeof(Stack_t));
     if (out == NULL) {
-        printf("Mem error");
+        printf("Return: MEM_ALLOC_ERROR\n");
         exit(OUT_OF_MEMORY);
     }
     out->size = INIT_SIZE;
     out->attr = malloc(out->size * sizeof(T));
     if (out->attr == NULL) {
         free(out);
+        printf("Return: MEM_ALLOC_ERROR\n");
         exit(OUT_OF_MEMORY);
     }
     out->top = 0;
@@ -39,6 +40,7 @@ void resize(Stack_t *stack) {
     stack->size *= MULTIPLIER;
     stack->attr = realloc(stack->attr, stack->size * sizeof(T));
     if (stack->attr == NULL) {
+        printf("Return: MEM_ALLOC_ERROR\n");
         exit(STACK_OVERFLOW);
     }
 }

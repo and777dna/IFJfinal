@@ -11,20 +11,6 @@ void setSourceFile(FILE *f)
   source = f;
 }
 
-int strInit(string *s)
-// funkce vytvori novy retezec
-{   
-     /* printf("helllo\n\n");
-    if ((s->str = (char*) malloc(STR_LEN_INC)) == NULL)
-        return STR_ERROR;
-          printf("helllo\n\n");
-    s->str[0] = '\0';
-    s->length = 0;
-    s->allocSize = STR_LEN_INC;
-      printf("helllo\n\n");
-    return STR_SUCCESS;*/
-}
-
 void strFree(string *s)
 // funkce uvolni retezec z pameti
 {

@@ -21,7 +21,12 @@ int main(int argc, char *argv[]){
     setTable(table);
     a = program();
     changeError(a);
-    printf("%d\n", a);
+    if (a == 0){
+        printf("\x1B[33m""FINISHED WITHOUT ERRORS!\nCONGRATS!!!\n");    
+    }
+    else{
+        printf("\x1B[31m""EXIT WITH ERROR: %d\n", a);
+    }
     freeFunc(table->func_tree);
     free(token);
     free(table);

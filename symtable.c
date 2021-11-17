@@ -27,7 +27,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
     if(*var_tree == NULL){
         *var_tree = malloc(sizeof(struct Var_tree));
         if(*var_tree == NULL){
-            printf("net pameti\n");
+            printf("Return: MEM_ALLOC_ERROR\n");
             return false;
         }
         (*var_tree)->name = name;
@@ -36,7 +36,6 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->R = NULL;
         (*var_tree)->next = NULL;
         (*var_tree)->type = type;
-        printf("%s var--------------%d !DEEP\n", (*var_tree)->name, (*var_tree)->deepOfVar);
         return true;
     }
     else if ((*var_tree != NULL)&&(deep > (*var_tree)->deepOfVar))
@@ -158,14 +157,15 @@ vars freeAllVars(vars var)
 }
 ////-------------------------------------FUNCTION-----------------------------------------/////
 
-void insertFunc(char *name, funcs *func, int orig)
+funcs insertFunc(char *name, funcs *func, int orig)
 {
     if (*func == NULL)
     {
         *func = malloc(sizeof(struct Func_tree));
         if (*func == NULL)
         {
-            return;
+            printf("Return: MEM_ALLOC_ERROR\n");
+            return NULL;
         }
         (*func)->origin = orig;
         (*func)->name = name;
@@ -174,7 +174,7 @@ void insertFunc(char *name, funcs *func, int orig)
         (*func)->in = NULL;
         (*func)->out = NULL;
         printf("dobavil %s\n", (*func)->name);
-        return;
+        return (*func);
     }
     else if (strcmp((*func)->name, name) < 0)
     {
@@ -204,7 +204,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         }
         else if (strcmp(func_tree->name, name) == 0)
         {
-            printf("nasel func\n");
+            printf("nasel func %s\n", func_tree->name);
             return func_tree;
         }
     }
@@ -232,9 +232,7 @@ void insertInput(char *name_arg, funcs func, char *name_func, int type)
         function->in->name = name_arg;
         function->in->next = NULL;
         function->in->type = type;
-        if (start == NULL){
-            start = function->in;
-        }
+        start = function->in;
         function->in->first = start;
         return;
     }
@@ -260,6 +258,7 @@ void insertOutput(funcs func, int type, char *name)
     funcs function = findFunc(func, name);
     if (function == NULL)
     {
+        printf("Return: MEM_ALLOC_ERROR\n");
         return;
     }
     if (function->out == NULL)
@@ -275,9 +274,7 @@ void insertOutput(funcs func, int type, char *name)
         }
         function->out->next = NULL;
         function->out->type = type;
-        if (startOut == NULL){
-            startOut = function->out;
-        }
+        startOut = function->out;
         function->out->first = startOut;
         return;
     }
@@ -288,8 +285,8 @@ void insertOutput(funcs func, int type, char *name)
         {
             new_param = new_param->next;
         }
-        
         new_param->next = malloc(sizeof(struct outputFunc));
+        new_param->next->first = new_param;
         new_param = new_param->next;
         new_param->next = NULL;
         new_param->type = type;
@@ -329,27 +326,28 @@ void freeFunc (funcs func)
     
 }
 
-////--------------------------------------------------------------------------------------------------
-/*
-void insertInbuiltFuncs(funcs func)
+funcs insertInbuiltFuncs(funcs func)
 {
-    insertFunc("reads", &func);
-    insertOutput(func, 2, "reads");
-    insertFunc("readi", &func);
-    insertOutput(func, 1, "readi");
-    insertFunc("readn", &func);
-    insertOutput(func, 3, "reads");
+    printf("VESTAVENE FUNKCE\n");
+    insertFunc("reads", &func, 2);
+    insertOutput(func, STRING, "reads");
+    insertFunc("readi", &func, 2);
+    insertOutput(func, INTEGER, "readi");
+    insertFunc("readn", &func, 2);
+    insertOutput(func, NUMBER, "readn");
 
-    insertFunc("tointeger", &func);
-    insertInput("f", func, "tointeger", 3);
-    insertOutput(func, 1, "tointeger");
+    insertFunc("tointeger", &func, 2);
+    insertInput("f", func, "tointeger", NUMBER);
+    insertOutput(func, INTEGER, "tointeger");
 
-    insertFunc("substr", &func);
-    insertInput("s", func, "substr", 2);
-    insertInput("i", func, "substr", 3);
-    insertInput("j", func, "substr", 3);
-    insertOutput(func, 2, "substr");
+    insertFunc("substr", &func, 2);
+    insertInput("s", func, "substr", STRING);
+    insertInput("i", func, "substr", NUMBER);
+    insertInput("j", func, "substr", NUMBER);
+    insertOutput(func, STRING, "substr");
+    return func;
 }
+////--------------------------------------------------------------------------------------------------
 /*
 int main()
 {
