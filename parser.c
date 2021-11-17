@@ -15,6 +15,7 @@ int deep;
 int counterVar = 1;
 symtable *table;
 int error_flag;
+bool if_spotted;
 SeznamOfVars *seznam;
 SeznamOfVars *head;
 
@@ -63,10 +64,6 @@ void strcpy_for_var(char *src)
             head->next = seznam;
         }
     }
-    if (head->next != NULL){
-        printf("SEZNAM-HEAD_NEXT: %s \n",head->next->name);
-    }
-    printf("SEZNAM: %s \n",seznam->name);
     return;
 }
 
@@ -136,10 +133,6 @@ int inputIsOK()
             {
                 insertInput(seznam->name, table->func_tree, name_func_save, token);
                 insertVar(&(table->var_tree), deep, seznam->name, token);
-            while (table->var_tree != NULL){
-                printf("%s var--------------%d DEEP\n",table->var_tree->name, table->var_tree->deepOfVar);
-                table->var_tree = table->var_tree->next;
-            }
                 freeSeznam();
                 token = tryGetToken();
                 if (token == COMMA)
@@ -239,10 +232,6 @@ int GlobalCompare(funcs tmp)
                 return SEM_ERROR_FUNCPARAM;
             }
             insertVar(&(table->var_tree), deep, seznam->name, token);
-            while (table->var_tree != NULL){
-                printf("%s var--------------%d DEEP\n",table->var_tree->name, table->var_tree->deepOfVar);
-                table->var_tree = table->var_tree->next;
-            }
             if ((token = tryGetToken()) == COMMA)
             {
                 token = tryGetToken();
@@ -513,6 +502,7 @@ int functionBodyIsOK()
             bool func = functionBodyIsOK();
             break;
         case IF:
+            if_spotted = true; 
             token = tryGetToken();
             token = express(token, &attr, table->var_tree, table->func_tree, deep);
             if (token != THEN)
@@ -522,7 +512,14 @@ int functionBodyIsOK()
             }
             deep++;
             token = tryGetToken();
-            break; 
+            break;
+        case ELSE:
+            if(!(if_spotted) && deep == 0){
+                printf("Return: SYNTAX_ERROR\n");
+                return SYNTAX_ERROR;
+            }
+            token = tryGetToken();
+            break;    
         case ID:;
             funcs maybefunc = findFunc(table->func_tree, attr.str);
             if (maybefunc != NULL)
@@ -731,8 +728,7 @@ int syntaxCheck(){
                 return SYNTAX_ERROR;
             }
             else{
-                table->var_tree = freeVarTree(table->var_tree);
-                printf("hhgfkffk\n");
+                table->var_tree = freeAllVars(table->var_tree);
                 deep = 0;
             }
         }
@@ -807,7 +803,6 @@ int program()
     }
     free(table->var_tree);
     freeSeznam();
-    free(seznam);
     free(name_func_save);
     return error_flag;
 }

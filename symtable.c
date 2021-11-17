@@ -4,7 +4,6 @@
 #include <string.h>
 
 symtable *ST;
-static int i = 0;
 struct inputFunc *start;
 struct outputFunc *startOut;
 
@@ -25,7 +24,6 @@ symtable *initST(symtable *ST)
 
 bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(ST->var_tree),...)
 {
-    
     if(*var_tree == NULL){
         *var_tree = malloc(sizeof(struct Var_tree));
         if(*var_tree == NULL){
@@ -51,6 +49,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         tmp->deepOfVar = (*var_tree)->deepOfVar;
         tmp->name = (*var_tree)->name;
         tmp->L = (*var_tree)->L;
+        tmp->R = (*var_tree)->R;
         tmp->next = NULL;
         tmp->type = (*var_tree)->type;
         (*var_tree)->name = name;
@@ -138,12 +137,11 @@ vars freeVarTree(vars var)
     }
     vars tmp = var;
     var = tmp->next;
-    printf("TMP FIRST NAME %s\n", var->name);
     if(tmp->L != NULL){
-        tmp = freeVarTree(var->L);
+        freeVarTree(tmp->L);
     }
     if(tmp->R != NULL){
-        tmp = freeVarTree(var->R);
+        freeVarTree(tmp->R);
     }
     tmp = NULL;
     free(tmp);
