@@ -83,7 +83,7 @@ vars findVarFromTree(vars var_tree, int deep, char *name)
     
     if (strcmp(name, var_tree->name) == 0)
     {
-        printf("nasel %s %d\n", var_tree->name, var_tree->deepOfVar);
+        //printf("nasel %s %d\n", var_tree->name, var_tree->deepOfVar);
         return var_tree;
     }
     else if (strcmp(name, var_tree->name) < 0)
@@ -101,7 +101,7 @@ vars findVar(vars var_tree, int deep, char *name)
     vars tmp = var_tree;
     if (var_tree != NULL)
     {
-        printf("deepVar\\\\\\%d        deep %d \n", var_tree->deepOfVar, deep);
+        //printf("deepVar\\\\\\%d        deep %d \n", var_tree->deepOfVar, deep);
         if (deep <= var_tree->deepOfVar)
         {
             tmp = findVarFromTree(tmp, deep, name);
@@ -116,7 +116,7 @@ vars findVar(vars var_tree, int deep, char *name)
         }
         else
         {
-            printf("VARno with deep %d and deepvar %d\n", deep, var_tree->deepOfVar);
+            //printf("VARno with deep %d and deepvar %d\n", deep, var_tree->deepOfVar);
             return NULL;
         }    
     }
@@ -193,7 +193,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
 {
     if (func_tree != NULL)
     {
-        printf("%s func--------------functree %s\n", name, func_tree->name);
+        //printf("%s func--------------functree %s\n", name, func_tree->name);
         if (strcmp(func_tree->name, name) < 0)
         {
             findFunc(func_tree->L, name);
@@ -204,7 +204,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         }
         else if (strcmp(func_tree->name, name) == 0)
         {
-            printf("nasel func %s\n", func_tree->name);
+            //printf("nasel func %s\n", func_tree->name);
             return func_tree;
         }
     }

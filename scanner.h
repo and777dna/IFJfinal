@@ -164,3 +164,7 @@ int strGetLength(string *s);
 void setSourceFile(FILE *f);
 int getNextToken(string *attr);
 int express(int token, string *attr, vars var, funcs funcs, int deep);
+
+void GEN_WRITE_VAR_LITERAL(int token, string attr, int deep);
+void GEN_FUNC_MAIN_END(char *name_func, SeznamOfVars *param);
+void GEN_FUNC_MAIN_START(char* name);

@@ -102,7 +102,7 @@ int tryGetToken()
     {
         changeError(1);
     }
-    printf("%d   %s\n", token, attr.str);  // to check the token
+    //printf("%d   %s\n", token, attr.str);  // to check the token
     return token;
 }
 
@@ -713,6 +713,7 @@ int functionBodyIsOK()
                                                 if(maybefunc->in->next != NULL){
                                                     maybefunc->in = maybefunc->in->next;
                                                 }
+                                                GEN_FUNC_MAIN_START(attr.str);
                                                 token = tryGetToken();
                                             }
                                             else if(token == COMMA){
