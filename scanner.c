@@ -346,11 +346,20 @@ int getNextToken(string *attr){
 
             case 17:
                 // pokracovani operatoru ""
-                if (c == '\"') {state = 0; return RETEZEC;}
+                if (c == '\"') {
+                    state = 0;
+                    return RETEZEC;
+                }
                 else if (c == EOF)
                 {
                     printf("Return: LEX_ERROR\n");
                     return LEX_ERROR;
+                }
+                else if(c == '\\'){
+                    state = 21;
+                }
+                else if(isspace(c)){
+                    strcat(attr->str, "\\032");
                 }
                 else
                     strAddChar(attr, c);
@@ -401,7 +410,29 @@ int getNextToken(string *attr){
                 else if (isspace(c)){state = 0; return FLOAT;}
                 strAddChar(attr, c);
                 break;
-
+            case 21:
+                if(c == 'n'){
+                    strcat(attr->str, "\\010");
+                    state = 17;
+                }
+                else if(c == 't'){
+                    strcat(attr->str, "\\009");
+                    state = 17;
+                }
+                else if(c == '\"'){
+                    strcat(attr->str, "\\034");
+                    state = 17;
+                }
+                else if(c == '\\'){
+                    strcat(attr->str, "\\092");
+                    state = 17;
+                }
+                if(isdigit(c)){
+                    state = 17;
+                    strAddChar(attr, '\\');
+                    strAddChar(attr, c);
+                }
+                break;
         }
     }
 }
