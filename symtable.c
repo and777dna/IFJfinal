@@ -345,6 +345,15 @@ funcs insertInbuiltFuncs(funcs func)
     insertInput("i", func, "substr", NUMBER);
     insertInput("j", func, "substr", NUMBER);
     insertOutput(func, STRING, "substr");
+
+    insertFunc("ord", &func, 2);
+    insertInput("s", func, "ord", STRING);
+    insertInput("i", func, "ord", INTEGER);
+    insertOutput(func, INTEGER, "ord");
+
+    insertFunc("chr", &func, 2);
+    insertInput("i", func, "chr", INTEGER);
+    insertOutput(func, STRING, "chr");
     return func;
 }
 ////--------------------------------------------------------------------------------------------------

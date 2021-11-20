@@ -218,6 +218,7 @@ int getNextToken(string *attr){
                     else if (strCmpConstStr(attr, "string") == 0) {state = 0; return STRING;}
                     else if (strCmpConstStr(attr, "then") == 0) {state = 0; return THEN;}
                     else if (strCmpConstStr(attr, "while") == 0) {state = 0; return WHILE;}
+                    else if (strCmpConstStr(attr, "write") == 0) {state = 0; return WRITE;}
                     else
                     {state = 0; return ID;}          // jednalo se skutecne o identifikator
                 }
@@ -358,7 +359,7 @@ int getNextToken(string *attr){
             case 18:
                 if (isspace(c)) return INT;
                 else if (c == '.') state = 19;
-                else if (c == ')' || c == ',' || c == ')'){
+                else if (c == ')' || c == ',' || isalpha(c)){
                   ungetc(c, source);
                   state = 0;
                   return INT;
@@ -374,12 +375,12 @@ int getNextToken(string *attr){
                 if (c == 'e' || c == 'E'){
                     state = 20;
                 }
-                else if (c == ')' || c == ',' || c == ')'){
+                else if (c == ')' || c == ','){
                     ungetc(c, source);
                     state = 0;
                     return FLOAT;
                 }
-                else if (!isspace(c) && isdigit(c) && c != 'e' && c != 'E'){
+                else if (!isspace(c) && !isdigit(c) && c != 'e' && c != 'E'){
                     printf("Return: LEX_ERROR\n");
                     return LEX_ERROR;
                 }

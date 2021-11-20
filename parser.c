@@ -457,8 +457,11 @@ int functionBodyIsOK()
                     token = tryGetToken();
                     if (token == INTEGER || token == STRING || token == NUMBER)
                     {
-                    
-                        insertVar(&(table->var_tree), deep, seznam->name, token);
+                        seznam = seznam->first;
+                        while(seznam != NULL){
+                            insertVar(&(table->var_tree), deep, seznam->name, token);
+                            seznam = seznam->next;
+                        }
                         freeSeznam();
                         int type = token;
                         token = tryGetToken();
@@ -478,6 +481,11 @@ int functionBodyIsOK()
                         if(token == COMMA){
                             token = tryGetToken();
                         }
+                        vars varcheck = findVar(table->var_tree, deep, attr.str);
+                        if (varcheck != NULL){
+                            printf("Return: SEM_ERROR_DEFINE\n");
+                            return SEM_ERROR_DEFINE;
+                        }
                         strcpy_for_var(attr.str);
                         token = tryGetToken();
                     }
@@ -486,8 +494,11 @@ int functionBodyIsOK()
                         token = tryGetToken();
                         if (token == INTEGER || token == STRING || token == NUMBER)
                         {
-                        
-                            insertVar(&(table->var_tree), deep, seznam->name, token);
+                            seznam = seznam->first;
+                            while(seznam != NULL){
+                                insertVar(&(table->var_tree), deep, seznam->name, token);
+                                seznam = seznam->next;
+                            }
                             freeSeznam();
                             int type = token;
                             token = tryGetToken();
@@ -506,7 +517,61 @@ int functionBodyIsOK()
                 else return SYNTAX_ERROR;
             }
             else return SYNTAX_ERROR;
-            
+            break;
+        case WRITE:
+            token = tryGetToken();
+            if(token != LEFT_BRACKET){
+                printf("Return: SYNTAX_ERROR\n");
+                return SYNTAX_ERROR;
+            }
+            token = tryGetToken();
+            if(token == RIGHT_BRACKET){
+                printf("Return: SYNTAX_ERROR\n");
+                return SYNTAX_ERROR;
+            }
+            while(token != RIGHT_BRACKET){
+                switch (token){
+                case ID:;
+                    vars vareh = findVar(table->var_tree, deep, attr.str);
+                    if(vareh == NULL){
+                        printf("Return: SEM_ERROR_DEFINE\n");
+                        return SEM_ERROR_DEFINE;
+                    }
+                    token = tryGetToken();
+                    if(token == COMMA){
+                        token = tryGetToken();
+                        continue;
+                    }
+                    else if(token == RIGHT_BRACKET){
+                        break;
+                    }
+                    else{
+                        printf("Return: SYNTAX_ERROR\n");
+                        return SYNTAX_ERROR;
+                    }
+                    break;
+                case INT:
+                case RETEZEC:
+                case FLOAT:
+                    token = tryGetToken();
+                    if(token == COMMA){
+                        token = tryGetToken();
+                        continue;
+                    }
+                    else if(token == RIGHT_BRACKET){
+                        break;
+                    }
+                    else{
+                        printf("Return: SYNTAX_ERROR\n");
+                        return SYNTAX_ERROR;
+                    }
+                    break;
+                default:
+                    printf("Return: SYNTAX_ERROR\n");
+                    return SYNTAX_ERROR;
+                }
+            }
+            token = tryGetToken();
             break;
         case WHILE:
             token = tryGetToken();
@@ -587,6 +652,14 @@ int functionBodyIsOK()
                         token = tryGetToken();
                         if (token == ID){
                             funcs maybefunc = findFunc(table->func_tree, attr.str);
+                            if (maybefunc == NULL){
+                                token = express(token, &attr, table->var_tree, table->func_tree, deep);
+                                if (token == COMMA){
+                                    token = tryGetToken();
+                                    break;
+                                }
+                                break;
+                            }
                             if (maybefunc != NULL){
                                 seznam = seznam->first;
                                 maybefunc->out = maybefunc->out->first;

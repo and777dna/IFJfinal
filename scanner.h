@@ -22,6 +22,7 @@
 #define RETURN 22
 #define THEN 23
 #define WHILE 24
+#define WRITE 25
 
 //operatory inkrementace a dekrementace
 #define ASSIGNED 29 // '='
