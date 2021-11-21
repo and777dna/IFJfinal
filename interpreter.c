@@ -37,22 +37,22 @@ void GEN_WRITE_VAR_LITERAL(int token, string attr, int deep){
     switch (token)
 	{
 		case INT:
-			printf("int@%s", attr.str);
+			printf("int@%s\n", attr.str);
 			break;
 
 		case FLOAT:
-			printf("float@%s", attr.str);
+			printf("float@%s\n", attr.str);
 			break;
 
 		case RETEZEC:
-			printf("string@%s", attr.str);
+			printf("string@%s\n", attr.str);
 			break;
 		case NIL:
-		    printf("nil@%s", attr.str);
+		    printf("nil@%s\n", attr.str);
 	}
 }
 void GEN_START_OF_FUNCTION(string attr){
-	if(!strcmp(attr.str, "main")){
+	if(!strcmp(attr.str, "main\n")){
 		printf("LABEL $%s\n", attr.str);
 		printf("PUSHFRAME \n\n");
 	}
@@ -64,16 +64,16 @@ void GEN_START_OF_FUNCTION(string attr){
 }
 
 void GEN_FUNC_MAIN_END(char *name_func, SeznamOfVars *param){
-	printf("CALL $%s", name_func);
+	printf("CALL $%s\n", name_func);
 	while(param != NULL){
-		printf("MOVE LF@%s, TF@ret1",param->name);
+		printf("MOVE LF@%s, TF@ret1\n",param->name);
 		param = param->next;
 		return;
 	}
 }
 void GEN_FUNC_MAIN_START(char* name){
-    printf("DEFVAR LF@%d",count);
-	printf("MOVE LF@%d, %s",count, name);
+    printf("DEFVAR LF@%d\n",count);
+	printf("MOVE LF@%d, %s\n",count, name);
 	count++;
 	return;
 }

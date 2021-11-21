@@ -52,7 +52,6 @@
 
 //specialni znaky
 #define END_OF_FILE 60
-#define END_OF_LINE 61
 
 //chybove hlasky
 #define LEX_ERROR 1

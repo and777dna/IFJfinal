@@ -90,6 +90,7 @@ void freeSeznam()
     } 
     head = NULL;
     free(seznam);
+    seznam = NULL;
     return;
 }
 
@@ -102,7 +103,7 @@ int tryGetToken()
     {
         changeError(1);
     }
-    //printf("%d   %s\n", token, attr.str);  // to check the token
+    printf("%d   %s\n", token, attr.str);  // to check the token
     return token;
 }
 
@@ -619,7 +620,14 @@ int functionBodyIsOK()
                 token = tryGetToken();
                 while (token != RIGHT_BRACKET)
                 {   
-                    int typeCheck = token + 15;
+                    int typeCheck;
+                    vars maybevar = findVar(table->var_tree, deep, attr.str);
+                    if(maybevar != NULL){
+                        typeCheck = maybevar->type;
+                    }
+                    else{
+                        typeCheck = token + 15;
+                    }
                     if (token == COMMA)
                     {
                         token = tryGetToken();
@@ -630,9 +638,15 @@ int functionBodyIsOK()
                         printf("Return: SEM_ERROR_FUNCPARAM\n");
                         return SEM_ERROR_FUNCPARAM;
                     }
-                    maybefunc->in = maybefunc->in->next;
+                    if(maybefunc->in->next == NULL){
+                        maybefunc->in = maybefunc->in->first;
+                    }
+                    else{
+                        maybefunc->in = maybefunc->in->next;
+                    }
                     token = tryGetToken();
                 }
+                token = tryGetToken();
             }
             else{
                 vars maybevar = findVar(table->var_tree, deep, attr.str);
@@ -792,10 +806,15 @@ int functionBodyIsOK()
         case COMMA:
             break;
         case END:
-            table->var_tree = freeVarTree(table->var_tree);
-            deep--;
+            if(table->var_tree->deepOfVar != 0){ 
+                table->var_tree = freeVarTree(table->var_tree);  
+            }
+            deep--;  
             if_spotted = false;
-            freeSeznam();
+            if(seznam != NULL){
+                printf("FREE seznam\n");
+                freeSeznam();
+            }
             token = tryGetToken();
             break;
         default:

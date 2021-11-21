@@ -58,7 +58,6 @@ void pop(Stack_t *stack, int token, string attr, int deep) {
     if (stack->top == 0) {
         exit(STACK_UNDERFLOW);
     }
-    printf("ADADADAD: %d\n", token);
     GEN_WRITE_VAR_LITERAL(token, attr, deep);
     stack->top--;
 }
@@ -197,6 +196,19 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep)
     push(stack, buk, 38);
     if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT)
     {
+        funcs tmp = findFunc(functree, attr->str);
+        if (tmp != NULL){
+            return token;
+        }
+        if (token == ID){
+            vars tmp2 = findVar(vartree, deep, attr->str);
+            if(tmp2->type == STRING){
+                token = 3;
+            }
+            else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
+                token = 0;
+            }
+        }
         push(stack, *attr, token);
         token = tryGetToken();
         token = TableCheck(stack, token, attr, vartree, functree, deep);
@@ -205,7 +217,16 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep)
             token = express(token, attr, vartree, functree, deep);
         }
         else{
-            if ((token >= 10 && token <= 25) || token == ID){
+            if (token == NIL){
+                if (stack != NULL){
+                    free((stack)->attr);
+                    free(stack);
+                    stack = NULL;
+                }
+                token = tryGetToken();
+                return token; 
+            }
+            else if ((token >= 10 && token <= 25) || token == ID){
                 if (stack != NULL){
                     free((stack)->attr);
                     free(stack);

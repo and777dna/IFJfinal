@@ -36,6 +36,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->R = NULL;
         (*var_tree)->next = NULL;
         (*var_tree)->type = type;
+        printf("dobavil %s | %d\n", (*var_tree)->name, (*var_tree)->deepOfVar);
         return true;
     }
     else if ((*var_tree != NULL)&&(deep > (*var_tree)->deepOfVar))
@@ -57,6 +58,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->R = NULL;
         (*var_tree)->next = tmp;
         (*var_tree)->type = type;
+        printf("dobavil %s | %d\n", (*var_tree)->name, (*var_tree)->deepOfVar);
         return true;
     }
     else if (strcmp(name, (*var_tree)->name) < 0)
@@ -83,7 +85,7 @@ vars findVarFromTree(vars var_tree, int deep, char *name)
     
     if (strcmp(name, var_tree->name) == 0)
     {
-        //printf("nasel %s %d\n", var_tree->name, var_tree->deepOfVar);
+        printf("nasel %s %d\n", var_tree->name, var_tree->deepOfVar);
         return var_tree;
     }
     else if (strcmp(name, var_tree->name) < 0)
@@ -101,8 +103,8 @@ vars findVar(vars var_tree, int deep, char *name)
     vars tmp = var_tree;
     if (var_tree != NULL)
     {
-        //printf("deepVar\\\\\\%d        deep %d \n", var_tree->deepOfVar, deep);
-        if (deep <= var_tree->deepOfVar)
+        printf("deepVar\\\\\\%d        deep %d \n", var_tree->deepOfVar, deep);
+        if (deep >= var_tree->deepOfVar)
         {
             tmp = findVarFromTree(tmp, deep, name);
             if (tmp == NULL && deep > 0)
@@ -116,7 +118,7 @@ vars findVar(vars var_tree, int deep, char *name)
         }
         else
         {
-            //printf("VARno with deep %d and deepvar %d\n", deep, var_tree->deepOfVar);
+            printf("VARno with deep %d and deepvar %d\n", deep, var_tree->deepOfVar);
             return NULL;
         }    
     }
@@ -130,6 +132,7 @@ vars findVar(vars var_tree, int deep, char *name)
 
 vars freeVarTree(vars var)
 {
+    printf("VARFree %s\n", var->name);
     if (var == NULL)
     {
         return var;
@@ -142,6 +145,7 @@ vars freeVarTree(vars var)
     if(tmp->R != NULL){
         freeVarTree(tmp->R);
     }
+    printf("VARFree %s\n", tmp->name);
     tmp = NULL;
     free(tmp);
     return var; 
@@ -153,6 +157,7 @@ vars freeAllVars(vars var)
     {
         var = freeVarTree(var);
     }
+    printf("AllVARFree\n");
     return var;
 }
 ////-------------------------------------FUNCTION-----------------------------------------/////

@@ -132,7 +132,6 @@ int getNextToken(string *attr){
                 else if (c == ')') return RIGHT_BRACKET;
                 else if (c == ',') return COMMA;
                 
-                else if (c == '\n') return END_OF_LINE;
                 else if (c == EOF) return END_OF_FILE;
                 else{
                     printf("Return: LEX_ERROR\n");
@@ -143,6 +142,9 @@ int getNextToken(string *attr){
             case 1:
                 // komentar
                 if (c == '\n') state = 0;
+                else if(c == EOF){
+                    return END_OF_FILE;
+                }
                 break;
 
             case 2:
@@ -358,8 +360,11 @@ int getNextToken(string *attr){
                 else if(c == '\\'){
                     state = 21;
                 }
-                else if(isspace(c)){
-                    strcat(attr->str, "\\032");
+                else if(c == ' '){
+                    strAddChar(attr, '\\');
+                    strAddChar(attr, '0');
+                    strAddChar(attr, '3');
+                    strAddChar(attr, '2');
                 }
                 else
                     strAddChar(attr, c);
