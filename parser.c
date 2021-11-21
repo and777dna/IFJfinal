@@ -443,6 +443,7 @@ int functionBodyIsOK()
         switch (token)
         {
         case LOCAL:
+            freeSeznam();
             token = tryGetToken();
             if (token == ID)
             {
@@ -575,6 +576,7 @@ int functionBodyIsOK()
             token = tryGetToken();
             break;
         case WHILE:
+            freeSeznam();
             token = tryGetToken();
             token = express(token, &attr, table->var_tree, table->func_tree, deep);
             if (token != DO)
@@ -584,9 +586,9 @@ int functionBodyIsOK()
             }
             deep++;
             token = tryGetToken();
-            bool func = functionBodyIsOK();
             break;
         case IF:
+            freeSeznam();
             if_spotted = true; 
             token = tryGetToken();
             token = express(token, &attr, table->var_tree, table->func_tree, deep);
@@ -599,6 +601,7 @@ int functionBodyIsOK()
             token = tryGetToken();
             break;
         case ELSE:
+            freeSeznam();
             if(!(if_spotted) && deep == 0){
                 printf("Return: SYNTAX_ERROR\n");
                 return SYNTAX_ERROR;
@@ -672,6 +675,7 @@ int functionBodyIsOK()
                                     token = tryGetToken();
                                     break;
                                 }
+                                freeSeznam();
                                 break;
                             }
                             if (maybefunc != NULL){
@@ -684,8 +688,8 @@ int functionBodyIsOK()
                                         if(varfind->type == maybefunc->out->type){
                                             if((seznam->next == NULL && maybefunc->out->next != NULL) 
                                             || (seznam->next != NULL && maybefunc->out->next == NULL)){
-                                                    printf("Return: SEM_ERROR_FUNCPARAM\n");
-                                                    return SEM_ERROR_FUNCPARAM;
+                                                printf("Return: SEM_ERROR_FUNCPARAM1\n");
+                                                return SEM_ERROR_FUNCPARAM;
                                             }
                                         }
                                         else{
@@ -722,8 +726,16 @@ int functionBodyIsOK()
                                 {   
                                     if(maybefunc->in != NULL){
                                         maybefunc->in = maybefunc->in->first;
+                                        int check;
                                         while(token != RIGHT_BRACKET){
-                                            if (token+15 == maybefunc->in->type){
+                                            if (token == ID){
+                                                vars varfind = findVar(table->var_tree, deep, attr.str);
+                                                check = varfind->type;
+                                            }
+                                            else{
+                                                check = token + 15;
+                                            }
+                                            if (check == maybefunc->in->type){
                                                 if(maybefunc->in->next != NULL){
                                                     maybefunc->in = maybefunc->in->next;
                                                 }
@@ -812,7 +824,6 @@ int functionBodyIsOK()
             deep--;  
             if_spotted = false;
             if(seznam != NULL){
-                printf("FREE seznam\n");
                 freeSeznam();
             }
             token = tryGetToken();
@@ -828,7 +839,7 @@ int functionBodyIsOK()
 
 int syntaxCheck(){
     int result;
-    while(token != END_OF_FILE){  
+    while(token != END_OF_FILE){
         if (token == FUNCTION){
             result = functionIsOK();
             if (result != 0){

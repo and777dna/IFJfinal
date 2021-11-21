@@ -150,10 +150,10 @@ int getNextToken(string *attr){
             case 2:
                 // pokracovani komentaru
                 if (c == '-') state = 3;
-                else if (isspace(c)){state = 0; return DEC;}
                 else{
-                    printf("Return: LEX_ERROR\n");
-                    return LEX_ERROR;
+                    ungetc(c, source);
+                    state = 0;
+                    return DEC;
                 }
                 break;
 
@@ -229,14 +229,10 @@ int getNextToken(string *attr){
             case 8:
                 // pokracovani operatoru +
                 if (isspace(c)) {state = 0; return INC;}
-                else if (c == '(' || c == ',' || c == ')'){
+                else{
                     ungetc(c, source);
                     state = 0;
                     return INC;
-                }
-                else{
-                    printf("Return: LEX_ERROR\n");
-                    return LEX_ERROR;
                 }
                 break;
 
@@ -326,14 +322,10 @@ int getNextToken(string *attr){
                 // pokracovani operatoru ==
                 if (c == '=') {state = 0; return EQUAL;}
                 else if (isspace(c)) return ASSIGNED;
-                else if (c == '(' || c == ',' || c == ')'){
+                else{
                     ungetc(c, source);
                     state = 0;
                     return ASSIGNED;
-                }
-                else{
-                    printf("Return: LEX_ERROR\n");
-                    return LEX_ERROR;
                 }
                 break;
 
