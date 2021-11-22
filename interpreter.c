@@ -37,15 +37,15 @@ void GEN_WRITE_VAR_LITERAL(int token, string attr){
     switch (token)
 	{
 		case INT:
-			printf("int@%s", attr.str);
+			printf("int@%s\n", attr.str);
 			break;
 
 		case FLOAT:
-			printf("float@%s", attr.str);
+			printf("float@%s\n", attr.str);
 			break;
 
 		case RETEZEC:
-			printf("string@%s", attr.str);
+			printf("string@%s\n", attr.str);
 			break;
 		case NIL:
 		    printf("nil@%s", attr.str);
@@ -60,7 +60,7 @@ void GEN_PRINT_WRITE(int token, string attr){
     printf("\n");
 }
 void GEN_START_OF_FUNCTION(string attr){
-	if(!strcmp(attr.str, "main")){
+	if(!strcmp(attr.str, "main\n")){
 		printf("LABEL $%s\n", attr.str);
 		printf("PUSHFRAME \n\n");
 	}

@@ -58,7 +58,6 @@ void pop(Stack_t *stack, int token, string attr, int deep) {
     if (stack->top == 0) {
         exit(STACK_UNDERFLOW);
     }
-    printf("ADADADAD: %d\n", token);
     GEN_WRITE_VAR_LITERAL(token, attr, deep);
     stack->top--;
 }
@@ -72,7 +71,7 @@ void implode(Stack_t *stack) {
 
 char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
 {
-//  +    -    \    *    /    (    )    i    $    =   <>    <   <=    >   >=   str   #   ..   nill
+//  +    -    \    *    /    (    )    i    $    =   ~=    <   <=    >   >=   str   #   ..   nill
   {'>', '>', '<', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '#', '#'},  // +
   {'>', '>', '<', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // -
   {'>', '>', '>', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // \    //space after '\' is important
@@ -83,7 +82,7 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'>', '>', '>', '>', '>', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '#', '#', '#', '#'},  // i
   {'<', '<', '<', '<', '<', '<', '#', '<', '#', '<', '<', '<', '<', '<', '<', '<', '<', '<', '#'},  // $
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '<'},  // =
-  {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '<'},  // <>
+  {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '<'},  // ~=
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '#'},  // <
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '#'},  // <=
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '#'},  // >
@@ -148,6 +147,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
         }
         else if (precTable[stackVal][inputNum] == '='){
             pop(stack, token, *attr, deep);
+            token = tryGetToken();
             TableCheck(stack, token, attr, vartree, functree, deep);
         }
         else{ 
@@ -195,17 +195,48 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep)
     string buk;
     buk.str = "$";
     push(stack, buk, 38);
-    if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT)
+    if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT || token == HASH)
     {
+        funcs tmp = findFunc(functree, attr->str);
+        if (tmp != NULL){
+            return token;
+        }
+        if (token == ID){
+            vars tmp2 = findVar(vartree, deep, attr->str);
+            if(tmp2->type == STRING){
+                token = 3;
+            }
+            else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
+                token = 0;
+            }
+        }
         push(stack, *attr, token);
         token = tryGetToken();
+        if (token == ID){
+            vars tmp2 = findVar(vartree, deep, attr->str);
+            if(tmp2->type == STRING){
+                token = 3;
+            }
+            else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
+                token = 0;
+            }
+        }
         token = TableCheck(stack, token, attr, vartree, functree, deep);
         if (token == COMMA){
             token = tryGetToken();
             token = express(token, attr, vartree, functree, deep);
         }
         else{
-            if ((token >= 10 && token <= 25) || token == ID){
+            if (token == NIL){
+                if (stack != NULL){
+                    free((stack)->attr);
+                    free(stack);
+                    stack = NULL;
+                }
+                token = tryGetToken();
+                return token; 
+            }
+            else if ((token >= 10 && token <= 25) || token == ID){
                 if (stack != NULL){
                     free((stack)->attr);
                     free(stack);
@@ -225,7 +256,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep)
         }
     }
     else{
-        printf("Return: SEM_ERROR_EXPRESS\n");
+        printf("Return: SEM_ERROR_EXPRESS2\n");
         return SEM_ERROR_EXPRESS;
     }
 }

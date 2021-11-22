@@ -1,17 +1,23 @@
 require "ifj21"
-global concat : function(string, string) : string, integer
-function concat (x : string, y : string) : string, integer
-local z,f : integer = 2 * 2 , 5 + 5
-if 4 == 4 then
-local h : integer = 2
-h = nill
-write("a", 4, 4.5)
-end 
-x,f = concat("r","e")
-return x .. y, 0 end
-function main()
-local yay : string
-local ret: integer
-yay, ret = concat("ahoj", "svete")
+
+function foo(x : integer, y : integer) : integer, integer
+  local i : integer = x
+  local j : integer = (y + 2) * 3
+  i, j = j+1, i+1  -- vyhodnocuj zprava a p�i�azuj pozd�ji
+  return i, j 
+end
+
+function main() 
+  local a : integer = 1
+  local b : integer = 2
+  a, b = foo(a, b)  -- returns 13, 2
+  if a < b then
+    write(a, "<", b, "\n")
+  else
+    write(a, ">=", b, "\n")
+    local a : integer = 666  -- Teal varuje, ze redefinice (prekryti)
+    write(a, "\n")
+  end
+  write(a, "\n")  --[[ prints 13 ]]
 end
 main()

@@ -102,7 +102,7 @@ vars findVar(vars var_tree, int deep, char *name)
     if (var_tree != NULL)
     {
         //printf("deepVar\\\\\\%d        deep %d \n", var_tree->deepOfVar, deep);
-        if (deep <= var_tree->deepOfVar)
+        if (deep >= var_tree->deepOfVar)
         {
             tmp = findVarFromTree(tmp, deep, name);
             if (tmp == NULL && deep > 0)
@@ -173,7 +173,7 @@ funcs insertFunc(char *name, funcs *func, int orig)
         (*func)->R = NULL;
         (*func)->in = NULL;
         (*func)->out = NULL;
-        printf("dobavil %s\n", (*func)->name);
+        //printf("dobavil %s\n", (*func)->name);
         return (*func);
     }
     else if (strcmp((*func)->name, name) < 0)
@@ -209,7 +209,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         }
     }
     else{
-        printf("FUNCno\n");  
+        //printf("FUNCno\n");  
         return NULL;
     }
     
@@ -342,8 +342,8 @@ funcs insertInbuiltFuncs(funcs func)
 
     insertFunc("substr", &func, 2);
     insertInput("s", func, "substr", STRING);
-    insertInput("i", func, "substr", NUMBER);
-    insertInput("j", func, "substr", NUMBER);
+    insertInput("i", func, "substr", INTEGER);
+    insertInput("j", func, "substr", INTEGER);
     insertOutput(func, STRING, "substr");
 
     insertFunc("ord", &func, 2);
