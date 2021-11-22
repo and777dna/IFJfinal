@@ -356,35 +356,3 @@ funcs insertInbuiltFuncs(funcs func)
     insertOutput(func, STRING, "chr");
     return func;
 }
-////--------------------------------------------------------------------------------------------------
-/*
-int main()
-{
-    
-    ST = init(ST);
-
-    insertVar(&(ST->var_tree), 0, "abc", 1);
-    insertVar(&(ST->var_tree), 0, "adsad", 1);
-    insertVar(&(ST->var_tree), 0, "ggghcff", 1);
-    insertVar(&(ST->var_tree), 1, "adsad", 1);
-    vars tmp = findVar(ST->var_tree, 0 , "ggghcff");
-    if (tmp->deepOfVar == 0)
-    {
-        printf("nasel\n\n");
-    }
-    
-
-    Token *token = malloc(sizeof(struct token));
-    token->data = "ahoj";
-    token->next = NULL;
-    token->size = 4;
-    token->type = 10;
-
-    insertFunc(token->data, &(ST->func_tree));
-    insertInput("as", ST->func_tree, "ahoj", 2);
-
-    freeFunc(ST->func_tree);
-    freeVarTree(ST->var_tree);
-    //free(ST->var_tree);
-    return 0;
-}*/
