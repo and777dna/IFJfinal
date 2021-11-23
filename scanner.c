@@ -359,8 +359,12 @@ int getNextToken(string *attr){
                     strAddChar(attr, '2');
                 }
                 else if(!(isalnum(c))){
-                    strAddChar(attr, '\\');
-                    strAddChar(attr, (int)c);
+                    char sub[4];
+                    sprintf(sub, "\\0%d", (int)c);
+                    strAddChar(attr, sub[0]);
+                    strAddChar(attr, sub[1]);
+                    strAddChar(attr, sub[2]);
+                    strAddChar(attr, sub[3]);
                 }
                 else
                     strAddChar(attr, c);
