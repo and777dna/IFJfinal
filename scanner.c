@@ -150,6 +150,11 @@ int getNextToken(string *attr){
             case 2:
                 // pokracovani komentaru
                 if (c == '-') state = 3;
+                else if(isdigit(c)){
+                    strAddChar(attr, '-');
+                    strAddChar(attr, c);
+                    state = 18;
+                }
                 else{
                     ungetc(c, source);
                     state = 0;
@@ -374,9 +379,9 @@ int getNextToken(string *attr){
                 if (isspace(c)) return INT;
                 else if (c == '.') state = 19;
                 else if (c == ')' || c == ',' || isalpha(c)){
-                  ungetc(c, source);
-                  state = 0;
-                  return INT;
+                    ungetc(c, source);
+                    state = 0;
+                    return INT;
                 }
                 else if (!isdigit(c)){
                     printf("Return: LEX_ERROR\n");
