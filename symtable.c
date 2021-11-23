@@ -272,22 +272,22 @@ void insertOutput(funcs func, int type, char *name)
         {
             return;
         }
+        startOut = malloc(sizeof (struct outputFunc));
+        startOut->next = NULL;
+        startOut->type = type;
         function->out->next = NULL;
         function->out->type = type;
-        startOut = function->out;
         function->out->first = startOut;
         return;
     }
     else
     {
-        outPar new_param = function->out;
-        while (new_param->next != NULL)
+        while (function->out->next != NULL)
         {
-            new_param = new_param->next;
+            function->out = function->out->next;
         }
-        new_param->next = malloc(sizeof(struct outputFunc));
-        new_param->next->first = new_param;
-        new_param = new_param->next;
+        function->out->next = malloc(sizeof(struct outputFunc));
+        outPar new_param = function->out->next;
         new_param->next = NULL;
         new_param->type = type;
         new_param->first = startOut;

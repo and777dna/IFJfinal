@@ -358,6 +358,10 @@ int getNextToken(string *attr){
                     strAddChar(attr, '3');
                     strAddChar(attr, '2');
                 }
+                else if(!(isalnum(c))){
+                    strAddChar(attr, '\\');
+                    strAddChar(attr, (int)c);
+                }
                 else
                     strAddChar(attr, c);
                 break;
@@ -407,6 +411,7 @@ int getNextToken(string *attr){
                 else if (isspace(c)){state = 0; return FLOAT;}
                 strAddChar(attr, c);
                 break;
+
             case 21:
                 if(c == 'n'){
                     strcat(attr->str, "\\010");

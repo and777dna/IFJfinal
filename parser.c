@@ -448,7 +448,7 @@ int functionBodyIsOK()
             if (token == ID)
             {
                 vars varcheck = findVar(table->var_tree, deep, attr.str);
-                if (varcheck != NULL){
+                if (varcheck != NULL && varcheck->deepOfVar == deep){
                     printf("Return: SEM_ERROR_DEFINE\n");
                     return SEM_ERROR_DEFINE;
                 }
@@ -539,6 +539,7 @@ int functionBodyIsOK()
                         printf("Return: SEM_ERROR_DEFINE\n");
                         return SEM_ERROR_DEFINE;
                     }
+                    GEN_PRINT_WRITE(token, attr);
                     token = tryGetToken();
                     if(token == COMMA){
                         token = tryGetToken();
@@ -555,6 +556,7 @@ int functionBodyIsOK()
                 case INT:
                 case RETEZEC:
                 case FLOAT:
+                    GEN_PRINT_WRITE(token, attr);
                     token = tryGetToken();
                     if(token == COMMA){
                         token = tryGetToken();
@@ -688,7 +690,7 @@ int functionBodyIsOK()
                                         if(varfind->type == maybefunc->out->type){
                                             if((seznam->next == NULL && maybefunc->out->next != NULL) 
                                             || (seznam->next != NULL && maybefunc->out->next == NULL)){
-                                                printf("Return: SEM_ERROR_FUNCPARAM1\n");
+                                                printf("Return: SEM_ERROR_FUNCPARAM\n");
                                                 return SEM_ERROR_FUNCPARAM;
                                             }
                                         }
@@ -739,7 +741,7 @@ int functionBodyIsOK()
                                                 if(maybefunc->in->next != NULL){
                                                     maybefunc->in = maybefunc->in->next;
                                                 }
-                                                GEN_FUNC_MAIN_START(attr.str);
+                                                GEN_FUNC_CALL(attr.str);
                                                 token = tryGetToken();
                                             }
                                             else if(token == COMMA){
@@ -916,6 +918,7 @@ int syntaxCheck(){
 int program()
 {
     table->func_tree = insertInbuiltFuncs(table->func_tree);
+    GEN_CALL_INBUILDS();
     deep = 0;
     error_flag = 0;
     int error_flag = 0;

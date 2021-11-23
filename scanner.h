@@ -164,6 +164,12 @@ void setSourceFile(FILE *f);
 int getNextToken(string *attr);
 int express(int token, string *attr, vars var, funcs funcs, int deep);
 
-void GEN_WRITE_VAR_LITERAL(int token, string attr, int deep);
+void GEN_WRITE_VAR_LITERAL(int token, string attr);
 void GEN_FUNC_MAIN_END(char *name_func, SeznamOfVars *param);
-void GEN_FUNC_MAIN_START(char* name);
+void GEN_FUNC_MAIN_START(char *name);
+void GEN_WRITE_VAR_LITERAL(int token, string attr);
+void GEN_PRINT_WRITE(int token, string attr);
+void GEN_START_OF_FUNCTION(string attr);
+void GEN_FUNC_CALL(char *name);
+void GEN_END_OF_FUNCTION(string attr);
+void GEN_CALL_INBUILDS();

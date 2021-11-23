@@ -58,7 +58,7 @@ void pop(Stack_t *stack, int token, string attr, int deep) {
     if (stack->top == 0) {
         exit(STACK_UNDERFLOW);
     }
-    GEN_WRITE_VAR_LITERAL(token, attr, deep);
+    GEN_WRITE_VAR_LITERAL(token, attr);
     stack->top--;
 }
 
