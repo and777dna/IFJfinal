@@ -50,15 +50,19 @@ void push(Stack_t *stack, string value, int type) {
         resize(stack);
     }
     stack->top++;
-    stack->attr[stack->top].attr = value.str;
+    stack->attr[stack->top].attr = malloc(sizeof(string));
+    strcpy(stack->attr[stack->top].attr, value.str);
     stack->attr[stack->top].type = type;
+    printf("PUSH: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
 }
 
-void pop(Stack_t *stack, int token, string attr, int deep) { 
+void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end) { 
     if (stack->top == 0) {
         exit(STACK_UNDERFLOW);
     }
-    GEN_WRITE_VAR_LITERAL(token, attr.str);
+    char *name = seznam->name;
+    printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
+    EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name);
     stack->top--;
 }
 
@@ -93,7 +97,7 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'#', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '#', '#', '#', '#', '#', '#', '#', '#'},  // nill
 };
 
-int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep){
+int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, bool end){
     if ((token < 10 || token > 25) && token != COMMA){
         int stackVal = stack->attr[stack->top].type - 30;
         int inputNum = token - 30;
@@ -139,22 +143,23 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                     token = 0;
                 }
             }
-            TableCheck(stack, token, attr, vartree, functree, deep);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
         }
         else if (precTable[stackVal][inputNum] == '>'){
-            pop(stack, token, *attr, deep);
-            TableCheck(stack, token, attr, vartree, functree, deep);
+            pop(stack, token, *attr, deep, seznam, end);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
         }
         else if (precTable[stackVal][inputNum] == '='){
-            pop(stack, token, *attr, deep);
+            pop(stack, token, *attr, deep, seznam, end);
             token = tryGetToken();
-            TableCheck(stack, token, attr, vartree, functree, deep);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
         }
         else{ 
             funcs tmp = findFunc(functree, attr->str);
             vars tmp2 = findVar(vartree, deep, attr->str);
             if (tmp != NULL || tmp2 != NULL){
                 token = ID;
+                pop(stack, token, *attr, deep, seznam, end);
                 return token;
             }
             printf("%s:%d -- %d\n",attr->str, inputNum, stackVal);
@@ -167,6 +172,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
         return token;
     }
     else{
+        end = true;
         int stackVal = stack->attr[stack->top].type - 30;
         if (stack->attr[stack->top].type == ID || stack->attr[stack->top].type == INT || stack->attr[stack->top].type == FLOAT){
             stackVal = 7;
@@ -175,11 +181,13 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             stackVal = 15;
         }
         if (precTable[stackVal][8] == '>'){
-            pop(stack, token, *attr, deep);
+            printf("EXPRESS_POP\n");
+            pop(stack, token, *attr, deep, seznam, end);
             return token;
         }
         else if (precTable[stackVal][8] == '='){
-            pop(stack, token, *attr, deep);
+            printf("EXPRESS_POP\n");
+            pop(stack, token, *attr, deep, seznam, end);
             return token;
         }
         else{ 
@@ -191,8 +199,8 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
 
 int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam)
 {
-    bool end = false; 
-    printf("OSNFKSJNF:JK\n");
+    printf("SEZNAM->FIRST: %s\n", seznam->name);
+    bool end = false;
     Stack_t *stack = createStack();
     string buk;
     buk.str = "$";
@@ -223,7 +231,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
                 token = 0;
             }
         }
-        token = TableCheck(stack, token, attr, vartree, functree, deep);
+        token = TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
         if (token == COMMA){
             token = tryGetToken();
             if(seznam != NULL){
@@ -235,23 +243,35 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             end = true;
             if (token == NIL){
                 if (stack != NULL){
+                    if (strcmp(stack->attr, "$") != 0){
+                        pop(stack, token, *attr, deep, seznam, end);
+                    }
                     free((stack)->attr);
                     free(stack);
                     stack = NULL;
                 }
+                printf("EXPRESS_END\n");
                 token = tryGetToken();
                 return token; 
             }
             else if ((token >= 10 && token <= 25) || token == ID){
                 if (stack != NULL){
+                    if (strcmp(stack->attr, "$") != 0){
+                        pop(stack, token, *attr, deep, seznam, end);
+                    }
                     free((stack)->attr);
                     free(stack);
                     stack = NULL;
                 }
+                printf("EXPRESS_END\n");
                 return token; 
             }
             else{
                 if (stack != NULL){
+                    if (strcmp(stack->attr, "$") != 0){
+                        printf("EXPRESS_END_POP: %s\n", stack->attr);
+                        pop(stack, token, *attr, deep, seznam, end);
+                    }
                     free((stack)->attr);
                     free(stack);
                     stack = NULL;

@@ -2,7 +2,7 @@ require "ifj21"
 
 function foo(x : integer, y : integer) : integer, integer
   local i : integer = x
-  local j : integer = (y + 2) * 3 --(y2+)3*
+  local j : integer = y + 2
   i, j = j+1, i+1  -- vyhodnocuj zprava a p�i�azuj pozd�ji
   return i, j 
 end

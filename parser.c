@@ -469,13 +469,13 @@ int functionBodyIsOK()
                                 break;
                             }
                         }
+                        GEN_DEFVAR_VAR(seznam);
                         int type = token;
                         token = tryGetToken();
                         switch (token)
                         {
                             case ASSIGNED:
                                 token = tryGetToken();
-                                seznam = seznam->first;
                                 token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                                 break;
                             default:
@@ -505,10 +505,16 @@ int functionBodyIsOK()
                             seznam = seznam->first;
                             while(seznam != NULL){
                                 insertVar(&(table->var_tree), deep, seznam->name, token);
-                                seznam = seznam->next;
+                                if(seznam->next != NULL){
+                                    seznam = seznam->next;
+                                }
+                                else{
+                                    break;
+                                }
                             }
-                            freeSeznam();
                             int type = token;
+                            seznam = seznam->first;
+                            GEN_DEFVAR_VAR(seznam);
                             token = tryGetToken();
                             switch (token)
                             {
@@ -749,7 +755,7 @@ int functionBodyIsOK()
                                                 if(maybefunc->in->next != NULL){
                                                     maybefunc->in = maybefunc->in->next;
                                                 }
-                                                GEN_FUNC_CALL(attr.str);
+                                                GEN_FUNC_MAIN_END(attr.str);
                                                 token = tryGetToken();
                                             }
                                             else if(token == COMMA){
@@ -929,6 +935,7 @@ int program()
 {
     table->func_tree = insertInbuiltFuncs(table->func_tree);
     GEN_CALL_INBUILDS();
+    printf("------------------------------------------------------\n");
     deep = 0;
     error_flag = 0;
     int error_flag = 0;

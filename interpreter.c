@@ -75,8 +75,12 @@ void GEN_START_OF_FUNCTION(string attr){
 void GEN_DEFVAR_VAR(SeznamOfVars *param){
 	while(param != NULL){
 		printf("DEFVAR LF@%s\n", param->name);
-		param = param->next;
-		return;
+		if(param->next != NULL){
+			param = param->next;
+		}
+		else{
+			return;
+		}
     }
 }
 
@@ -107,96 +111,95 @@ void GEN_END_OF_FUNCTION(string attr){
     }
 }
 
-void EXPRESSION_FUNC(string attr, int token, bool end, char* var_name){
+void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 	static char *param1;
 	static char *param2;
 	static int oper;
-	static int counter = 0;
-	if (counter = 0){
-		param1 = attr.str;
+	static int counter;
+	static int type;
+	if (counter == 0){
+		printf("Counter: %d\n", counter);
+		type = token;
+		param1 = attr;
+		printf("  Param1: %s\n", param1);
 		counter++;
 	}
-	else if (counter = 1){
-		param2 = attr.str;
+	else if (counter == 1){
+		printf("Counter: %d\n", counter);
+		param2 = attr;
+		printf("  Param2: %s\n", param2);
 		counter++;
-	} 
-	else if (counter = 2){
+	}
+	else if (counter == 2){
+		printf("Counter: %d\n", counter);
 		oper = token;
+		printf("  Operand->type: %d\n", oper);
 		counter++;
 	}
-	if (counter = 3){
-		if (!end){
+
+	if (counter == 3){
+		printf("Counter-switch: %d\n", counter);
+		if (oper != NULL){
+			printf("Counter-switch: %d\n", counter);
 			switch (oper)
 			{
-				
 				case INC:
-					printf("DEFVAR LF@ADD_REZ");
-					printf("ADD LF@ADD_REZ LF@%s LF@%s", param1, param2);
-					param1 = "SUM_REZ"; 
+					printf("DEFVAR LF@ADD_RES\n");
+					printf("ADD LF@ADD_RES LF@%s LF@%s\n", param1, param2);
+					param1 = "SUM_RES"; 
 					param2 = NULL;
 					break;
 				case DEC:
-					printf("DEFVAR LF@SUB_REZ");
-					printf("ADD LF@SUB_REZ LF@%s LF@%s", param1, param2);
-					param1 = "SUB_REZ"; 
+					printf("DEFVAR LF@SUB_RES\n");
+					printf("DEC LF@SUB_RES LF@%s LF@%s\n", param1, param2);
+					param1 = "SUB_RES"; 
 					param2 = NULL;
 					break;
 				case MULTIPLY:
-					printf("DEFVAR LF@MUL_REZ");
-					printf("ADD LF@MUL_REZ LF@%s LF@%s", param1, param2);
-					param1 = "MUL_REZ"; 
+					printf("DEFVAR LF@MUL_RES\n");
+					printf("MUL LF@MUL_RES LF@%s LF@%s\n", param1, param2);
+					param1 = "MUL_RES"; 
 					param2 = NULL;
 					break;
 				case DIV:
-					printf("DEFVAR LF@DIV_REZ");
-					printf("ADD LF@DIV_REZ LF@%s LF@%s", param1, param2);
-					param1 = "DIV_REZ"; 
+					printf("DEFVAR LF@DIV_RES\n");
+					printf("DIV LF@DIV_RES LF@%s LF@%s\n", param1, param2);
+					param1 = "DIV_RES"; 
 					param2 = NULL;
 					break;
 				case MOD:
-					printf("DEFVAR LF@IDIV_REZ");
-					printf("ADD LF@IDIV_REZ LF@%s LF@%s", param1, param2);
-					param1 = "IDIV_REZ"; 
+					printf("DEFVAR LF@IDIV_RES\n");
+					printf("IDIV LF@IDIV_RES LF@%s LF@%s\n", param1, param2);
+					param1 = "IDIV_RES"; 
 					param2 = NULL;
 					break;
 				case HASH:
-					printf("DEFVAR LF@HASH_REZ");
-					printf("STRLEN LF@HASH_REZ LF@%s", param1);
-					param1 = "HASH_REZ";
+					printf("DEFVAR LF@HASH_RES\n");
+					printf("STRLEN LF@HASH_RES LF@%s\n", param1);
+					param1 = "HASH_RES";
 					param2 = NULL;
 					break;
 				case DOTDOT:
-					printf("DEFVAR LF@DOTDOT_REZ");
-					printf("CONCAT LF@DOTDOT LF@%S LF@%S", param1, param2);
-					param1 = "DOTDOT_REZ";
+					printf("DEFVAR LF@DOTDOT_RES\n");
+					printf("CONCAT LF@DOTDOT LF@%s LF@%s\n", param1, param2);
+					param1 = "DOTDOT_RES";
 					param2 = NULL;
 					break;
 			}
 		}
-		else if(end){
-			printf("MOVE LF@%s ", var_name);
-			GEN_WRITE_VAR_LITERAL(token, param1);
-		}
-	
+	}
+	if(end && type != 38){
+		printf("Counter-move: %d\n", counter);
+		printf("Operator-move: %d\n", oper);
+		printf(" MOVE LF@%s ", var_name);
+		GEN_WRITE_VAR_LITERAL(type, param1);
+		counter = 0;
+	}
+	else if(type == 38){
+		counter = 0;
+		type = 0;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //INBUILDS FUNCTION
 
@@ -453,6 +456,7 @@ void GEN_CALL_INBUILDS(){
     GENERATION_ORD();
     GENERATION_CHR();
 }
+
 // void FUNC_WHILE(string attr, int count, bool if_condition, bool for_condition){
 //     if(for_condition){
 //         printf("LABEL $%s$for$%d\n", token->data, count);
