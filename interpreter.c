@@ -33,31 +33,30 @@ void GEN_START_MAIN(){
 
  }
 
-void GEN_WRITE_VAR_LITERAL(int token, string attr){
+void GEN_WRITE_VAR_LITERAL(int token, char *attr){
     switch (token)
 	{
 		case INT:
-			printf("int@%s\n", attr.str);
+			printf("int@%s\n", attr);
 			break;
-
 		case FLOAT:
-			printf("float@%s\n", attr.str);
+			printf("float@%s\n", attr);
 			break;
-
 		case RETEZEC:
-			printf("string@%s\n", attr.str);
+			printf("string@%s\n", attr);
 			break;
 		case NIL:
-		    printf("nil@%s", attr.str);
+		    printf("nil@%s\n", attr);
             break;
         case ID:
-            printf("LF@%s$%d", attr.str, 1);
+            printf("LF@%s$%d\n", attr, 1);
+			break;
 	}
 }
 
 void GEN_PRINT_WRITE(int token, string attr){
     printf("WRITE ");
-    GEN_WRITE_VAR_LITERAL(token, attr);
+    GEN_WRITE_VAR_LITERAL(token, attr.str);
     printf("\n");
 }
 
@@ -73,14 +72,22 @@ void GEN_START_OF_FUNCTION(string attr){
 	}
 }
 
-void GEN_FUNC_CALL(char* name){
-    printf("DEFVAR LF@%d\n",count_start);
-	printf("MOVE LF@%d, %s\n",count_start, name);
+void GEN_DEFVAR_VAR(SeznamOfVars *param){
+	while(param != NULL){
+		printf("DEFVAR LF@%s\n", param->name);
+		param = param->next;
+		return;
+    }
+}
+
+void GEN_FUNC_MAIN_END(char* name){
+    printf("DEFVAR TF@%d\n",count_start);
+	printf("MOVE TF@%d, %s\n",count_start, name);
 	count_start++;
 	return;
 }
 
-void GEN_FUNC_MAIN_END(char *name_func, SeznamOfVars *param){
+void GEN_FUNC_CALL(char *name_func, SeznamOfVars *param){
 	printf("CALL $%s\n", name_func);
 	while(param != NULL){
 		printf("MOVE LF@%s, TF@ret%d\n",param->name, count_end);
@@ -99,6 +106,99 @@ void GEN_END_OF_FUNCTION(string attr){
         printf("RETURN \n\n");
     }
 }
+
+void EXPRESSION_FUNC(string attr, int token, bool end, char* var_name){
+	static char *param1;
+	static char *param2;
+	static int oper;
+	static int counter = 0;
+	if (counter = 0){
+		param1 = attr.str;
+		counter++;
+	}
+	else if (counter = 1){
+		param2 = attr.str;
+		counter++;
+	} 
+	else if (counter = 2){
+		oper = token;
+		counter++;
+	}
+	if (counter = 3){
+		if (!end){
+			switch (oper)
+			{
+				
+				case INC:
+					printf("DEFVAR LF@ADD_REZ");
+					printf("ADD LF@ADD_REZ LF@%s LF@%s", param1, param2);
+					param1 = "SUM_REZ"; 
+					param2 = NULL;
+					break;
+				case DEC:
+					printf("DEFVAR LF@SUB_REZ");
+					printf("ADD LF@SUB_REZ LF@%s LF@%s", param1, param2);
+					param1 = "SUB_REZ"; 
+					param2 = NULL;
+					break;
+				case MULTIPLY:
+					printf("DEFVAR LF@MUL_REZ");
+					printf("ADD LF@MUL_REZ LF@%s LF@%s", param1, param2);
+					param1 = "MUL_REZ"; 
+					param2 = NULL;
+					break;
+				case DIV:
+					printf("DEFVAR LF@DIV_REZ");
+					printf("ADD LF@DIV_REZ LF@%s LF@%s", param1, param2);
+					param1 = "DIV_REZ"; 
+					param2 = NULL;
+					break;
+				case MOD:
+					printf("DEFVAR LF@IDIV_REZ");
+					printf("ADD LF@IDIV_REZ LF@%s LF@%s", param1, param2);
+					param1 = "IDIV_REZ"; 
+					param2 = NULL;
+					break;
+				case HASH:
+					printf("DEFVAR LF@HASH_REZ");
+					printf("STRLEN LF@HASH_REZ LF@%s", param1);
+					param1 = "HASH_REZ";
+					param2 = NULL;
+					break;
+				case DOTDOT:
+					printf("DEFVAR LF@DOTDOT_REZ");
+					printf("CONCAT LF@DOTDOT LF@%S LF@%S", param1, param2);
+					param1 = "DOTDOT_REZ";
+					param2 = NULL;
+					break;
+			}
+		}
+		else if(end){
+			printf("MOVE LF@%s ", var_name);
+			GEN_WRITE_VAR_LITERAL(token, param1);
+		}
+	
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//INBUILDS FUNCTION
 
 void GENERATION_READI(){
 printf("LABEL $READI\n");
@@ -353,3 +453,21 @@ void GEN_CALL_INBUILDS(){
     GENERATION_ORD();
     GENERATION_CHR();
 }
+// void FUNC_WHILE(string attr, int count, bool if_condition, bool for_condition){
+//     if(for_condition){
+//         printf("LABEL $%s$for$%d\n", token->data, count);
+//     } else if (if_condition){
+//         printf("LABEL $%s$if$%d$else\n", token->data, count);
+//     } else 
+//         printf("LABEL $%s$if$%d$end\n", token->data, count);
+// }
+
+
+// LABEL while
+// JUMPIFEQ end GF@counter string@aaaaaaaaaaaaa
+// WRITE GF@counter
+// WRITE string@\010
+// CONCAT GF@counter GF@counter string@a
+// JUMP while
+
+// LABEL end
