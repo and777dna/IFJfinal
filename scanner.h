@@ -162,7 +162,7 @@ int strGetLength(string *s);
 //hlavicka funkce simulujici lexikalni analyzator
 void setSourceFile(FILE *f);
 int getNextToken(string *attr);
-int express(int token, string *attr, vars var, funcs funcs, int deep);
+int express(int token, string *attr, vars var, funcs funcs, int deep, SeznamOfVars *seznam);
 
 void GEN_WRITE_VAR_LITERAL(int token, string attr);
 void GEN_FUNC_MAIN_END(char *name_func, SeznamOfVars *param);

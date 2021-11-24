@@ -189,8 +189,9 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
     }
 }
 
-int express(int token, string *attr, vars vartree, funcs functree, int deep)
+int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam)
 {
+    printf("OSNFKSJNF:JK\n");
     Stack_t *stack = createStack();
     string buk;
     buk.str = "$";
@@ -224,7 +225,10 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep)
         token = TableCheck(stack, token, attr, vartree, functree, deep);
         if (token == COMMA){
             token = tryGetToken();
-            token = express(token, attr, vartree, functree, deep);
+            if(seznam != NULL){
+                seznam = seznam->next;
+            }
+            token = express(token, attr, vartree, functree, deep, seznam);
         }
         else{
             if (token == NIL){

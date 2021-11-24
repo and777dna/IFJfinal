@@ -462,20 +462,26 @@ int functionBodyIsOK()
                         seznam = seznam->first;
                         while(seznam != NULL){
                             insertVar(&(table->var_tree), deep, seznam->name, token);
-                            seznam = seznam->next;
+                            if(seznam->next != NULL){
+                                seznam = seznam->next;
+                            }
+                            else{
+                                break;
+                            }
                         }
-                        freeSeznam();
                         int type = token;
                         token = tryGetToken();
                         switch (token)
                         {
                             case ASSIGNED:
                                 token = tryGetToken();
-                                token = express(token, &attr, table->var_tree, table->func_tree, deep);
+                                seznam = seznam->first;
+                                token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                                 break;
                             default:
                                 break;
                         }
+                        freeSeznam();
                     }
                 }
                 else if(token == COMMA){
@@ -508,7 +514,8 @@ int functionBodyIsOK()
                             {
                                 case ASSIGNED:
                                     token = tryGetToken();
-                                    token = express(token, &attr, table->var_tree, table->func_tree, deep);
+                                    seznam = seznam->first;
+                                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                                     break;
                                 default:
                                     break;
@@ -580,7 +587,7 @@ int functionBodyIsOK()
         case WHILE:
             freeSeznam();
             token = tryGetToken();
-            token = express(token, &attr, table->var_tree, table->func_tree, deep);
+            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
             if (token != DO)
             {
                 printf("Return: SYNTAX_ERROR\n");
@@ -593,7 +600,7 @@ int functionBodyIsOK()
             freeSeznam();
             if_spotted = true; 
             token = tryGetToken();
-            token = express(token, &attr, table->var_tree, table->func_tree, deep);
+            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
             if (token != THEN)
             {
                 printf("Return: SYNTAX_ERROR\n");
@@ -672,7 +679,8 @@ int functionBodyIsOK()
                         if (token == ID){
                             funcs maybefunc = findFunc(table->func_tree, attr.str);
                             if (maybefunc == NULL){
-                                token = express(token, &attr, table->var_tree, table->func_tree, deep);
+                                seznam = seznam->first;
+                                token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                                 if (token == COMMA){
                                     token = tryGetToken();
                                     break;
@@ -765,7 +773,8 @@ int functionBodyIsOK()
                                     }
                                 }
                                 else {
-                                    token = express(token, &attr, table->var_tree, table->func_tree, deep);
+                                    seznam = seznam->first;
+                                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                                     if (token == COMMA){
                                         token = tryGetToken();
                                         break;
@@ -774,7 +783,8 @@ int functionBodyIsOK()
                             }
                         }
                         else{
-                            token = express(token, &attr, table->var_tree, table->func_tree, deep);
+                            seznam = seznam->first;
+                            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                             if (token == COMMA){
                                 token = tryGetToken();
                                 break;
@@ -804,7 +814,7 @@ int functionBodyIsOK()
                         else if (table->var_tree->type == INTEGER || table->var_tree->type == NUMBER){
                             token = INT;
                         }
-                        token = express(token, &attr, table->var_tree, table->func_tree, deep);
+                        token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                         break;
                     }
                     else {
@@ -812,7 +822,7 @@ int functionBodyIsOK()
                     }
                 }
                 else{
-                    token = express(token, &attr, table->var_tree, table->func_tree, deep);
+                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                     break;
                 }
             }      

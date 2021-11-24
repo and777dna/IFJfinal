@@ -36,6 +36,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->R = NULL;
         (*var_tree)->next = NULL;
         (*var_tree)->type = type;
+        printf("Added %s'\n", (*var_tree)->name);
         return true;
     }
     else if ((*var_tree != NULL)&&(deep > (*var_tree)->deepOfVar))
@@ -57,6 +58,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->R = NULL;
         (*var_tree)->next = tmp;
         (*var_tree)->type = type;
+        printf("Added %s'\n", (*var_tree)->name);
         return true;
     }
     else if (strcmp(name, (*var_tree)->name) < 0)
@@ -68,7 +70,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         insertVar(&((*var_tree)->R), deep, name, type);
     }
     else{
-        printf("yze est'\n");
+        printf("yze est %s'\n", (*var_tree)->name);
         return false;
     }
 }
