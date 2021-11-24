@@ -191,6 +191,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
 
 int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam)
 {
+    bool end = false; 
     printf("OSNFKSJNF:JK\n");
     Stack_t *stack = createStack();
     string buk;
@@ -231,6 +232,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             token = express(token, attr, vartree, functree, deep, seznam);
         }
         else{
+            end = true;
             if (token == NIL){
                 if (stack != NULL){
                     free((stack)->attr);
