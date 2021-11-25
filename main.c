@@ -7,7 +7,7 @@ int main(int argc, char *argv[]){
     symtable *table;
     table = initST(table);
     FILE *f;
-    if ((f = fopen("ifj21.tl", "r")) == NULL)
+    if ((f = fopen(stdin, "r")) == NULL)
     {
         printf("Soubor se nepodarilo otevrit\n");
         return FILE_ERROR;
@@ -21,12 +21,12 @@ int main(int argc, char *argv[]){
     setTable(table);
     a = program();
     changeError(a);
-    if (a == 0){
-        printf("\x1B[33m""FINISHED WITHOUT ERRORS!\nCONGRATS!!!\n");    
-    }
-    else{
-        printf("\x1B[31m""EXIT WITH ERROR: %d\n", a);
-    }
+    // if (a == 0){
+    //     printf("\x1B[33m""FINISHED WITHOUT ERRORS!\nCONGRATS!!!\n");    
+    // }
+    // else{
+    //     printf("\x1B[31m""EXIT WITH ERROR: %d\n", a);
+    // }
     freeFunc(table->func_tree);
     free(token);
     free(table);

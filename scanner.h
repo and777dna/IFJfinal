@@ -54,7 +54,7 @@
 #define END_OF_FILE 60
 
 //chybove hlasky
-#define LEX_ERROR 1
+#define LEX_ERROR -10
 #define FILE_ERROR -1
 
 #define STR_LEN_INC 8
@@ -173,4 +173,7 @@ void GEN_FUNC_CALL(char *name, SeznamOfVars *param);
 void GEN_END_OF_FUNCTION(string attr);
 void GEN_CALL_INBUILDS();
 void GEN_DEFVAR_VAR(SeznamOfVars *param);
-void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name);
+bool ifSpotted(int spotted);
+bool whileSpotted(int spotted);
+bool checkSEEN(int token);
+void EXPRESSION_FUNC(char *attr, int token, bool end, char *var_name);

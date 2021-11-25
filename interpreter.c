@@ -11,25 +11,26 @@
 
 int count_start = 1;
 int count_end = 1;
+bool main_flag = false;
 
 void GEN_START_MAIN(){
-	printf(".IFJcode20\n");
-    printf("DEFVAR GF@_\n");
+	fprintf(stdout, ".IFJcode20\n");
+    fprintf(stdout, "DEFVAR GF@_\n");
 
     // Global variables for concatenation processing
-    printf("DEFVAR GF@_str1\n");
-    printf("DEFVAR GF@_str2\n");
-    printf("DEFVAR GF@_strRes\n");
+    fprintf(stdout, "DEFVAR GF@_str1\n");
+    fprintf(stdout, "DEFVAR GF@_str2\n");
+    fprintf(stdout, "DEFVAR GF@_strRes\n");
 
     // If divide by zero
-    printf("DEFVAR GF@_tmpDividingByZero\n");
-    printf("JUMP enderror9\n");
-    printf("LABEL error9\n");
-    printf("EXIT int@9\n");
-    printf("LABEL enderror9\n");
+    fprintf(stdout, "DEFVAR GF@_tmpDividingByZero\n");
+    fprintf(stdout, "JUMP enderror9\n");
+    fprintf(stdout, "LABEL error9\n");
+    fprintf(stdout, "EXIT int@9\n");
+    fprintf(stdout, "LABEL enderror9\n");
 
 
-	printf("JUMP $$main\n");
+	fprintf(stdout, "JUMP $$main\n");
 
  }
 
@@ -37,44 +38,44 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr){
     switch (token)
 	{
 		case INT:
-			printf("int@%s\n", attr);
+			fprintf(stdout, "int@%s\n", attr);
 			break;
 		case FLOAT:
-			printf("float@%s\n", attr);
+			fprintf(stdout, "float@%s\n", attr);
 			break;
 		case RETEZEC:
-			printf("string@%s\n", attr);
+			fprintf(stdout, "string@%s\n", attr);
 			break;
 		case NIL:
-		    printf("nil@%s\n", attr);
+		    fprintf(stdout, "nil@%s\n", attr);
             break;
         case ID:
-            printf("LF@%s$%d\n", attr, 1);
+            fprintf(stdout, "LF@%s$%d\n", attr, 1);
 			break;
 	}
 }
 
 void GEN_PRINT_WRITE(int token, string attr){
-    printf("WRITE ");
+    fprintf(stdout, "WRITE ");
     GEN_WRITE_VAR_LITERAL(token, attr.str);
-    printf("\n");
 }
 
 void GEN_START_OF_FUNCTION(string attr){
-	if(!strcmp(attr.str, "main\n")){
-		printf("LABEL $%s\n", attr.str);
-		printf("PUSHFRAME \n\n");
+	if(strcmp(attr.str, "main")){
+		fprintf(stdout, "LABEL $%s\n", attr.str);
+		fprintf(stdout, "PUSHFRAME \n");
 	}
 	else {
-		printf("LABEL $$main\n");
-		printf("CREATEFRAME\n");
-		printf("PUSHFRAME\n\n");
+		fprintf(stdout, "LABEL $main\n");
+		fprintf(stdout, "CREATEFRAME\n");
+		fprintf(stdout, "PUSHFRAME\n");
+		main_flag = true;
 	}
 }
 
 void GEN_DEFVAR_VAR(SeznamOfVars *param){
 	while(param != NULL){
-		printf("DEFVAR LF@%s\n", param->name);
+		fprintf(stdout, "DEFVAR LF@%s\n", param->name);
 		if(param->next != NULL){
 			param = param->next;
 		}
@@ -85,366 +86,720 @@ void GEN_DEFVAR_VAR(SeznamOfVars *param){
 }
 
 void GEN_FUNC_MAIN_END(char* name){
-    printf("DEFVAR TF@%d\n",count_start);
-	printf("MOVE TF@%d, %s\n",count_start, name);
+    fprintf(stdout, "DEFVAR TF@%d\n",count_start);
+	fprintf(stdout, "MOVE TF@%d, %s\n",count_start, name);
 	count_start++;
 	return;
 }
 
 void GEN_FUNC_CALL(char *name_func, SeznamOfVars *param){
-	printf("CALL $%s\n", name_func);
+	fprintf(stdout, "CALL $%s\n", name_func);
 	while(param != NULL){
-		printf("MOVE LF@%s, TF@ret%d\n",param->name, count_end);
-		param = param->next;
+		fprintf(stdout, "MOVE LF@%s, TF@ret%d\n",param->name, count_end);
+		if(param->next != NULL){
+			param = param->next;
+		}
+		else{
+			break;
+		}
 		count_end++;
-		return;
     }
+	return;
 }
 
 void GEN_END_OF_FUNCTION(string attr){
     if(!strcmp(attr.str, "main")){
-        printf("POPFRAME\n\n");
-        printf("JUMP $END_OF_PROGRAM\n");
+        fprintf(stdout, "POPFRAME\n\n");
+        fprintf(stdout, "JUMP $END_OF_PROGRAM\n");
     } else {
-        printf("POPFRAME \n");
-        printf("RETURN \n\n");
+        fprintf(stdout, "POPFRAME\n");
+        fprintf(stdout, "RETURN \n\n");
     }
+}
+
+bool ifSpotted(int spotted){
+	static bool here = false;
+	if(spotted == 1){
+		here = true;
+		return here;
+	}
+	else if(spotted == 0){
+		here = false;
+		return here;
+	}
+	else{
+		return here;
+	}
+}
+
+bool whileSpotted(int spotted){
+	static bool here = false;
+	if(spotted == 1){
+		here = true;
+		return here;
+	}
+	else if(spotted == 0){
+		here = false;
+		return here;
+	}
+	else{
+		return here;
+	}
+}
+
+bool checkSEEN(int token){
+	static bool seen[13];
+	static bool count = false;
+	switch (token)
+	{
+		case END:
+			for (int i = 0; i < 14; i++){
+				seen[i] = false;
+			}
+			count = true;
+			if(!main_flag){
+				fprintf(stdout, "POPFRAME\n");
+				fprintf(stdout, "RETURN\n\n");
+			}
+			return false;
+			break;
+		case INC:
+			if(seen[0] == false){
+				seen[0] = true;
+				return false;
+			}
+			count = false;
+			return seen[0];
+			break;
+		case DEC:
+			if(seen[1] == false){
+				seen[1] = true;
+				return false;
+			}
+			count = false;
+			return seen[1];
+			break;
+		case MULTIPLY:
+			if(seen[2] == false){
+				seen[2] = true;
+				return false;
+			}
+			count = false;
+			return seen[2];
+			break;
+		case DIV:
+			if(seen[3] == false){
+				seen[3] = true;
+				return false;
+			}
+			count = false;
+			return seen[3];
+			break;
+		case MOD:
+			if(seen[4] == false){
+				seen[4] = true;
+				return false;
+			}
+			count = false;
+			return seen[4];
+			break;
+		case HASH:
+			if(seen[5] == false){
+				seen[5] = true;
+				return false;
+			}
+			count = false;
+			return seen[5];
+			break;
+		case DOTDOT:
+			if(seen[6] == false){
+				seen[6] = true;
+				return false;
+			}
+			count = false;
+			return seen[6];
+			break;
+		case LESS:
+			if(seen[7] == false){
+				seen[7] = true;
+				return false;
+			}
+			count = false;
+			return seen[7];
+			break;
+		case MORE:
+			if(seen[8] == false){
+				seen[8] = true;
+				return false;
+			}
+			count = false;
+			return seen[8];
+			break;
+		case EQUAL:
+			if(seen[9] == false){
+				seen[9] = true;
+				return false;
+			}
+			count = false;
+			return seen[9];
+			break;
+		case LESSOREQUAL:
+			if(seen[10] == false){
+				seen[10] = true;
+				return false;
+			}
+			count = false;
+			return seen[10];
+			break;
+		case MOREOREQUAL:
+			if(seen[11] == false){
+				seen[11] = true;
+				return false;
+			}
+			count = false;
+			return seen[11];
+			break;
+		case NOTEQUAL:
+			if(seen[12] == false){
+				seen[12] = true;
+				return false;
+			}
+			count = false;
+			return seen[12];
+			break;
+		default:
+			return count;
+			break;
+	}
 }
 
 void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 	static char *param1;
 	static char *param2;
-	static int oper;
+	static int oper = 0;
 	static int counter;
 	static int type;
+	static int counter1 = 1;
+	static bool tmp = false;
 	if (counter == 0){
-		printf("Counter: %d\n", counter);
 		type = token;
 		param1 = attr;
-		printf("  Param1: %s\n", param1);
 		counter++;
+		// fprintf(stdout, "Param1: %s\n", param1);
 	}
 	else if (counter == 1){
-		printf("Counter: %d\n", counter);
-		param2 = attr;
-		printf("  Param2: %s\n", param2);
-		counter++;
+		if(token != 35 && token != 36){
+			param2 = attr;
+			counter++;
+		}
+		// fprintf(stdout, "Param2: %s\n", param2);
 	}
 	else if (counter == 2){
-		printf("Counter: %d\n", counter);
 		oper = token;
-		printf("  Operand->type: %d\n", oper);
-		counter++;
 	}
-
-	if (counter == 3){
-		printf("Counter-switch: %d\n", counter);
-		if (oper != NULL){
-			printf("Counter-switch: %d\n", counter);
+	if (oper != 0){
+		if (oper != 0){
 			switch (oper)
 			{
 				case INC:
-					printf("DEFVAR LF@ADD_RES\n");
-					printf("ADD LF@ADD_RES LF@%s LF@%s\n", param1, param2);
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@SUM_RES\n");
+						fprintf(stdout, "ADD LF@SUM_RES LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@SUM_RES int@0\n");
+						fprintf(stdout, "ADD LF@SUM_RES LF@%s LF@%s\n", param1, param2);
+					}
 					param1 = "SUM_RES"; 
 					param2 = NULL;
+					oper = 0;
+					counter = 1;
 					break;
 				case DEC:
-					printf("DEFVAR LF@SUB_RES\n");
-					printf("DEC LF@SUB_RES LF@%s LF@%s\n", param1, param2);
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@SUB_RES\n");
+						fprintf(stdout, "DEC LF@SUB_RES LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@SUB_RES int@0\n");
+						fprintf(stdout, "DEC LF@SUB_RES LF@%s LF@%s\n", param1, param2);
+					}
 					param1 = "SUB_RES"; 
 					param2 = NULL;
+					oper = 0;
+					counter = 1;
 					break;
 				case MULTIPLY:
-					printf("DEFVAR LF@MUL_RES\n");
-					printf("MUL LF@MUL_RES LF@%s LF@%s\n", param1, param2);
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@MUL_RES\n");
+						fprintf(stdout, "MUL LF@MUL_RES LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@MUL_RES int@0\n");
+						fprintf(stdout, "MUL LF@MUL_RES LF@%s LF@%s\n", param1, param2);
+					}
 					param1 = "MUL_RES"; 
 					param2 = NULL;
+					oper = 0;
+					counter = 1;
 					break;
 				case DIV:
-					printf("DEFVAR LF@DIV_RES\n");
-					printf("DIV LF@DIV_RES LF@%s LF@%s\n", param1, param2);
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@DIV_RES\n");
+						fprintf(stdout, "DIV LF@DIV_RES LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@DIV_RES int@0\n");
+						fprintf(stdout, "DIV LF@DIV_RES LF@%s LF@%s\n", param1, param2);
+					}
 					param1 = "DIV_RES"; 
 					param2 = NULL;
+					oper = 0;
+					counter = 1;
 					break;
 				case MOD:
-					printf("DEFVAR LF@IDIV_RES\n");
-					printf("IDIV LF@IDIV_RES LF@%s LF@%s\n", param1, param2);
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@IDIV_RES\n");
+						fprintf(stdout, "IDIV LF@IDIV_RES LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@IDIV_RES int@0\n");
+						fprintf(stdout, "IDIV LF@IDIV_RES LF@%s LF@%s\n", param1, param2);
+					}
 					param1 = "IDIV_RES"; 
 					param2 = NULL;
+					oper = 0;
+					counter = 1;
 					break;
 				case HASH:
-					printf("DEFVAR LF@HASH_RES\n");
-					printf("STRLEN LF@HASH_RES LF@%s\n", param1);
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@HASH_RES\n");
+						fprintf(stdout, "STRLEN LF@HASH_RES LF@%s\n", param1);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@HASH_RES int@0\n");
+						fprintf(stdout, "STRLEN LF@HASH_RES LF@%s\n", param1);
+					}
 					param1 = "HASH_RES";
 					param2 = NULL;
+					oper = 0;
+					counter = 1;
 					break;
 				case DOTDOT:
-					printf("DEFVAR LF@DOTDOT_RES\n");
-					printf("CONCAT LF@DOTDOT LF@%s LF@%s\n", param1, param2);
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@DOTDOT_RES\n");
+						fprintf(stdout, "CONCAT LF@DOTDOT LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@DOTDOT_RES int@0\n");
+						fprintf(stdout, "CONCAT LF@DOTDOT LF@%s LF@%s\n", param1, param2);
+					}
 					param1 = "DOTDOT_RES";
 					param2 = NULL;
+					oper = 0;
+					counter = 1;
+					break;
+				case LESS:
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@LESS_RES\n");
+						fprintf(stdout, "LT LF@LESS_RES LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@LESS_RES int@0\n");
+						fprintf(stdout, "LT LF@LESS_RES LF@%s LF@%s\n", param1, param2);
+					}
+					param1 = "LESS_RES";
+					param2 = NULL;
+					oper = 0;
+					counter = 1;
+					tmp = true;
+					break;
+                case MORE:
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@MORE_RES\n");
+						fprintf(stdout, "GT LF@MORE_RES LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@MORE_RES int@0\n");
+						fprintf(stdout, "GT LF@MORE_RES LF@%s LF@%s\n", param1, param2);
+					}
+					param1 = "MORE_RES";
+					param2 = NULL;
+					oper = 0;
+					counter = 1;
+					tmp = true;
+					break;
+				case EQUAL:
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@EQUAL_RES\n");
+						fprintf(stdout, "EQ LF@EQUAL_RES LF@%s LF@%s\n", param1, param2);
+					}
+					else{
+						fprintf(stdout, "MOVE LF@EQUAL_RES int@0\n");
+						fprintf(stdout, "EQ LF@EQUAL_RES LF@%s LF@%s\n", param1, param2);
+					}
+					param1 = "EQUAL_RES";
+					param2 = NULL;
+					oper = 0;
+					counter = 1;
+					tmp = true;
+					break;
+				case LESSOREQUAL:
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@LESSOREQUAL\n");
+						fprintf(stdout, "DEFVAR LF@LESSOREQUAL1\n");
+						fprintf(stdout, "DEFVAR LF@LESSOREQUAL_RES\n");
+						fprintf(stdout, "LT LF@LESSOREQUAL LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@LESSOREQUAL1 LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "OR LF@LESSOREQUAL_RES LF@LESSOREQUAL LF@LESSOREQUAL1\n");
+					}
+					else{
+						fprintf(stdout, "MOVE LF@LESSOREQUAL int@0\n");
+						fprintf(stdout, "MOVE LF@LESSOREQUAL1 int@0\n");
+						fprintf(stdout, "MOVE LF@LESSOREQUAL_RES int@0\n");
+						fprintf(stdout, "LT LF@LESSOREQUAL LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@LESSOREQUAL1 LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "OR LF@LESSOREQUAL_RES LF@LESSOREQUAL LF@LESSOREQUAL1\n");
+					}
+					param1 = "LESSOREQUAL_RES";
+					param2 = NULL;
+					oper = 0;
+					counter = 1;
+					tmp = true;
+					break;
+				case MOREOREQUAL:
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@MOREOREQUAL\n");
+						fprintf(stdout, "DEFVAR LF@MOREOREQUAL1\n");
+						fprintf(stdout, "DEFVAR LF@MOREOREQUAL_RES\n");
+						fprintf(stdout, "GT LF@MOREOREQUAL LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@MOREOREQUAL1 LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "OR LF@MOREOREQUAL_RES LF@MOREOREQUAL LF@MOREOREQUAL1\n");
+					}
+					else{
+						fprintf(stdout, "MOVE LF@MOREOREQUAL int@0\n");
+						fprintf(stdout, "MOVE LF@MOREOREQUAL1 int@0\n");
+						fprintf(stdout, "MOVE LF@MOREOREQUAL_RES int@0\n");
+						fprintf(stdout, "GT LF@MOREOREQUAL LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@MOREOREQUAL1 LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "OR LF@MOREOREQUAL_RES LF@MOREOREQUAL LF@MOREOREQUAL1\n");
+					}
+					param1 = "MOREOREQUAL_RES";
+					param2 = NULL;
+					oper = 0;
+					counter = 1;
+					tmp = true;
+					break;
+				case NOTEQUAL:
+					if(!(checkSEEN(oper))){
+						fprintf(stdout, "DEFVAR LF@NOTEQUAL\n");
+						fprintf(stdout, "DEFVAR LF@NOTEQUAL_RES\n");
+						fprintf(stdout, "EQ LF@NOTEQUAL LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@NOTEQUAL_RES LF@NOTEQUAL1\n");
+					}
+					else{
+						fprintf(stdout, "MOVE LF@NOTEQUAL int@0\n");
+						fprintf(stdout, "MOVE LF@NOTEQUAL_RES int@0\n");
+						fprintf(stdout, "EQ LF@NOTEQUAL LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@NOTEQUAL_RES LF@NOTEQUAL1\n");
+					}
+					param1 = "NOTEQUAL_RES";
+					param2 = NULL;
+					oper = 0;
+					counter = 1;
+					tmp = true;
 					break;
 			}
 		}
 	}
-	if(end && type != 38){
-		printf("Counter-move: %d\n", counter);
-		printf("Operator-move: %d\n", oper);
-		printf(" MOVE LF@%s ", var_name);
-		GEN_WRITE_VAR_LITERAL(type, param1);
-		counter = 0;
+	if(!(ifSpotted(4)) && !(whileSpotted(4))){
+		if(end && type != 38 && param2 == NULL){
+			if(var_name != NULL){
+				fprintf(stdout, "MOVE LF@%s ", var_name);
+			}
+			else{
+				if(checkSEEN(1)){
+					counter1 = 1;
+				}
+				fprintf(stdout, "MOVE LF@ret%d ", counter1);
+				counter1++;
+			}
+			GEN_WRITE_VAR_LITERAL(type, param1);
+			counter = 0;
+		}
+		else if(type == 38){
+			counter = 0;
+			type = 0;
+			oper = 0;
+		}
+		else if(end && oper != 0){
+			counter = 0;
+		}
 	}
-	else if(type == 38){
-		counter = 0;
-		type = 0;
+	else if((ifSpotted(4) || whileSpotted(4)) && tmp){
+		if(ifSpotted(4)){
+			fprintf(stdout, "JUMPIFNEQ else %s bool@true\n", param1);
+			ifSpotted(0);
+			counter = 0;
+			type = 0;
+			oper = 0;
+			tmp = false;
+		}
+		else if(whileSpotted(4)){
+			fprintf(stdout, "LABEL while\n");
+			fprintf(stdout, "JUMPIFEQ end %s bool@true\n", param1);
+			counter = 0;
+			type = 0;
+			oper = 0;
+			tmp = false;
+		}
 	}
 }
 
 //INBUILDS FUNCTION
 
 void GENERATION_READI(){
-printf("LABEL $READI\n");
-    printf("PUSHFRAME\n");
-    printf("DEFVAR LF@ret1\n");
-    printf("DEFVAR LF@ret2\n");
-    printf("READ LF@ret1 int\n");
-    printf("DEFVAR LF@ret_check\n");
+fprintf(stdout, "LABEL $READI\n");
+    fprintf(stdout, "PUSHFRAME\n");
+    fprintf(stdout, "DEFVAR LF@ret1\n");
+    fprintf(stdout, "DEFVAR LF@ret2\n");
+    fprintf(stdout, "READ LF@ret1 int\n");
+    fprintf(stdout, "DEFVAR LF@ret_check\n");
 
-    printf("TYPE LF@ret_check LF@ret1\n");
-    printf("JUMPIFNEQ $READI_END LF@ret_check string@int\n");
+    fprintf(stdout, "TYPE LF@ret_check LF@ret1\n");
+    fprintf(stdout, "JUMPIFNEQ $READI_END LF@ret_check string@int\n");
 
-    printf("PUSHS LF@ret1\n");
-    printf("MOVE LF@ret2 int@0\n");
-    printf("PUSHS LF@ret2\n");
-    printf("JUMP $END_READI\n");
+    fprintf(stdout, "PUSHS LF@ret1\n");
+    fprintf(stdout, "MOVE LF@ret2 int@0\n");
+    fprintf(stdout, "PUSHS LF@ret2\n");
+    fprintf(stdout, "JUMP $END_READI\n");
 
-	printf("LABEL $READI_END\n");
-    printf("PUSHS LF@ret1\n");
-    printf("MOVE LF@ret2 int@1\n");
-    printf("PUSHS LF@ret2\n");
+	fprintf(stdout, "LABEL $READI_END\n");
+    fprintf(stdout, "PUSHS LF@ret1\n");
+    fprintf(stdout, "MOVE LF@ret2 int@1\n");
+    fprintf(stdout, "PUSHS LF@ret2\n");
 
-    printf("LABEL $END_READI\n");
-	printf("POPFRAME\n");
-	printf("RETURN\n\n");
+    fprintf(stdout, "LABEL $END_READI\n");
+	fprintf(stdout, "POPFRAME\n");
+	fprintf(stdout, "RETURN\n\n");
 }
 
 void GENERATION_READS(){
-    printf("LABEL $READS\n");
-    printf("PUSHFRAME\n");
-    printf("DEFVAR LF@ret1\n");
-    printf("DEFVAR LF@ret2\n");
-    printf("READ LF@ret1 string\n");
-    printf("DEFVAR LF@ret_check\n");
+    fprintf(stdout, "LABEL $READS\n");
+    fprintf(stdout, "PUSHFRAME\n");
+    fprintf(stdout, "DEFVAR LF@ret1\n");
+    fprintf(stdout, "DEFVAR LF@ret2\n");
+    fprintf(stdout, "READ LF@ret1 string\n");
+    fprintf(stdout, "DEFVAR LF@ret_check\n");
 
-    printf("TYPE LF@ret_check LF@ret1\n");
-    printf("JUMPIFNEQ $READS_END LF@ret_check string@string\n");
+    fprintf(stdout, "TYPE LF@ret_check LF@ret1\n");
+    fprintf(stdout, "JUMPIFNEQ $READS_END LF@ret_check string@string\n");
 
-    printf("PUSHS LF@ret1\n");
-    printf("MOVE LF@ret2 int@0\n");
-    printf("PUSHS LF@ret2\n");
-    printf("JUMP $END_READS\n");
+    fprintf(stdout, "PUSHS LF@ret1\n");
+    fprintf(stdout, "MOVE LF@ret2 int@0\n");
+    fprintf(stdout, "PUSHS LF@ret2\n");
+    fprintf(stdout, "JUMP $END_READS\n");
 
-	printf("LABEL $READS_END\n");
-    printf("PUSHS LF@ret1\n");
-    printf("MOVE LF@ret2 int@1\n");
-    printf("PUSHS LF@ret2\n");
+	fprintf(stdout, "LABEL $READS_END\n");
+    fprintf(stdout, "PUSHS LF@ret1\n");
+    fprintf(stdout, "MOVE LF@ret2 int@1\n");
+    fprintf(stdout, "PUSHS LF@ret2\n");
 
-    printf("LABEL $END_READS\n");
-	printf("POPFRAME\n");
-	printf("RETURN\n\n");
+    fprintf(stdout, "LABEL $END_READS\n");
+	fprintf(stdout, "POPFRAME\n");
+	fprintf(stdout, "RETURN\n\n");
 }
 
 void GENERATION_READN(){
-    printf("LABEL $READN\n");
-    printf("PUSHFRAME\n");
-    printf("DEFVAR LF@ret\n");
-    printf("DEFVAR LF@ret2\n");
-    printf("DEFVAR LF@ret_check\n");
-    printf("READ LF@ret1 float\n");
+    fprintf(stdout, "LABEL $READN\n");
+    fprintf(stdout, "PUSHFRAME\n");
+    fprintf(stdout, "DEFVAR LF@ret\n");
+    fprintf(stdout, "DEFVAR LF@ret2\n");
+    fprintf(stdout, "DEFVAR LF@ret_check\n");
+    fprintf(stdout, "READ LF@ret1 float\n");
 
-    printf("TYPE LF@ret_check LF@ret1\n");
-    printf("JUMPIFNEQ $INPUTF_END LF@ret_check string@float\n");
+    fprintf(stdout, "TYPE LF@ret_check LF@ret1\n");
+    fprintf(stdout, "JUMPIFNEQ $INPUTF_END LF@ret_check string@float\n");
 
-    printf("PUSHS LF@ret\n");
-    printf("MOVE LF@ret2 int@0\n");
-    printf("PUSHS LF@ret2\n");
-    printf("JUMP $END_READN\n");
+    fprintf(stdout, "PUSHS LF@ret\n");
+    fprintf(stdout, "MOVE LF@ret2 int@0\n");
+    fprintf(stdout, "PUSHS LF@ret2\n");
+    fprintf(stdout, "JUMP $END_READN\n");
 
-	printf("LABEL $READN_END\n");
-    printf("MOVE LF@ret nil@nil\n");
-    printf("PUSHS LF@ret\n");
-    printf("MOVE LF@ret2 int@1\n");
-    printf("PUSHS LF@ret2\n");
+	fprintf(stdout, "LABEL $READN_END\n");
+    fprintf(stdout, "MOVE LF@ret nil@nil\n");
+    fprintf(stdout, "PUSHS LF@ret\n");
+    fprintf(stdout, "MOVE LF@ret2 int@1\n");
+    fprintf(stdout, "PUSHS LF@ret2\n");
 
-    printf("LABEL $END_READN\n");
-	printf("POPFRAME\n");
-	printf("RETURN\n\n");
+    fprintf(stdout, "LABEL $END_READN\n");
+	fprintf(stdout, "POPFRAME\n");
+	fprintf(stdout, "RETURN\n\n");
 }
 
 void GENERATION_TOINTEGER(){
-	printf("LABEL $TOINTEGER\n");
-	printf("PUSHFRAME\n");
-	printf("DEFVAR LF@ret1\n");
-	printf("DEFVAR LF@param\n");
-	printf("MOVE LF@param LF@f$0\n");//f
-	printf("FLOAT2INT LF@ret1 LF@param\n");
-	printf("PUSHS LF@ret1\n");
-	printf("POPFRAME\n");
-	printf("RETURN\n\n");
+	fprintf(stdout, "LABEL $TOINTEGER\n");
+	fprintf(stdout, "PUSHFRAME\n");
+	fprintf(stdout, "DEFVAR LF@ret1\n");
+	fprintf(stdout, "DEFVAR LF@param\n");
+	fprintf(stdout, "MOVE LF@param LF@f$0\n");//f
+	fprintf(stdout, "FLOAT2INT LF@ret1 LF@param\n");
+	fprintf(stdout, "PUSHS LF@ret1\n");
+	fprintf(stdout, "POPFRAME\n");
+	fprintf(stdout, "RETURN\n\n");
 }
 
 void GENERATION_SUBSTR(){
-	printf("LABEL $SUBSTR\n");
-	printf("PUSHFRAME\n");
-	printf("DEFVAR LF@ret1\n");//string
-	printf("DEFVAR LF@ret2\n");//int
+	fprintf(stdout, "LABEL $SUBSTR\n");
+	fprintf(stdout, "PUSHFRAME\n");
+	fprintf(stdout, "DEFVAR LF@ret1\n");//string
+	fprintf(stdout, "DEFVAR LF@ret2\n");//int
 
-	printf("DEFVAR LF@string\n");
-	printf("DEFVAR LF@from\n");
-	printf("DEFVAR LF@length_of_str\n");
-	printf("DEFVAR LF@length\n");
+	fprintf(stdout, "DEFVAR LF@string\n");
+	fprintf(stdout, "DEFVAR LF@from\n");
+	fprintf(stdout, "DEFVAR LF@length_of_str\n");
+	fprintf(stdout, "DEFVAR LF@length\n");
 
-	printf("DEFVAR LF@length_helper\n");
-	printf("DEFVAR LF@char\n");
-	printf("DEFVAR LF@new_strlen\n");
+	fprintf(stdout, "DEFVAR LF@length_helper\n");
+	fprintf(stdout, "DEFVAR LF@char\n");
+	fprintf(stdout, "DEFVAR LF@new_strlen\n");
 
-	printf("MOVE LF@ret1 string@\n");
-	printf("MOVE LF@string LF@s$0\n");
-	printf("MOVE LF@from LF@i$0\n");
-	printf("MOVE LF@length_of_str LF@n$0\n");
+	fprintf(stdout, "MOVE LF@ret1 string@\n");
+	fprintf(stdout, "MOVE LF@string LF@s$0\n");
+	fprintf(stdout, "MOVE LF@from LF@i$0\n");
+	fprintf(stdout, "MOVE LF@length_of_str LF@n$0\n");
 
-	printf("MOVE LF@length_helper int@0\n");
+	fprintf(stdout, "MOVE LF@length_helper int@0\n");
 
-	printf("STRLEN LF@length LF@string\n");//length = STRLEN(STRING)
-	printf("SUB LF@new_strlen LF@length int@1\n");//new_strlen = length - 1
+	fprintf(stdout, "STRLEN LF@length LF@string\n");//length = STRLEN(STRING)
+	fprintf(stdout, "SUB LF@new_strlen LF@length int@1\n");//new_strlen = length - 1
 
-	printf("DEFVAR LF@result\n");
-	printf("LT LF@result LF@length_of_str int@0\n"); //n < O
-	printf("JUMPIFEQ $SUBSTR_END LF@result bool@true\n");
+	fprintf(stdout, "DEFVAR LF@result\n");
+	fprintf(stdout, "LT LF@result LF@length_of_str int@0\n"); //n < O
+	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result bool@true\n");
 
-	printf("EQ LF@result LF@length_of_str int@0\n"); //n == O
-	printf("JUMPIFEQ $SUBSTR_EMPTY LF@result bool@true\n");
+	fprintf(stdout, "EQ LF@result LF@length_of_str int@0\n"); //n == O
+	fprintf(stdout, "JUMPIFEQ $SUBSTR_EMPTY LF@result bool@true\n");
 
-	printf("LT LF@result LF@from int@0\n"); //i < O
-	printf("JUMPIFEQ $SUBSTR_END LF@result bool@true\n");
+	fprintf(stdout, "LT LF@result LF@from int@0\n"); //i < O
+	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result bool@true\n");
 
-	printf("GT LF@result LF@from LF@new_strlen\n");//i >= length - 1
-	printf("JUMPIFEQ $SUBSTR_END LF@result bool@true\n");
+	fprintf(stdout, "GT LF@result LF@from LF@new_strlen\n");//i >= length - 1
+	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result bool@true\n");
 
-	printf("ADD LF@length_helper LF@length_helper LF@from\n");
-	printf("ADD LF@length_helper LF@length_helper LF@length_of_str\n");//i + n
+	fprintf(stdout, "ADD LF@length_helper LF@length_helper LF@from\n");
+	fprintf(stdout, "ADD LF@length_helper LF@length_helper LF@length_of_str\n");//i + n
 
-	printf("GT LF@result LF@length_helper LF@length\n");//i + n > n ? n : i+n
-	printf("JUMPIFEQ $SUBSTR_LEN LF@result bool@true\n");
-	printf("JUMP $FOR_LOOP\n");
-	printf("LABEL $SUBSTR_LEN\n");
-	printf("MOVE LF@length_helper LF@length\n");
+	fprintf(stdout, "GT LF@result LF@length_helper LF@length\n");//i + n > n ? n : i+n
+	fprintf(stdout, "JUMPIFEQ $SUBSTR_LEN LF@result bool@true\n");
+	fprintf(stdout, "JUMP $FOR_LOOP\n");
+	fprintf(stdout, "LABEL $SUBSTR_LEN\n");
+	fprintf(stdout, "MOVE LF@length_helper LF@length\n");
 
-	printf("LABEL $FOR_LOOP\n");
-	printf("JUMPIFEQ $SUBSTR_RET_0 LF@length_helper LF@from\n");
-	printf("GETCHAR LF@char LF@string LF@from\n");
-	printf("CONCAT LF@ret1 LF@ret1 LF@char\n");
-	printf("ADD LF@from LF@from int@1\n");
-	printf("JUMP $FOR_LOOP\n");
+	fprintf(stdout, "LABEL $FOR_LOOP\n");
+	fprintf(stdout, "JUMPIFEQ $SUBSTR_RET_0 LF@length_helper LF@from\n");
+	fprintf(stdout, "GETCHAR LF@char LF@string LF@from\n");
+	fprintf(stdout, "CONCAT LF@ret1 LF@ret1 LF@char\n");
+	fprintf(stdout, "ADD LF@from LF@from int@1\n");
+	fprintf(stdout, "JUMP $FOR_LOOP\n");
 
-	printf("LABEL $SUBSTR_RET_0\n");
-	printf("PUSHS LF@ret1\n");
-	printf("MOVE LF@ret2 int@0\n");
-	printf("PUSHS LF@ret2\n");
-	printf("JUMP $END\n");
+	fprintf(stdout, "LABEL $SUBSTR_RET_0\n");
+	fprintf(stdout, "PUSHS LF@ret1\n");
+	fprintf(stdout, "MOVE LF@ret2 int@0\n");
+	fprintf(stdout, "PUSHS LF@ret2\n");
+	fprintf(stdout, "JUMP $END\n");
 
-	printf("LABEL $SUBSTR_END\n");
-	printf("MOVE LF@ret1 nil@nil\n");
-	printf("PUSHS LF@ret1\n");
-	printf("MOVE LF@ret2 int@1\n");
-	printf("PUSHS LF@ret2\n");
+	fprintf(stdout, "LABEL $SUBSTR_END\n");
+	fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
+	fprintf(stdout, "PUSHS LF@ret1\n");
+	fprintf(stdout, "MOVE LF@ret2 int@1\n");
+	fprintf(stdout, "PUSHS LF@ret2\n");
 
-	printf("LABEL $END\n");
-	printf("POPFRAME\n");
-	printf("RETURN\n\n");
+	fprintf(stdout, "LABEL $END\n");
+	fprintf(stdout, "POPFRAME\n");
+	fprintf(stdout, "RETURN\n\n");
 
-	printf("LABEL $SUBSTR_EMPTY\n");
-	printf("MOVE LF@ret1 string@\n");
-	printf("PUSHS LF@ret1\n");
-	printf("MOVE LF@ret2 int@0\n");
-	printf("PUSHS LF@ret2\n");
-	printf("JUMP $END\n\n");
+	fprintf(stdout, "LABEL $SUBSTR_EMPTY\n");
+	fprintf(stdout, "MOVE LF@ret1 string@\n");
+	fprintf(stdout, "PUSHS LF@ret1\n");
+	fprintf(stdout, "MOVE LF@ret2 int@0\n");
+	fprintf(stdout, "PUSHS LF@ret2\n");
+	fprintf(stdout, "JUMP $END\n\n");
 }
 
 void GENERATION_ORD(){
-	printf("LABEL $ORD\n");
-	printf("PUSHFRAME\n");
-	printf("DEFVAR LF@string\n");
-	printf("DEFVAR LF@int\n");
-	printf("DEFVAR LF@length\n");
-	printf("DEFVAR LF@right_int\n");
-	printf("DEFVAR LF@ret1\n");//string
-	printf("DEFVAR LF@ret2\n");//int
+	fprintf(stdout, "LABEL $ORD\n");
+	fprintf(stdout, "PUSHFRAME\n");
+	fprintf(stdout, "DEFVAR LF@string\n");
+	fprintf(stdout, "DEFVAR LF@int\n");
+	fprintf(stdout, "DEFVAR LF@length\n");
+	fprintf(stdout, "DEFVAR LF@right_int\n");
+	fprintf(stdout, "DEFVAR LF@ret1\n");//string
+	fprintf(stdout, "DEFVAR LF@ret2\n");//int
 
-	printf("MOVE LF@string LF@s$0\n");
-	printf("MOVE LF@int LF@i$0\n\n");
+	fprintf(stdout, "MOVE LF@string LF@s$0\n");
+	fprintf(stdout, "MOVE LF@int LF@i$0\n\n");
 
-	printf("STRLEN LF@length LF@string\n");//5
-	printf("SUB LF@length LF@length int@1\n");//4
+	fprintf(stdout, "STRLEN LF@length LF@string\n");//5
+	fprintf(stdout, "SUB LF@length LF@length int@1\n");//4
 
-	printf("GT LF@right_int LF@int LF@length\n");
-	printf("JUMPIFEQ $ORD_END LF@right_int bool@true\n");//i > len(n)-1
+	fprintf(stdout, "GT LF@right_int LF@int LF@length\n");
+	fprintf(stdout, "JUMPIFEQ $ORD_END LF@right_int bool@true\n");//i > len(n)-1
 
-	printf("LT LF@right_int LF@int int@0\n");
-	printf("JUMPIFEQ $ORD_END LF@right_int bool@true\n");//i < 0
+	fprintf(stdout, "LT LF@right_int LF@int int@0\n");
+	fprintf(stdout, "JUMPIFEQ $ORD_END LF@right_int bool@true\n");//i < 0
 
-	printf("STRI2INT LF@ret1 LF@string LF@int\n");
+	fprintf(stdout, "STRI2INT LF@ret1 LF@string LF@int\n");
 
-	printf("PUSHS LF@ret1\n");
-	printf("MOVE LF@ret2 int@0\n");
-	printf("PUSHS LF@ret2\n");
-	printf("JUMP $ORD_RET\n");
+	fprintf(stdout, "PUSHS LF@ret1\n");
+	fprintf(stdout, "MOVE LF@ret2 int@0\n");
+	fprintf(stdout, "PUSHS LF@ret2\n");
+	fprintf(stdout, "JUMP $ORD_RET\n");
 
-	printf("LABEL $ORD_END\n");
-	printf("MOVE LF@ret1 nil@nil\n");
-	printf("PUSHS LF@ret1\n");
-	printf("MOVE LF@ret2 int@1\n");
-	printf("PUSHS LF@ret2\n");
+	fprintf(stdout, "LABEL $ORD_END\n");
+	fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
+	fprintf(stdout, "PUSHS LF@ret1\n");
+	fprintf(stdout, "MOVE LF@ret2 int@1\n");
+	fprintf(stdout, "PUSHS LF@ret2\n");
 
-	printf("LABEL $ORD_RET\n");
-	printf("POPFRAME\n");
-	printf("RETURN\n\n");
+	fprintf(stdout, "LABEL $ORD_RET\n");
+	fprintf(stdout, "POPFRAME\n");
+	fprintf(stdout, "RETURN\n\n");
 }
 
 void GENERATION_CHR(){
-printf("LABEL $CHR\n");
-printf("PUSHFRAME\n");
-printf("DEFVAR LF@int\n");
-printf("DEFVAR LF@right_int\n");
-printf("DEFVAR LF@ret1\n");//string
-printf("DEFVAR LF@ret2\n");//int
+fprintf(stdout, "LABEL $CHR\n");
+fprintf(stdout, "PUSHFRAME\n");
+fprintf(stdout, "DEFVAR LF@int\n");
+fprintf(stdout, "DEFVAR LF@right_int\n");
+fprintf(stdout, "DEFVAR LF@ret1\n");//string
+fprintf(stdout, "DEFVAR LF@ret2\n");//int
 
-printf("MOVE LF@int LF@i$0\n");
+fprintf(stdout, "MOVE LF@int LF@i$0\n");
 
-printf("LT LF@right_int LF@int int@0\n");
-printf("JUMPIFEQ $CHR_END LF@right_int bool@true\n");//i < 0
+fprintf(stdout, "LT LF@right_int LF@int int@0\n");
+fprintf(stdout, "JUMPIFEQ $CHR_END LF@right_int bool@true\n");//i < 0
 
-printf("GT LF@right_int LF@int int@255\n");
-printf("JUMPIFEQ $CHR_END LF@right_int bool@true\n");//i > len(n)-1
+fprintf(stdout, "GT LF@right_int LF@int int@255\n");
+fprintf(stdout, "JUMPIFEQ $CHR_END LF@right_int bool@true\n");//i > len(n)-1
 
-printf("INT2CHAR LF@ret1 LF@int\n");
+fprintf(stdout, "INT2CHAR LF@ret1 LF@int\n");
 
-printf("PUSHS LF@ret1\n");
-printf("MOVE LF@ret2 int@0\n");
-printf("PUSHS LF@ret2\n");
-printf("JUMP $CHR_RET\n");
+fprintf(stdout, "PUSHS LF@ret1\n");
+fprintf(stdout, "MOVE LF@ret2 int@0\n");
+fprintf(stdout, "PUSHS LF@ret2\n");
+fprintf(stdout, "JUMP $CHR_RET\n");
 
-printf("LABEL $CHR_END\n");
+fprintf(stdout, "LABEL $CHR_END\n");
 
-printf("MOVE LF@ret1 nil@nil\n");
-printf("PUSHS LF@ret1\n");
-printf("MOVE LF@ret2 int@1\n");
-printf("PUSHS LF@ret2\n");
+fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
+fprintf(stdout, "PUSHS LF@ret1\n");
+fprintf(stdout, "MOVE LF@ret2 int@1\n");
+fprintf(stdout, "PUSHS LF@ret2\n");
 
-printf("LABEL $CHR_RET\n");
-printf("POPFRAME\n");
-printf("RETURN\n\n");
+fprintf(stdout, "LABEL $CHR_RET\n");
+fprintf(stdout, "POPFRAME\n");
+fprintf(stdout, "RETURN\n\n");
 }
 
 void GEN_CALL_INBUILDS(){
@@ -459,11 +814,11 @@ void GEN_CALL_INBUILDS(){
 
 // void FUNC_WHILE(string attr, int count, bool if_condition, bool for_condition){
 //     if(for_condition){
-//         printf("LABEL $%s$for$%d\n", token->data, count);
+//         fprintf(stdout, "LABEL $%s$for$%d\n", token->data, count);
 //     } else if (if_condition){
-//         printf("LABEL $%s$if$%d$else\n", token->data, count);
+//         fprintf(stdout, "LABEL $%s$if$%d$else\n", token->data, count);
 //     } else 
-//         printf("LABEL $%s$if$%d$end\n", token->data, count);
+//         fprintf(stdout, "LABEL $%s$if$%d$end\n", token->data, count);
 // }
 
 

@@ -1,5 +1,4 @@
 #define SYNTAX_OK 0           //syntax ok
-#define LEX_ERROR 1           //chyba v programu v rámci lexikální analýzy (chybná struktura aktuálního lexému).
 #define SYNTAX_ERROR 2        //chyba v programu v rámci syntaktické analýzy (chybná syntaxe programu).
 #define SEM_ERROR_DEFINE 3    //sémantická chyba v programu – nedefinovaná funkce/proměnná, pokus o redefinici proměnné, atp.
 #define SEM_ERROR_INCOMP 4    //sémantická chyba v příkazu přiřazení (typová nekompatibilita).

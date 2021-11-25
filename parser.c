@@ -99,16 +99,19 @@ int tryGetToken()
     if (attr.str != NULL){
         strFree(&attr);
     }
-    if ((token = getNextToken(&attr)) == -1)
+    if ((token = getNextToken(&attr)) == -10)
     {
         changeError(1);
+        printf("Return: LEX_ERROR\n");
+        return LEX_ERROR;
     }
-    printf("%d   %s\n", token, attr.str);  // to check the token
+    // printf("%d   %s\n", token, attr.str);  // to check the token
     return token;
 }
 
 void changeError(int n)
 {
+    fprintf(stderr, "ERROR %d\n", n);
     error_flag = n;
 }
 
@@ -310,6 +313,7 @@ int functionIsOK()
         token = tryGetToken();
         if (token == ID){
             name_func_save = strcpy_for_func(attr.str, name_func_save);
+            GEN_START_OF_FUNCTION(attr);
             funcs tmp = findFunc(table->func_tree, name_func_save);
             if (tmp == NULL)
             {
@@ -592,6 +596,7 @@ int functionBodyIsOK()
             break;
         case WHILE:
             freeSeznam();
+            whileSpotted(1);
             token = tryGetToken();
             token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
             if (token != DO)
@@ -604,6 +609,7 @@ int functionBodyIsOK()
             break;
         case IF:
             freeSeznam();
+            ifSpotted(1);
             if_spotted = true; 
             token = tryGetToken();
             token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
@@ -623,6 +629,8 @@ int functionBodyIsOK()
             }
             if_spotted = false;
             token = tryGetToken();
+            printf("JUMP end\n");
+            printf("LABEL else\n");
             break;    
         case ID:;
             funcs maybefunc = findFunc(table->func_tree, attr.str);
@@ -767,6 +775,8 @@ int functionBodyIsOK()
                                                 return SEM_ERROR_FUNCPARAM;
                                             }
                                         }
+                                        seznam = seznam->first;
+                                        GEN_FUNC_CALL(maybefunc->name, seznam);
                                         token = tryGetToken();
                                         break;
                                     }
@@ -814,12 +824,6 @@ int functionBodyIsOK()
                         break;
                     }
                     else if(tmp2 != NULL){
-                        if(table->var_tree->type == STRING){
-                            token = RETEZEC;
-                        }
-                        else if (table->var_tree->type == INTEGER || table->var_tree->type == NUMBER){
-                            token = INT;
-                        }
                         token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
                         break;
                     }
@@ -844,7 +848,13 @@ int functionBodyIsOK()
             if(seznam != NULL){
                 freeSeznam();
             }
+            ifSpotted(0);
+            if (whileSpotted(4)){
+                printf("JUMP while\n");
+            }
+            whileSpotted(0);
             token = tryGetToken();
+            printf("LABEL end\n");
             break;
         default:
             printf("DEFALT with %d\n", token);
@@ -874,8 +884,10 @@ int syntaxCheck(){
                 return SYNTAX_ERROR;
             }
             else{
+                checkSEEN(token);
                 table->var_tree = freeAllVars(table->var_tree);
                 deep = 0;
+                initSeznam();
             }
         }
         else if(token == GLOBAL){
@@ -935,7 +947,6 @@ int program()
 {
     table->func_tree = insertInbuiltFuncs(table->func_tree);
     GEN_CALL_INBUILDS();
-    printf("------------------------------------------------------\n");
     deep = 0;
     error_flag = 0;
     int error_flag = 0;
@@ -951,7 +962,6 @@ int program()
         else changeError(2);
     }
     free(table->var_tree);
-    freeSeznam();
     free(name_func_save);
     return error_flag;
 }

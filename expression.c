@@ -50,18 +50,21 @@ void push(Stack_t *stack, string value, int type) {
         resize(stack);
     }
     stack->top++;
-    stack->attr[stack->top].attr = malloc(sizeof(string));
+    stack->attr[stack->top].attr = calloc(sizeof(value.str), sizeof(char));
     strcpy(stack->attr[stack->top].attr, value.str);
     stack->attr[stack->top].type = type;
-    printf("PUSH: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
+    //printf("PUSH: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
 }
 
 void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end) { 
     if (stack->top == 0) {
         exit(STACK_UNDERFLOW);
     }
-    char *name = seznam->name;
-    printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
+    char *name = NULL;
+    if(seznam != NULL){
+        name = seznam->name;
+    }
+    //printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
     EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name);
     stack->top--;
 }
@@ -159,7 +162,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             vars tmp2 = findVar(vartree, deep, attr->str);
             if (tmp != NULL || tmp2 != NULL){
                 token = ID;
-                pop(stack, token, *attr, deep, seznam, end);
+                pop(stack, token, *attr, deep, seznam, true);
                 return token;
             }
             printf("%s:%d -- %d\n",attr->str, inputNum, stackVal);
@@ -181,13 +184,11 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             stackVal = 15;
         }
         if (precTable[stackVal][8] == '>'){
-            printf("EXPRESS_POP\n");
-            pop(stack, token, *attr, deep, seznam, end);
+            pop(stack, token, *attr, deep, seznam, true);
             return token;
         }
         else if (precTable[stackVal][8] == '='){
-            printf("EXPRESS_POP\n");
-            pop(stack, token, *attr, deep, seznam, end);
+            pop(stack, token, *attr, deep, seznam, true);
             return token;
         }
         else{ 
@@ -199,7 +200,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
 
 int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam)
 {
-    printf("SEZNAM->FIRST: %s\n", seznam->name);
+    //printf("SEZNAM->FIRST: %s\n", seznam->name);
     bool end = false;
     Stack_t *stack = createStack();
     string buk;
@@ -233,6 +234,17 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
         }
         token = TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
         if (token == COMMA){
+            if (stack != NULL){
+                //printf("SJbfkjSbdfkS\n");
+                end = true;
+                while (strcmp(stack->attr[stack->top].attr, "$") != 0){
+                    //printf("POP-END: %s\n", stack->attr[stack->top].attr);
+                    pop(stack, token, *attr, deep, seznam, end);
+                }
+                free((stack)->attr);
+                free(stack);
+                stack = NULL;
+            }
             token = tryGetToken();
             if(seznam != NULL){
                 seznam = seznam->next;
@@ -243,33 +255,30 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             end = true;
             if (token == NIL){
                 if (stack != NULL){
-                    if (strcmp(stack->attr, "$") != 0){
+                    while (strcmp(stack->attr[stack->top].attr, "$") != 0){
                         pop(stack, token, *attr, deep, seznam, end);
                     }
                     free((stack)->attr);
                     free(stack);
                     stack = NULL;
                 }
-                printf("EXPRESS_END\n");
                 token = tryGetToken();
                 return token; 
             }
             else if ((token >= 10 && token <= 25) || token == ID){
                 if (stack != NULL){
-                    if (strcmp(stack->attr, "$") != 0){
+                    while (strcmp(stack->attr[stack->top].attr, "$") != 0){
                         pop(stack, token, *attr, deep, seznam, end);
                     }
                     free((stack)->attr);
                     free(stack);
                     stack = NULL;
                 }
-                printf("EXPRESS_END\n");
                 return token; 
             }
             else{
                 if (stack != NULL){
-                    if (strcmp(stack->attr, "$") != 0){
-                        printf("EXPRESS_END_POP: %s\n", stack->attr);
+                    while (strcmp(stack->attr[stack->top].attr, "$") != 0){
                         pop(stack, token, *attr, deep, seznam, end);
                     }
                     free((stack)->attr);
