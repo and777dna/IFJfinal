@@ -6,14 +6,14 @@ int main(int argc, char *argv[]){
 
     symtable *table;
     table = initST(table);
-    FILE *f;
-    if ((f = fopen(stdin, "r")) == NULL)
-    {
-        printf("Soubor se nepodarilo otevrit\n");
-        return FILE_ERROR;
-    }else{
-        printf("Soubor se podarilo otevrit\n");
-    }
+    FILE *f = stdin;
+    // if ((f = fopen(stdin, "r")) == NULL)
+    // {
+    //     printf("Soubor se nepodarilo otevrit\n");
+    //     return FILE_ERROR;
+    // }else{
+    //     printf("Soubor se podarilo otevrit\n");
+    // }
     setSourceFile(f);
     string *token;
     token = malloc(sizeof(struct Str));
