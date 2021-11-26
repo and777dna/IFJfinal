@@ -447,7 +447,8 @@ int functionBodyIsOK()
         switch (token)
         {
         case LOCAL:
-            freeSeznam();
+            head = NULL;
+            //freeSeznam();
             token = tryGetToken();
             if (token == ID)
             {
@@ -930,7 +931,7 @@ int syntaxCheck(){
                 }
             }
             else if (maybefunc == NULL){
-                printf("Return: SYNTAX_ERROR\n");
+                printf("Return: SYNTAX_ERROR1\n");
                 return SYNTAX_ERROR;
             }
         }

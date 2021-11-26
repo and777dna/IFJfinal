@@ -175,7 +175,7 @@ funcs insertFunc(char *name, funcs *func, int orig)
         (*func)->R = NULL;
         (*func)->in = NULL;
         (*func)->out = NULL;
-        //printf("dobavil %s\n", (*func)->name);
+        // printf("dobavil %s\n", (*func)->name);
         return (*func);
     }
     else if (strcmp((*func)->name, name) < 0)
@@ -195,7 +195,7 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
 {
     if (func_tree != NULL)
     {
-        //printf("%s func--------------functree %s\n", name, func_tree->name);
+        // printf("%s func--------------functree %s\n", name, func_tree->name);
         if (strcmp(func_tree->name, name) < 0)
         {
             findFunc(func_tree->L, name);
@@ -206,12 +206,12 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         }
         else if (strcmp(func_tree->name, name) == 0)
         {
-            //printf("nasel func %s\n", func_tree->name);
+            // printf("nasel func %s\n", func_tree->name);
             return func_tree;
         }
     }
     else{
-        //printf("FUNCno\n");  
+        // printf("FUNCno\n");  
         return NULL;
     }
     

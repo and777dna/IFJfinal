@@ -1,22 +1,29 @@
+-- Program 2: Vypocet faktorialu (rekurzivne)
 require "ifj21"
 
-function foo(x : integer, y : integer) : integer, integer
-  local i : integer = x
-  local j : integer = (y + 2) * 3
-  i, j = j+1, i+1  -- vyhodnocuj zprava a p�i�azuj pozd�ji
-  return i, j 
+function factorial(n : integer) : integer
+  local n1 : integer = n - 1
+  if n < 2 then
+    return 1
+  else
+    local tmp : integer = factorial(n1)
+    return n * tmp
+  end
 end
 
-function main() 
-  local a : integer = -125
-  local b : integer = 2
-  a, b = foo(a, b)  -- returns 13, 2
-  while a <= b do
-    write(a, "<", b, "\n")
-    write(a, ">=", b, "\n")
-    local a : integer = 666  -- Teal varuje, ze redefinice (prekryti)
-    write(a, "\n")
+function main()
+  write("Zadejte cislo pro vypocet faktorialu: ")
+  local a : integer = readi()
+  if a ~= nil then
+		if a < 0 then
+			write("Faktorial nejde spocitat!", "\n")
+		else
+			local vysl : integer = factorial(a)
+			write("Vysledek je ", vysl, "\n")
+    end
+  else
+     write("Chyba pri nacitani celeho cisla!\n")
   end
-  write(a, "\n")  --[[ prints 13 ]]
 end
+
 main()

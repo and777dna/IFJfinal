@@ -296,6 +296,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 	}
 	else if (counter == 2){
 		oper = token;
+		// fprintf(stdout, "Oper: %d\n", oper);
 	}
 	if (oper != 0){
 		if (oper != 0){
