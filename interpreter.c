@@ -560,7 +560,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 //INBUILDS FUNCTION
 
 void GENERATION_READI(){
-fprintf(stdout, "LABEL $READI\n");
+fprintf(stdout, "LABEL $readi\n");
     fprintf(stdout, "PUSHFRAME\n");
     fprintf(stdout, "DEFVAR LF@ret1\n");
     fprintf(stdout, "DEFVAR LF@ret2\n");
@@ -575,18 +575,18 @@ fprintf(stdout, "LABEL $READI\n");
     fprintf(stdout, "PUSHS LF@ret2\n");
     fprintf(stdout, "JUMP $END_READI\n");
 
-	fprintf(stdout, "LABEL $READI_END\n");
+	fprintf(stdout, "LABEL $readi_end\n");
     fprintf(stdout, "PUSHS LF@ret1\n");
     fprintf(stdout, "MOVE LF@ret2 int@1\n");
     fprintf(stdout, "PUSHS LF@ret2\n");
 
-    fprintf(stdout, "LABEL $END_READI\n");
+    fprintf(stdout, "LABEL $end_readi\n");
 	fprintf(stdout, "POPFRAME\n");
 	fprintf(stdout, "RETURN\n\n");
 }
 
 void GENERATION_READS(){
-    fprintf(stdout, "LABEL $READS\n");
+    fprintf(stdout, "LABEL $reads\n");
     fprintf(stdout, "PUSHFRAME\n");
     fprintf(stdout, "DEFVAR LF@ret1\n");
     fprintf(stdout, "DEFVAR LF@ret2\n");
@@ -601,18 +601,18 @@ void GENERATION_READS(){
     fprintf(stdout, "PUSHS LF@ret2\n");
     fprintf(stdout, "JUMP $END_READS\n");
 
-	fprintf(stdout, "LABEL $READS_END\n");
+	fprintf(stdout, "LABEL $reads_end\n");
     fprintf(stdout, "PUSHS LF@ret1\n");
     fprintf(stdout, "MOVE LF@ret2 int@1\n");
     fprintf(stdout, "PUSHS LF@ret2\n");
 
-    fprintf(stdout, "LABEL $END_READS\n");
+    fprintf(stdout, "LABEL $end_reads\n");
 	fprintf(stdout, "POPFRAME\n");
 	fprintf(stdout, "RETURN\n\n");
 }
 
 void GENERATION_READN(){
-    fprintf(stdout, "LABEL $READN\n");
+    fprintf(stdout, "LABEL $readn\n");
     fprintf(stdout, "PUSHFRAME\n");
     fprintf(stdout, "DEFVAR LF@ret\n");
     fprintf(stdout, "DEFVAR LF@ret2\n");
@@ -627,7 +627,7 @@ void GENERATION_READN(){
     fprintf(stdout, "PUSHS LF@ret2\n");
     fprintf(stdout, "JUMP $END_READN\n");
 
-	fprintf(stdout, "LABEL $READN_END\n");
+	fprintf(stdout, "LABEL $readn_end\n");
     fprintf(stdout, "MOVE LF@ret nil@nil\n");
     fprintf(stdout, "PUSHS LF@ret\n");
     fprintf(stdout, "MOVE LF@ret2 int@1\n");
@@ -639,7 +639,7 @@ void GENERATION_READN(){
 }
 
 void GENERATION_TOINTEGER(){
-	fprintf(stdout, "LABEL $TOINTEGER\n");
+	fprintf(stdout, "LABEL $tointeger\n");
 	fprintf(stdout, "PUSHFRAME\n");
 	fprintf(stdout, "DEFVAR LF@ret1\n");
 	fprintf(stdout, "DEFVAR LF@param\n");
@@ -651,7 +651,7 @@ void GENERATION_TOINTEGER(){
 }
 
 void GENERATION_SUBSTR(){
-	fprintf(stdout, "LABEL $SUBSTR\n");
+	fprintf(stdout, "LABEL $substr\n");
 	fprintf(stdout, "PUSHFRAME\n");
 	fprintf(stdout, "DEFVAR LF@ret1\n");//string
 	fprintf(stdout, "DEFVAR LF@ret2\n");//int
@@ -697,30 +697,30 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "LABEL $SUBSTR_LEN\n");
 	fprintf(stdout, "MOVE LF@length_helper LF@length\n");
 
-	fprintf(stdout, "LABEL $FOR_LOOP\n");
+	fprintf(stdout, "LABEL $for_loop\n");
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_RET_0 LF@length_helper LF@from\n");
 	fprintf(stdout, "GETCHAR LF@char LF@string LF@from\n");
 	fprintf(stdout, "CONCAT LF@ret1 LF@ret1 LF@char\n");
 	fprintf(stdout, "ADD LF@from LF@from int@1\n");
 	fprintf(stdout, "JUMP $FOR_LOOP\n");
 
-	fprintf(stdout, "LABEL $SUBSTR_RET_0\n");
+	fprintf(stdout, "LABEL $substr_ret_0\n");
 	fprintf(stdout, "PUSHS LF@ret1\n");
 	fprintf(stdout, "MOVE LF@ret2 int@0\n");
 	fprintf(stdout, "PUSHS LF@ret2\n");
 	fprintf(stdout, "JUMP $END\n");
 
-	fprintf(stdout, "LABEL $SUBSTR_END\n");
+	fprintf(stdout, "LABEL $substr_end\n");
 	fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
 	fprintf(stdout, "PUSHS LF@ret1\n");
 	fprintf(stdout, "MOVE LF@ret2 int@1\n");
 	fprintf(stdout, "PUSHS LF@ret2\n");
 
-	fprintf(stdout, "LABEL $END\n");
+	fprintf(stdout, "LABEL $end\n");
 	fprintf(stdout, "POPFRAME\n");
 	fprintf(stdout, "RETURN\n\n");
 
-	fprintf(stdout, "LABEL $SUBSTR_EMPTY\n");
+	fprintf(stdout, "LABEL $substr_empty\n");
 	fprintf(stdout, "MOVE LF@ret1 string@\n");
 	fprintf(stdout, "PUSHS LF@ret1\n");
 	fprintf(stdout, "MOVE LF@ret2 int@0\n");
@@ -729,7 +729,7 @@ void GENERATION_SUBSTR(){
 }
 
 void GENERATION_ORD(){
-	fprintf(stdout, "LABEL $ORD\n");
+	fprintf(stdout, "LABEL $ord\n");
 	fprintf(stdout, "PUSHFRAME\n");
 	fprintf(stdout, "DEFVAR LF@string\n");
 	fprintf(stdout, "DEFVAR LF@int\n");
@@ -757,19 +757,19 @@ void GENERATION_ORD(){
 	fprintf(stdout, "PUSHS LF@ret2\n");
 	fprintf(stdout, "JUMP $ORD_RET\n");
 
-	fprintf(stdout, "LABEL $ORD_END\n");
+	fprintf(stdout, "LABEL $ord_end\n");
 	fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
 	fprintf(stdout, "PUSHS LF@ret1\n");
 	fprintf(stdout, "MOVE LF@ret2 int@1\n");
 	fprintf(stdout, "PUSHS LF@ret2\n");
 
-	fprintf(stdout, "LABEL $ORD_RET\n");
+	fprintf(stdout, "LABEL $ord_ret\n");
 	fprintf(stdout, "POPFRAME\n");
 	fprintf(stdout, "RETURN\n\n");
 }
 
 void GENERATION_CHR(){
-fprintf(stdout, "LABEL $CHR\n");
+fprintf(stdout, "LABEL $chr\n");
 fprintf(stdout, "PUSHFRAME\n");
 fprintf(stdout, "DEFVAR LF@int\n");
 fprintf(stdout, "DEFVAR LF@right_int\n");
@@ -791,14 +791,14 @@ fprintf(stdout, "MOVE LF@ret2 int@0\n");
 fprintf(stdout, "PUSHS LF@ret2\n");
 fprintf(stdout, "JUMP $CHR_RET\n");
 
-fprintf(stdout, "LABEL $CHR_END\n");
+fprintf(stdout, "LABEL $chr_end\n");
 
 fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
 fprintf(stdout, "PUSHS LF@ret1\n");
 fprintf(stdout, "MOVE LF@ret2 int@1\n");
 fprintf(stdout, "PUSHS LF@ret2\n");
 
-fprintf(stdout, "LABEL $CHR_RET\n");
+fprintf(stdout, "LABEL $chr_ret\n");
 fprintf(stdout, "POPFRAME\n");
 fprintf(stdout, "RETURN\n\n");
 }
