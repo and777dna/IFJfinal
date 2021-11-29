@@ -869,24 +869,19 @@ int functionBodyIsOK()
                 table->var_tree = freeVarTree(table->var_tree);  
             }
             deep--;  
-            if_spotted = false;
             if(seznam != NULL){
                 freeSeznam();
             }
             if (ifSpotted(0) && (ifORwhileWasTheLast(0) == 1))
             {
-                printf("LABEL ifend%d\n", ifSpotted(0));
+                fprintf(stdout, "LABEL ifend%d\n", ifSpotted(0));
                 if_spotted = false;
             }
-            
-            if (whileSpotted(0) && deep){
-                printf("JUMP while%d\n", whileSpotted(0));
-            }
-            whileSpotted(0);
             token = tryGetToken();
             if (whileSpotted(0) && (ifORwhileWasTheLast(0) == 2))
             {
-                printf("LABEL whileend%d\n", whileSpotted(0));
+                fprintf(stdout, "JUMP while%d\n", whileSpotted(0));
+                fprintf(stdout, "LABEL whileend%d\n", whileSpotted(0));
                 while_spotted = false;
             }
             if (if_spotted)
@@ -899,7 +894,6 @@ int functionBodyIsOK()
             }            
             break;
         default:
-            printf("DEFALT with %d\n", token);
             changeError(2);
             return SYNTAX_ERROR;
         }
