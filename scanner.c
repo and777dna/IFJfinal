@@ -103,8 +103,8 @@ int getNextToken(string *attr){
                     state = 2;
                 else if (isalpha(c))    // identifikator nebo klicove slovo
                 {
-                    if (c >= 'A' && c <= 'Z'){
-                    printf("Return: LEX_ERROR\n");
+                    if (c >= 'A' && c <= 'Z'){                    
+                    changeError(-10);
                     return LEX_ERROR;
                     }
                     else {
@@ -133,8 +133,8 @@ int getNextToken(string *attr){
                 else if (c == ',') return COMMA;
                 
                 else if (c == EOF) return END_OF_FILE;
-                else{
-                    printf("Return: LEX_ERROR\n");
+                else{                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 break;
@@ -179,8 +179,8 @@ int getNextToken(string *attr){
                 if (c == ']') state = 6;
                 // komentar pokracuje libovolnymi znaky, zustan ve stavu 1,
                 // ale kontroluj, zda neprijde EOF (neukonceny komentar)
-                if (c == EOF){
-                    printf("Return: LEX_ERROR\n");
+                if (c == EOF){                    
+                    changeError(-10);
                     return LEX_ERROR;                                                    ////добавить этот случай в "", (),...
                 }
                 break;
@@ -188,16 +188,16 @@ int getNextToken(string *attr){
             case 6:
                 // komentar
                 if (c == ']') state = 0;  // --[[ ]]
-                else if (c == EOF){
-                    printf("Return: LEX_ERROR\n");
+                else if (c == EOF){                    
+                    changeError(-10);
                     return LEX_ERROR; 
                 }
                 else state = 5;                                                   
                 break;
 
             case 7:
-                if ((c >= 'A' && c <= 'Z') && c != ')'){
-                    printf("Return: LEX_ERROR\n");
+                if ((c >= 'A' && c <= 'Z') && c != ')'){                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                     // identifikator nebo klicove slovo
@@ -249,8 +249,8 @@ int getNextToken(string *attr){
                     state = 0;
                     return MULTIPLY;
                 }
-                else{
-                    printf("Return: LEX_ERROR\n");
+                else{                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 break;
@@ -264,8 +264,8 @@ int getNextToken(string *attr){
                     state = 0;
                     return DIV;
                 }
-                else{
-                    printf("Return: LEX_ERROR\n");
+                else{                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 break;
@@ -278,8 +278,8 @@ int getNextToken(string *attr){
                     state = 0;
                     return MOD;
                 }
-                else{
-                    printf("Return: LEX_ERROR\n");
+                else{                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 break;
@@ -287,8 +287,8 @@ int getNextToken(string *attr){
             case 12:
                 // pokracovani operatoru ..
                 if (c == '.') {state = 0; return DOTDOT;}
-                else{
-                    printf("Return: LEX_ERROR\n");
+                else{                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 break;
@@ -302,8 +302,8 @@ int getNextToken(string *attr){
                     state = 0;
                     return LESS;
                 }
-                else{
-                    printf("Return: LEX_ERROR\n");
+                else{                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 break;
@@ -317,8 +317,8 @@ int getNextToken(string *attr){
                     state = 0;
                     return MORE;
                 }
-                else{
-                    printf("Return: LEX_ERROR\n");
+                else{                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 break;
@@ -337,8 +337,8 @@ int getNextToken(string *attr){
             case 16:
                 // pokracovani operatoru ~=
                 if (c == '=') {state = 0; return NOTEQUAL;}
-                else{
-                    printf("Return: LEX_ERROR\n");
+                else{                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 break;
@@ -350,8 +350,8 @@ int getNextToken(string *attr){
                     return RETEZEC;
                 }
                 else if (c == EOF)
-                {
-                    printf("Return: LEX_ERROR\n");
+                {                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 else if(c == '\\'){
@@ -383,8 +383,8 @@ int getNextToken(string *attr){
                     state = 0;
                     return INT;
                 }
-                else if (!isdigit(c)){
-                    printf("Return: LEX_ERROR\n");
+                else if (!isdigit(c)){                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 strAddChar(attr, c);
@@ -399,8 +399,8 @@ int getNextToken(string *attr){
                     state = 0;
                     return FLOAT;
                 }
-                else if (!isspace(c) && !isdigit(c) && c != 'e' && c != 'E'){
-                    printf("Return: LEX_ERROR\n");
+                else if (!isspace(c) && !isdigit(c) && c != 'e' && c != 'E'){                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 else if (isspace(c)){state = 0; return FLOAT;}
@@ -408,8 +408,8 @@ int getNextToken(string *attr){
                 break;
 
             case 20:
-                if (!isspace(c) && !isdigit(c) && c != '+' && c != '-' && c != ')'){
-                    printf("Return: LEX_ERROR\n");
+                if (!isspace(c) && !isdigit(c) && c != '+' && c != '-' && c != ')'){                    
+                    changeError(-10);
                     return LEX_ERROR;
                 }
                 else if (c == ')' || c == ',' || c == ')'){
@@ -423,19 +423,31 @@ int getNextToken(string *attr){
 
             case 21:
                 if(c == 'n'){
-                    strcat(attr->str, "\\010");
+                    strAddChar(attr, '\\');
+                    strAddChar(attr, '0');
+                    strAddChar(attr, '1');
+                    strAddChar(attr, '0');
                     state = 17;
                 }
                 else if(c == 't'){
-                    strcat(attr->str, "\\009");
+                    strAddChar(attr, '\\');
+                    strAddChar(attr, '0');
+                    strAddChar(attr, '0');
+                    strAddChar(attr, '9');
                     state = 17;
                 }
                 else if(c == '\"'){
-                    strcat(attr->str, "\\034");
+                    strAddChar(attr, '\\');
+                    strAddChar(attr, '0');
+                    strAddChar(attr, '3');
+                    strAddChar(attr, '4');
                     state = 17;
                 }
                 else if(c == '\\'){
-                    strcat(attr->str, "\\092");
+                    strAddChar(attr, '\\');
+                    strAddChar(attr, '0');
+                    strAddChar(attr, '9');
+                    strAddChar(attr, '2');
                     state = 17;
                 }
                 if(isdigit(c)){

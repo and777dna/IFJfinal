@@ -40,7 +40,7 @@ void resize(Stack_t *stack) {
     stack->size *= MULTIPLIER;
     stack->attr = realloc(stack->attr, stack->size * sizeof(T));
     if (stack->attr == NULL) {
-        printf("Return: MEM_ALLOC_ERROR\n");
+        changeError(99);
         exit(STACK_OVERFLOW);
     }
 }
@@ -79,7 +79,7 @@ void implode(Stack_t *stack) {
 char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
 {
 //  +    -    \    *    /    (    )    i    $    =   ~=    <   <=    >   >=   str   #   ..   nil
-  {'>', '>', '<', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '#', '#'},  // +
+  {'>', '>', '<', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // +
   {'>', '>', '<', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // -
   {'>', '>', '>', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // \    //space after '\' is important
   {'>', '>', '>', '>', '>', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // *
@@ -100,10 +100,26 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'#', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '#', '#', '#', '#', '#', '#', '#', '#'},  // nil
 };
 
-int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, bool end){
+int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, bool end, int type){
+    
+    static int savetype;
+    int checktype;
     if ((token < 10 || token > 25) && token != COMMA){
         int stackVal = stack->attr[stack->top].type - 30;
         int inputNum = token - 30;
+        if(token == RETEZEC || token == INT || token == FLOAT){
+            
+            if (type == STRING || type == INTEGER){
+                if (token != type-15 && token != ID && type != 3){
+                    changeError(4);
+                }
+            }
+            else if(type == NUMBER){
+                if (token != INT || token != FLOAT && token != ID && type != 3){
+                    changeError(4);
+                }
+            }
+        }
         if (token == ID || token == INT || token == FLOAT){
             inputNum = 7;
         }
@@ -111,7 +127,12 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             inputNum = 15;
         }
         else if(token == NIL){
-            inputNum = 18;
+            if(stack->attr[stack->top].type == EQUAL || stack->attr[stack->top].type == NOTEQUAL || stack->attr[stack->top].type == 38){
+                inputNum = 18;
+            }
+            else{
+                changeError(8);
+            }
         }
         if (stack->attr[stack->top].type == ID || stack->attr[stack->top].type == INT || stack->attr[stack->top].type == FLOAT){
             stackVal = 7;
@@ -120,7 +141,12 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             stackVal = 15;
         }
         else if (stack->attr[stack->top].type == NIL){
-            stackVal = 18;
+            if(token == EQUAL || token == NOTEQUAL){
+                stackVal = 18;
+            }
+            else{
+                changeError(8);
+            }
         }
 //---------------PrecTable Check------------
         if((stackVal == 2 || stackVal == 4) && attr->str == 0){
@@ -129,6 +155,33 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
         if (precTable[stackVal][inputNum] == '<'){
             push(stack, *attr, token);
             token = tryGetToken();
+            if (!(token > 9 && token < 48)){
+                checktype = token;
+                if(token == ID){
+                    vars tmp2 = findVar(vartree, deep, attr->str);
+                    if (tmp2 == NULL){
+                        changeError(3);
+                    }
+                    else{
+                        checktype = tmp2->type;
+                    }
+                }
+                if (savetype == NUMBER){
+                    if (checktype != INT && checktype != INTEGER && checktype != FLOAT && checktype != NUMBER){
+                        changeError(6);
+                    }
+                }
+                else if (savetype == STRING){
+                    if (checktype == INT || checktype == INTEGER || checktype == FLOAT || checktype == NUMBER){
+                        changeError(6);
+                    }
+                }
+                else if (savetype == INTEGER){
+                    if (checktype == RETEZEC || checktype == STRING || checktype == FLOAT || checktype == NUMBER){
+                        changeError(6);
+                    }
+                }
+            }
             if(token == ID){
                 funcs tmp = findFunc(functree, attr->str);
                 if (tmp != NULL){
@@ -136,7 +189,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 }
                 vars tmp2 = findVar(vartree, deep, attr->str);
                 if (tmp2 == NULL){
-                    printf("Return: SEM_ERROR_EXPRESS\n");
+                    changeError(6);
                     return SEM_ERROR_EXPRESS;
                 }
                 if(tmp2->type == STRING){
@@ -145,17 +198,41 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
                     token = 0;
                 }
+                else if (tmp2->type == NIL){
+                    if(stack->attr[stack->top].type == EQUAL || stack->attr[stack->top].type == NOTEQUAL){
+                        stackVal = 18;
+                    }
+                    else{
+                        changeError(8);
+                    }
+                }
             }
-            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
         }
         else if (precTable[stackVal][inputNum] == '>'){
+            if (stack->attr[stack->top].type == INTEGER || stack->attr[stack->top].type == NUMBER || 
+                stack->attr[stack->top].type == STRING || stack->attr[stack->top].type == NIL){
+                savetype = stack->attr[stack->top].type;
+            }
+            else if(stack->attr[stack->top].type == ID){
+                vars tmp2 = findVar(vartree, deep, stack->attr[stack->top].attr);
+                savetype = tmp2->type;
+            }
             pop(stack, token, *attr, deep, seznam, end);
-            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
         }
         else if (precTable[stackVal][inputNum] == '='){
+            if (stack->attr[stack->top].type == INTEGER || stack->attr[stack->top].type == NUMBER || 
+                stack->attr[stack->top].type == STRING || stack->attr[stack->top].type == NIL){
+                savetype = stack->attr[stack->top].type;
+            }
+            else if(stack->attr[stack->top].type == ID){
+                vars tmp2 = findVar(vartree, deep, stack->attr[stack->top].attr);
+                savetype = tmp2->type;
+            }
             pop(stack, token, *attr, deep, seznam, end);
             token = tryGetToken();
-            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
         }
         else{ 
             funcs tmp = findFunc(functree, attr->str);
@@ -165,9 +242,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 pop(stack, token, *attr, deep, seznam, true);
                 return token;
             }
-            printf("%s:%d -- %d\n",attr->str, inputNum, stackVal);
-            printf("3 %d\n", token);
-            printf("Return: SEM_ERROR_EXPRESS\n");
+            changeError(6);
             return SEM_ERROR_EXPRESS;
         }
     }
@@ -182,6 +257,9 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
         }
         else if (stack->attr[stack->top].type == RETEZEC){
             stackVal = 15;
+        }
+        else if (stack->attr[stack->top].type == NIL){
+            stackVal = 18;
         }
         if (precTable[stackVal][8] == '>'){
             if (token == NIL){
@@ -198,21 +276,21 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             pop(stack, token, *attr, deep, seznam, true);
             return token;
         }
-        else{ 
-            printf("Return: SEM_ERROR_EXPRESS\n");
+        else{
+            changeError(6);
             return SEM_ERROR_EXPRESS;
         }
     }
 }
 
-int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam)
+int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, int type)
 {
     bool end = false;
     Stack_t *stack = createStack();
     string buk;
     buk.str = "$";
     push(stack, buk, 38);
-    if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT || token == HASH)
+    if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT || token == HASH || token == NIL)
     {
         funcs tmp = findFunc(functree, attr->str);
         if (tmp != NULL){
@@ -226,6 +304,12 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
                 token = 0;
             }
+            if(tmp2->type != token && token != ID){
+                changeError(4);
+            }
+        }
+        if (token != type-15 && token != ID && type != 3 && token != NIL){
+            changeError(4);
         }
         push(stack, *attr, token);
         token = tryGetToken();
@@ -238,7 +322,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
                 token = 0;
             }
         }
-        token = TableCheck(stack, token, attr, vartree, functree, deep, seznam, end);
+        token = TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
         if (token == COMMA){
             if (stack != NULL){
                 end = true;
@@ -253,7 +337,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             if(seznam != NULL){
                 seznam = seznam->next;
             }
-            token = express(token, attr, vartree, functree, deep, seznam);
+            token = express(token, attr, vartree, functree, deep, seznam, type);
         }
         else{
             end = true;
@@ -289,13 +373,13 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
                     free(stack);
                     stack = NULL;
                 }
-                printf("Return: SEM_ERROR_EXPRESS1\n");
+                changeError(6);
                 return SEM_ERROR_EXPRESS;
             }
         }
     }
     else{
-        printf("Return: SEM_ERROR_EXPRESS2\n");
+        changeError(6);
         return SEM_ERROR_EXPRESS;
     }
 }

@@ -162,10 +162,11 @@ int strGetLength(string *s);
 //hlavicka funkce simulujici lexikalni analyzator
 void setSourceFile(FILE *f);
 int getNextToken(string *attr);
-int express(int token, string *attr, vars var, funcs funcs, int deep, SeznamOfVars *seznam);
+int express(int token, string *attr, vars var, funcs funcs, int deep, SeznamOfVars *seznam, int type);
+void changeError(int n);
 
 void GEN_WRITE_VAR_LITERAL(int token, char *attr);
-void GEN_FUNC_MAIN_END(char *name_func);
+void GEN_FUNC_MAIN_END(char *name_func, int token);
 void GEN_FUNC_MAIN_START(char *name);
 void GEN_PRINT_WRITE(int token, string attr);
 void GEN_START_OF_FUNCTION(string attr);
@@ -173,7 +174,8 @@ void GEN_FUNC_CALL(char *name, SeznamOfVars *param);
 void GEN_END_OF_FUNCTION(string attr);
 void GEN_CALL_INBUILDS();
 void GEN_DEFVAR_VAR(SeznamOfVars *param);
-bool ifSpotted(int spotted);
-bool whileSpotted(int spotted);
+int ifSpotted(int spotted);
+int whileSpotted(int spotted);
 bool checkSEEN(int token);
+int ifORwhileWasTheLast(int c);
 void EXPRESSION_FUNC(char *attr, int token, bool end, char *var_name);

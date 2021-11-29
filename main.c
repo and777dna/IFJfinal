@@ -20,7 +20,6 @@ int main(int argc, char *argv[]){
     int a;
     setTable(table);
     a = program();
-    changeError(a);
     // if (a == 0){
     //     printf("\x1B[33m""FINISHED WITHOUT ERRORS!\nCONGRATS!!!\n");    
     // }

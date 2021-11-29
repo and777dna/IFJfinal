@@ -13,6 +13,7 @@ int deep;
 symtable *table;
 int error_flag;
 bool if_spotted;
+bool while_spotted;
 SeznamOfVars *seznam;
 SeznamOfVars *head;
 
@@ -111,8 +112,24 @@ int tryGetToken()
 
 void changeError(int n)
 {
-    fprintf(stderr, "ERROR %d\n", n);
-    error_flag = n;
+    if(n == -10){
+        fprintf(stderr, "%d\n", 1);
+        freeFunc(table->func_tree);
+        strFree(&attr);
+        free(table);
+        free(table->var_tree);
+        free(name_func_save);
+        exit(1);
+    }
+    else{
+        fprintf(stderr, "%d\n", n);
+        freeFunc(table->func_tree);
+        free(table);
+        strFree(&attr);
+        free(table->var_tree);
+        free(name_func_save);
+        exit(n);
+    }
 }
 
 void setTable(symtable *st)
@@ -152,12 +169,14 @@ int inputIsOK()
                 }
             }
         }
+        changeError(2);
         return SYNTAX_ERROR;
         break;  
     case RIGHT_BRACKET:
         return SYNTAX_OK;
         break;
     default:
+        changeError(2);
         return SYNTAX_ERROR;
         break;
     }
@@ -187,14 +206,14 @@ int GlobalinputIsOK()
         else if(token == RIGHT_BRACKET){
             return SYNTAX_OK;
         }
-        printf("Return: SEM_ERROR_FUNCPARAM\n");
+        changeError(5);
         return SEM_ERROR_FUNCPARAM;
         break;  
     case RIGHT_BRACKET:
         return SYNTAX_OK;
         break;
     default:
-        printf("Return: SEM_ERROR_FUNCPARAM\n");
+        changeError(5);
         return SEM_ERROR_FUNCPARAM;
         break;
     }
@@ -217,7 +236,7 @@ int outputIsOK()
         }    
     }
     else{
-        printf("Return: SEM_ERROR_FUNCPARAM\n");
+        changeError(5);
         return SEM_ERROR_FUNCPARAM;
     }
 }
@@ -234,7 +253,7 @@ int GlobalCompare(funcs tmp)
             token = tryGetToken();
             if (token != tmp->in->type)
             {
-                printf("Return: SEM_ERROR_FUNCPARAM\n");
+                changeError(5);
                 return SEM_ERROR_FUNCPARAM;
             }
             insertVar(&(table->var_tree), deep, seznam->name, token);
@@ -246,7 +265,7 @@ int GlobalCompare(funcs tmp)
                     tmp->in = tmp->in->next;
                     return GlobalCompare(tmp);
                 }
-                printf("Return: SYNTAX_ERROR\n");
+                changeError(2);
                 return SYNTAX_ERROR;
             }
             else if(token == RIGHT_BRACKET)
@@ -260,11 +279,11 @@ int GlobalCompare(funcs tmp)
         {
             return SYNTAX_OK;
         }
-        printf("Return: SYNTAX_ERROR\n");
+        changeError(2);
         return SYNTAX_ERROR;
         break;
     default:
-        printf("Return: SYNTAX_ERROR\n");
+        changeError(2);
         return SYNTAX_ERROR;
         break;
     }
@@ -279,7 +298,7 @@ int GlobalCompareOut(funcs tmp)
     case NUMBER:
         if (tmp->out->type != token)
         {
-            printf("Return: SEM_ERROR_FUNCPARAM\n");
+            changeError(5);
             return SEM_ERROR_FUNCPARAM;
         }
         if ((token = tryGetToken()) == COMMA)
@@ -290,13 +309,13 @@ int GlobalCompareOut(funcs tmp)
                 tmp->out = tmp->out->next;
                 return GlobalCompareOut(tmp);
             }
-            printf("Return: SYNTAX_ERROR\n");
+            changeError(2);
             return SYNTAX_ERROR;
         }
         return SYNTAX_OK;
         break;
     default:
-        printf("Return: SYNTAX_ERROR\n");
+        changeError(2);
         return SYNTAX_ERROR;
         break;
     }
@@ -323,14 +342,14 @@ int functionIsOK()
             {
                 tmp->origin = 2;
                 if((token = tryGetToken()) != LEFT_BRACKET){
-                    printf("Return: SYNTAX_ERROR\n");
+                    changeError(2);
                     return SYNTAX_ERROR; 
                 }
                 token = tryGetToken();
                 globalCheck = GlobalCompare(tmp);
                 if (globalCheck)
                 {
-                    printf("Return: SEM_ERROR_FUNCPARAM\n");
+                    changeError(5);
                     return SEM_ERROR_FUNCPARAM;
                 }
                 token = tryGetToken();
@@ -346,13 +365,13 @@ int functionIsOK()
                     return SYNTAX_OK;
                 }
                 else{
-                    printf("Return: SYNTAX_ERROR\n");
+                    changeError(2);
                     return SYNTAX_ERROR;
                 }
             }
             else if (tmp != NULL)
             {
-                printf("Return: SEM_ERROR_DEFINE\n");
+                changeError(3);
                 return SEM_ERROR_DEFINE;
             }
             name_func_save = strcpy_for_func(attr.str, name_func_save);
@@ -361,7 +380,7 @@ int functionIsOK()
                 token = tryGetToken();
                 if (inputWasComplited = inputIsOK())
                 {
-                    printf("Return: SEM_ERROR_FUNCPARAM\n");
+                    changeError(5);
                     return SEM_ERROR_FUNCPARAM;
                 }
                 else
@@ -382,12 +401,12 @@ int functionIsOK()
                 
             }
             else{
-                printf("Return: SYNTAX_ERROR\n");
+                changeError(2);
                 return SYNTAX_ERROR; 
             }
         }
         else {
-            printf("Return: SEM_ERROR\n");
+            changeError(7);
             return SEM_ERROR;
         }
     }
@@ -406,7 +425,7 @@ int functionIsOK()
                     token = tryGetToken();
                         if ((inputWasComplited = GlobalinputIsOK()) != SYNTAX_OK)    
                         {
-                            printf("Return: SEM_ERROR_FUNCPARAM\n");
+                            changeError(5);
                             return SEM_ERROR_FUNCPARAM;
                         }
                         else
@@ -426,18 +445,18 @@ int functionIsOK()
                         }  
                     }
                     else{
-                        printf("Return: SYNTAX_ERROR\n");
+                        changeError(2);
                         return SYNTAX_ERROR; 
                     }
                 }
             }
         }
         else{
-            printf("Return: SYNTAX_ERROR\n");
+            changeError(2);
             return SYNTAX_ERROR;
         }
     }
-    printf("Return: SYNTAX_ERROR\n");
+    changeError(2);
     return SYNTAX_ERROR;
 }
 
@@ -454,7 +473,7 @@ int functionBodyIsOK()
             {
                 vars varcheck = findVar(table->var_tree, deep, attr.str);
                 if (varcheck != NULL && varcheck->deepOfVar == deep){
-                    printf("Return: SEM_ERROR_DEFINE\n");
+                    changeError(3);
                     return SEM_ERROR_DEFINE;
                 }
                 strcpy_for_var(attr.str);
@@ -481,7 +500,7 @@ int functionBodyIsOK()
                         {
                             case ASSIGNED:
                                 token = tryGetToken();
-                                token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+                                token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, type);
                                 break;
                             default:
                                 break;
@@ -496,7 +515,7 @@ int functionBodyIsOK()
                         }
                         vars varcheck = findVar(table->var_tree, deep, attr.str);
                         if (varcheck != NULL){
-                            printf("Return: SEM_ERROR_DEFINE\n");
+                            changeError(3);
                             return SEM_ERROR_DEFINE;
                         }
                         strcpy_for_var(attr.str);
@@ -526,7 +545,7 @@ int functionBodyIsOK()
                                 case ASSIGNED:
                                     token = tryGetToken();
                                     seznam = seznam->first;
-                                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+                                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, type);
                                     break;
                                 default:
                                     break;
@@ -541,12 +560,12 @@ int functionBodyIsOK()
         case WRITE:
             token = tryGetToken();
             if(token != LEFT_BRACKET){
-                printf("Return: SYNTAX_ERROR\n");
+                changeError(2);
                 return SYNTAX_ERROR;
             }
             token = tryGetToken();
             if(token == RIGHT_BRACKET){
-                printf("Return: SYNTAX_ERROR\n");
+                changeError(2);
                 return SYNTAX_ERROR;
             }
             while(token != RIGHT_BRACKET){
@@ -554,7 +573,7 @@ int functionBodyIsOK()
                 case ID:;
                     vars vareh = findVar(table->var_tree, deep, attr.str);
                     if(vareh == NULL){
-                        printf("Return: SEM_ERROR_DEFINE\n");
+                        changeError(3);
                         return SEM_ERROR_DEFINE;
                     }
                     GEN_PRINT_WRITE(token, attr);
@@ -567,7 +586,7 @@ int functionBodyIsOK()
                         break;
                     }
                     else{
-                        printf("Return: SYNTAX_ERROR\n");
+                        changeError(2);
                         return SYNTAX_ERROR;
                     }
                     break;
@@ -584,12 +603,12 @@ int functionBodyIsOK()
                         break;
                     }
                     else{
-                        printf("Return: SYNTAX_ERROR\n");
+                        changeError(2);
                         return SYNTAX_ERROR;
                     }
                     break;
                 default:
-                    printf("Return: SYNTAX_ERROR\n");
+                    changeError(2);
                     return SYNTAX_ERROR;
                 }
             }
@@ -598,11 +617,13 @@ int functionBodyIsOK()
         case WHILE:
             freeSeznam();
             whileSpotted(1);
+            while_spotted = true;
+            ifORwhileWasTheLast(2);
             token = tryGetToken();
-            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
             if (token != DO)
             {
-                printf("Return: SYNTAX_ERROR\n");
+                changeError(2);
                 return SYNTAX_ERROR;
             }
             deep++;
@@ -611,12 +632,13 @@ int functionBodyIsOK()
         case IF:
             freeSeznam();
             ifSpotted(1);
+            ifORwhileWasTheLast(1);
             if_spotted = true; 
             token = tryGetToken();
-            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
             if (token != THEN)
             {
-                printf("Return: SYNTAX_ERROR\n");
+                changeError(2);
                 return SYNTAX_ERROR;
             }
             deep++;
@@ -625,13 +647,13 @@ int functionBodyIsOK()
         case ELSE:
             freeSeznam();
             if(!(if_spotted) && deep == 0){
-                printf("Return: SYNTAX_ERROR\n");
+                changeError(2);
                 return SYNTAX_ERROR;
             }
-            if_spotted = false;
+            // if_spotted = false;
             token = tryGetToken();
-            printf("JUMP end\n");
-            printf("LABEL else\n");
+            printf("JUMP ifend%d\n", ifSpotted(0));
+            printf("LABEL else%d\n", ifSpotted(0));
             break;    
         case ID:;
             funcs maybefunc = findFunc(table->func_tree, attr.str);
@@ -641,7 +663,6 @@ int functionBodyIsOK()
                 if (token != LEFT_BRACKET)
                 {
                     changeError(2);
-                    printf("Return: SYNTAX_ERROR\n");
                     return SYNTAX_ERROR;
                 }
                 token = tryGetToken();
@@ -662,7 +683,7 @@ int functionBodyIsOK()
                     }
                     else if (typeCheck != maybefunc->in->type)
                     {
-                        printf("Return: SEM_ERROR_FUNCPARAM\n");
+                        changeError(5);
                         return SEM_ERROR_FUNCPARAM;
                     }
                     if(maybefunc->in->next == NULL){
@@ -673,6 +694,8 @@ int functionBodyIsOK()
                     }
                     token = tryGetToken();
                 }
+                GEN_FUNC_MAIN_END(attr.str, token);
+                GEN_FUNC_CALL(maybefunc->name, seznam);
                 token = tryGetToken();
             }
             else{
@@ -686,7 +709,6 @@ int functionBodyIsOK()
                     }
                     else if (token != ASSIGNED){
                         changeError(2);
-                        printf("Return: SYNTAX_ERROR\n");
                         return SYNTAX_ERROR;
                     }
                     else{
@@ -695,7 +717,7 @@ int functionBodyIsOK()
                             funcs maybefunc = findFunc(table->func_tree, attr.str);
                             if (maybefunc == NULL){
                                 seznam = seznam->first;
-                                token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+                                token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
                                 if (token == COMMA){
                                     token = tryGetToken();
                                     break;
@@ -713,12 +735,12 @@ int functionBodyIsOK()
                                         if(varfind->type == maybefunc->out->type){
                                             if((seznam->next == NULL && maybefunc->out->next != NULL) 
                                             || (seznam->next != NULL && maybefunc->out->next == NULL)){
-                                                printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                                changeError(5);
                                                 return SEM_ERROR_FUNCPARAM;
                                             }
                                         }
                                         else{
-                                            printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                            changeError(5);
                                             return SEM_ERROR_FUNCPARAM;
                                         }
                                         break;
@@ -730,19 +752,19 @@ int functionBodyIsOK()
                                         maybefunc->out = maybefunc->out->next;
                                         if((seznam->next == NULL && maybefunc->out->next != NULL) 
                                         || (seznam->next != NULL && maybefunc->out->next == NULL)){
-                                                printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                                changeError(5);
                                                 return SEM_ERROR_FUNCPARAM;
                                         }
                                     }
                                     else{
-                                        printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                        changeError(5);
                                         return SEM_ERROR_FUNCPARAM;
                                     }
                                 }
                             }
                             token = tryGetToken();
                             if (token != LEFT_BRACKET){
-                                printf("Return: SYNTAX_ERROR\n");
+                                changeError(2);
                                 return SYNTAX_ERROR;
                             }
                             else{
@@ -764,7 +786,7 @@ int functionBodyIsOK()
                                                 if(maybefunc->in->next != NULL){
                                                     maybefunc->in = maybefunc->in->next;
                                                 }
-                                                GEN_FUNC_MAIN_END(attr.str);
+                                                GEN_FUNC_MAIN_END(attr.str, token);
                                                 token = tryGetToken();
                                             }
                                             else if(token == COMMA){
@@ -772,26 +794,28 @@ int functionBodyIsOK()
                                                 continue;
                                             }
                                             else{
-                                                printf("Return: SEM_ERROR_FUNCPARAM\n");
+                                                changeError(5);
                                                 return SEM_ERROR_FUNCPARAM;
                                             }
                                         }
                                         seznam = seznam->first;
-                                        GEN_FUNC_CALL(maybefunc->name, seznam);
                                         token = tryGetToken();
+                                        GEN_FUNC_CALL(maybefunc->name, seznam);
                                         break;
                                     }
                                     else if(token != RIGHT_BRACKET){
+                                        changeError(2);
                                         return SYNTAX_ERROR;
                                     }
                                     else{
                                         token = tryGetToken();
+                                        GEN_FUNC_CALL(maybefunc->name, seznam);
                                         break;
                                     }
                                 }
                                 else {
                                     seznam = seznam->first;
-                                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+                                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
                                     if (token == COMMA){
                                         token = tryGetToken();
                                         break;
@@ -801,7 +825,7 @@ int functionBodyIsOK()
                         }
                         else{
                             seznam = seznam->first;
-                            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+                            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
                             if (token == COMMA){
                                 token = tryGetToken();
                                 break;
@@ -810,7 +834,7 @@ int functionBodyIsOK()
                     }
                 }
                 else{
-                    printf("Return: SYNTAX_ERROR\n");
+                    changeError(2);
                     return SYNTAX_ERROR;
                 }
             }
@@ -825,7 +849,7 @@ int functionBodyIsOK()
                         break;
                     }
                     else if(tmp2 != NULL){
-                        token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+                        token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
                         break;
                     }
                     else {
@@ -833,7 +857,7 @@ int functionBodyIsOK()
                     }
                 }
                 else{
-                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam);
+                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
                     break;
                 }
             }      
@@ -849,17 +873,34 @@ int functionBodyIsOK()
             if(seznam != NULL){
                 freeSeznam();
             }
-            ifSpotted(0);
-            if (whileSpotted(4)){
-                printf("JUMP while\n");
+            if (ifSpotted(0) && (ifORwhileWasTheLast(0) == 1))
+            {
+                printf("LABEL ifend%d\n", ifSpotted(0));
+                if_spotted = false;
+            }
+            
+            if (whileSpotted(0) && deep){
+                printf("JUMP while%d\n", whileSpotted(0));
             }
             whileSpotted(0);
             token = tryGetToken();
-            printf("LABEL end\n");
+            if (whileSpotted(0) && (ifORwhileWasTheLast(0) == 2))
+            {
+                printf("LABEL whileend%d\n", whileSpotted(0));
+                while_spotted = false;
+            }
+            if (if_spotted)
+            {
+                ifORwhileWasTheLast(1);
+            }
+            else if (while_spotted)
+            {
+                ifORwhileWasTheLast(2);
+            }            
             break;
         default:
             printf("DEFALT with %d\n", token);
-            printf("Return: SYNTAX_ERROR\n");
+            changeError(2);
             return SYNTAX_ERROR;
         }
     }
@@ -872,16 +913,16 @@ int syntaxCheck(){
         if (token == FUNCTION){
             result = functionIsOK();
             if (result != 0){
-                printf("Return: CHECK_ERROR\n");
+                changeError(result);
                 return result;
             }
             result = functionBodyIsOK();
             if (result != 0){
-                printf("Return: CHECK_ERROR\n");
+                changeError(result);
                 return result;
             }
             else if (token != END){
-                printf("Return: SYNTAX_ERROR\n");
+                changeError(2);
                 return SYNTAX_ERROR;
             }
             else{
@@ -894,7 +935,7 @@ int syntaxCheck(){
         else if(token == GLOBAL){
             result = functionIsOK();
             if (result != 0){
-                printf("Return: CHECK_ERROR\n");
+                changeError(result);
                 return result;
             }
             else{
@@ -909,7 +950,7 @@ int syntaxCheck(){
                 if (token != LEFT_BRACKET)
                 {
                     changeError(2);
-                    printf("Return: SYNTAX_ERROR\n");
+                    changeError(2);
                     return SYNTAX_ERROR;
                 }
                 token = tryGetToken();
@@ -923,20 +964,22 @@ int syntaxCheck(){
                     }
                     else if (typeCheck != maybefunc->in->type)
                     {
-                        printf("Return: SEM_ERROR_FUNCPARAM\n");
+                        changeError(5);
                         return SEM_ERROR_FUNCPARAM;
                     }
                     maybefunc->in = maybefunc->in->next;
+                    GEN_FUNC_MAIN_END(attr.str, token);
                     token = tryGetToken();
                 }
             }
             else if (maybefunc == NULL){
-                printf("Return: SYNTAX_ERROR1\n");
+                changeError(2);
                 return SYNTAX_ERROR;
             }
+            GEN_FUNC_CALL(maybefunc->name, NULL);
         }
         else{
-            printf("Return: SYNTAX_ERROR\n");
+            changeError(2);
             return SYNTAX_ERROR;
         }
         token = tryGetToken();
@@ -947,7 +990,6 @@ int syntaxCheck(){
 int program()
 {
     table->func_tree = insertInbuiltFuncs(table->func_tree);
-    GEN_CALL_INBUILDS();
     deep = 0;
     error_flag = 0;
     int error_flag = 0;
@@ -957,8 +999,13 @@ int program()
         if ((token == RETEZEC) && (!strCmpConstStr(&attr, "ifj21")))
         {
             token = tryGetToken();
+            fprintf(stdout, ".IFJcode21\n");
+            fprintf(stdout, "JUMP $main\n\n");
+            GEN_CALL_INBUILDS();
             error_flag = syntaxCheck();
-            changeError(error_flag);
+            if(error_flag != 0){
+                changeError(error_flag);
+            }
         }
         else changeError(2);
     }

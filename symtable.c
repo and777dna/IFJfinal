@@ -12,6 +12,7 @@ symtable *initST(symtable *ST)
 
     ST = malloc(sizeof(struct Symtable));
     if(ST == NULL){
+        changeError(99);
         return ST;
     }
     ST->func_tree = NULL;
@@ -27,7 +28,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
     if(*var_tree == NULL){
         *var_tree = malloc(sizeof(struct Var_tree));
         if(*var_tree == NULL){
-            printf("Return: MEM_ALLOC_ERROR\n");
+            changeError(99);
             return false;
         }
         (*var_tree)->name = name;
@@ -44,6 +45,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         vars tmp = malloc(sizeof(struct Var_tree));
         if (tmp == NULL)
         {
+            changeError(99);
             return false;
         }
         tmp->deepOfVar = (*var_tree)->deepOfVar;
@@ -166,7 +168,7 @@ funcs insertFunc(char *name, funcs *func, int orig)
         *func = malloc(sizeof(struct Func_tree));
         if (*func == NULL)
         {
-            printf("Return: MEM_ALLOC_ERROR\n");
+            changeError(99);
             return NULL;
         }
         (*func)->origin = orig;
@@ -260,7 +262,7 @@ void insertOutput(funcs func, int type, char *name)
     funcs function = findFunc(func, name);
     if (function == NULL)
     {
-        printf("Return: MEM_ALLOC_ERROR\n");
+        changeError(99);
         return;
     }
     if (function->out == NULL)
@@ -330,7 +332,6 @@ void freeFunc (funcs func)
 
 funcs insertInbuiltFuncs(funcs func)
 {
-    printf("VESTAVENE FUNKCE\n");
     insertFunc("reads", &func, 2);
     insertOutput(func, STRING, "reads");
     insertFunc("readi", &func, 2);

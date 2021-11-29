@@ -14,7 +14,6 @@ int count_end = 1;
 bool main_flag = false;
 
 void GEN_START_MAIN(){
-	fprintf(stdout, ".IFJcode20\n");
     fprintf(stdout, "DEFVAR GF@_\n");
 
     // Global variables for concatenation processing
@@ -28,29 +27,25 @@ void GEN_START_MAIN(){
     fprintf(stdout, "LABEL error9\n");
     fprintf(stdout, "EXIT int@9\n");
     fprintf(stdout, "LABEL enderror9\n");
-
-
-	fprintf(stdout, "JUMP $$main\n");
-
  }
 
 void GEN_WRITE_VAR_LITERAL(int token, char *attr){
     switch (token)
 	{
 		case INT:
-			fprintf(stdout, "int@%s\n", attr);
+			fprintf(stdout, "int@%s ", attr);
 			break;
 		case FLOAT:
-			fprintf(stdout, "float@%s\n", attr);
+			fprintf(stdout, "float@%s ", attr);
 			break;
 		case RETEZEC:
-			fprintf(stdout, "string@%s\n", attr);
+			fprintf(stdout, "string@%s ", attr);
 			break;
 		case NIL:
-		    fprintf(stdout, "nil@%s\n", attr);
+		    fprintf(stdout, "nil@%s ", attr);
             break;
         case ID:
-            fprintf(stdout, "LF@%s$%d\n", attr, 1);
+            fprintf(stdout, "LF@%s$%d ", attr, 1);
 			break;
 	}
 }
@@ -58,6 +53,7 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr){
 void GEN_PRINT_WRITE(int token, string attr){
     fprintf(stdout, "WRITE ");
     GEN_WRITE_VAR_LITERAL(token, attr.str);
+	fprintf(stdout, "\n");
 }
 
 void GEN_START_OF_FUNCTION(string attr){
@@ -85,9 +81,10 @@ void GEN_DEFVAR_VAR(SeznamOfVars *param){
     }
 }
 
-void GEN_FUNC_MAIN_END(char* name){
-    fprintf(stdout, "DEFVAR TF@%d\n",count_start);
-	fprintf(stdout, "MOVE TF@%d, %s\n",count_start, name);
+void GEN_FUNC_MAIN_END(char* name, int token){
+    fprintf(stdout, "DEFVAR TF@in%d\n",count_start);
+	fprintf(stdout, "MOVE TF@in%d ",count_start);
+	GEN_WRITE_VAR_LITERAL(token, name);
 	count_start++;
 	return;
 }
@@ -95,7 +92,7 @@ void GEN_FUNC_MAIN_END(char* name){
 void GEN_FUNC_CALL(char *name_func, SeznamOfVars *param){
 	fprintf(stdout, "CALL $%s\n", name_func);
 	while(param != NULL){
-		fprintf(stdout, "MOVE LF@%s, TF@ret%d\n",param->name, count_end);
+		fprintf(stdout, "MOVE LF@%s TF@ret%d\n",param->name, count_end);
 		if(param->next != NULL){
 			param = param->next;
 		}
@@ -117,34 +114,39 @@ void GEN_END_OF_FUNCTION(string attr){
     }
 }
 
-bool ifSpotted(int spotted){
-	static bool here = false;
-	if(spotted == 1){
-		here = true;
-		return here;
+int ifORwhileWasTheLast(int c)
+{
+	static int ifORwhile = 0;
+	if (c == 1)
+	{
+		ifORwhile = 1; /// if
 	}
-	else if(spotted == 0){
-		here = false;
-		return here;
+	else if (c == 2)
+	{
+		ifORwhile = 2; /// while
 	}
-	else{
-		return here;
-	}
+	
+	return ifORwhile;
 }
 
-bool whileSpotted(int spotted){
-	static bool here = false;
-	if(spotted == 1){
-		here = true;
-		return here;
+int ifSpotted(int iffind){
+	static int ifcounter = 0;
+	if (iffind == 0)
+	{
+		return ifcounter;
 	}
-	else if(spotted == 0){
-		here = false;
-		return here;
+	ifcounter++;
+	return ifcounter;
+}
+
+int whileSpotted(int spotted){
+	static int whilecounter = 0;
+	if (spotted == 0)
+	{
+		return whilecounter;
 	}
-	else{
-		return here;
-	}
+	whilecounter++;
+	return whilecounter;
 }
 
 bool checkSEEN(int token){
@@ -277,12 +279,15 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 	static char *param1;
 	static char *param2;
 	static int oper = 0;
+	static int token1 = 0;
+	static int token2 = 0;
 	static int counter;
 	static int type;
 	static int counter1 = 1;
 	static bool tmp = false;
 	if (counter == 0){
 		type = token;
+		token1 = token;
 		param1 = attr;
 		counter++;
 		// fprintf(stdout, "Param1: %s\n", param1);
@@ -290,6 +295,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 	else if (counter == 1){
 		if(token != 35 && token != 36){
 			param2 = attr;
+			token2 = token;
 			counter++;
 		}
 		// fprintf(stdout, "Param2: %s\n", param2);
@@ -305,11 +311,17 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case INC:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@SUM_RES\n");
-						fprintf(stdout, "ADD LF@SUM_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "ADD LF@SUM_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");					
 					}
 					else{
 						fprintf(stdout, "MOVE LF@SUM_RES int@0\n");
-						fprintf(stdout, "ADD LF@SUM_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "ADD LF@SUM_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");					
 					}
 					param1 = "SUM_RES"; 
 					param2 = NULL;
@@ -319,11 +331,17 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case DEC:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@SUB_RES\n");
-						fprintf(stdout, "DEC LF@SUB_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "DEC LF@SUB_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@SUB_RES int@0\n");
-						fprintf(stdout, "DEC LF@SUB_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "DEC LF@SUB_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					param1 = "SUB_RES"; 
 					param2 = NULL;
@@ -333,11 +351,17 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case MULTIPLY:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@MUL_RES\n");
-						fprintf(stdout, "MUL LF@MUL_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "MUL LF@MUL_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@MUL_RES int@0\n");
-						fprintf(stdout, "MUL LF@MUL_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "MUL LF@MUL_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					param1 = "MUL_RES"; 
 					param2 = NULL;
@@ -347,11 +371,18 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case DIV:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@DIV_RES\n");
-						fprintf(stdout, "DIV LF@DIV_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "DIV LF@DIV_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
+
 					}
 					else{
 						fprintf(stdout, "MOVE LF@DIV_RES int@0\n");
-						fprintf(stdout, "DIV LF@DIV_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "DIV LF@DIV_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					param1 = "DIV_RES"; 
 					param2 = NULL;
@@ -361,11 +392,17 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case MOD:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@IDIV_RES\n");
-						fprintf(stdout, "IDIV LF@IDIV_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "IDIV LF@IDIV_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@IDIV_RES int@0\n");
-						fprintf(stdout, "IDIV LF@IDIV_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "IDIV LF@IDIV_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					param1 = "IDIV_RES"; 
 					param2 = NULL;
@@ -375,11 +412,15 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case HASH:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@HASH_RES\n");
-						fprintf(stdout, "STRLEN LF@HASH_RES LF@%s\n", param1);
+						fprintf(stdout, "STRLEN LF@HASH_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						fprintf(stdout, "\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@HASH_RES int@0\n");
-						fprintf(stdout, "STRLEN LF@HASH_RES LF@%s\n", param1);
+						fprintf(stdout, "STRLEN LF@HASH_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						fprintf(stdout, "\n");
 					}
 					param1 = "HASH_RES";
 					param2 = NULL;
@@ -389,11 +430,17 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case DOTDOT:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@DOTDOT_RES\n");
-						fprintf(stdout, "CONCAT LF@DOTDOT LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "CONCAT LF@DOTDOT_RES");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@DOTDOT_RES int@0\n");
-						fprintf(stdout, "CONCAT LF@DOTDOT LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "CONCAT LF@DOTDOT_RES \n");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					param1 = "DOTDOT_RES";
 					param2 = NULL;
@@ -403,11 +450,17 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case LESS:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@LESS_RES\n");
-						fprintf(stdout, "LT LF@LESS_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "LT LF@LESS_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@LESS_RES int@0\n");
-						fprintf(stdout, "LT LF@LESS_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "LT LF@LESS_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					param1 = "LESS_RES";
 					param2 = NULL;
@@ -418,11 +471,17 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
                 case MORE:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@MORE_RES\n");
-						fprintf(stdout, "GT LF@MORE_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "GT LF@MORE_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@MORE_RES int@0\n");
-						fprintf(stdout, "GT LF@MORE_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "GT LF@MORE_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					param1 = "MORE_RES";
 					param2 = NULL;
@@ -433,11 +492,17 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				case EQUAL:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@EQUAL_RES\n");
-						fprintf(stdout, "EQ LF@EQUAL_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@EQUAL_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@EQUAL_RES int@0\n");
-						fprintf(stdout, "EQ LF@EQUAL_RES LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@EQUAL_RES ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 					}
 					param1 = "EQUAL_RES";
 					param2 = NULL;
@@ -450,16 +515,28 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 						fprintf(stdout, "DEFVAR LF@LESSOREQUAL\n");
 						fprintf(stdout, "DEFVAR LF@LESSOREQUAL1\n");
 						fprintf(stdout, "DEFVAR LF@LESSOREQUAL_RES\n");
-						fprintf(stdout, "LT LF@LESSOREQUAL LF@%s LF@%s\n", param1, param2);
-						fprintf(stdout, "EQ LF@LESSOREQUAL1 LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "LT LF@LESSOREQUAL ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
+						fprintf(stdout, "EQ LF@LESSOREQUAL1 ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 						fprintf(stdout, "OR LF@LESSOREQUAL_RES LF@LESSOREQUAL LF@LESSOREQUAL1\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@LESSOREQUAL int@0\n");
 						fprintf(stdout, "MOVE LF@LESSOREQUAL1 int@0\n");
 						fprintf(stdout, "MOVE LF@LESSOREQUAL_RES int@0\n");
-						fprintf(stdout, "LT LF@LESSOREQUAL LF@%s LF@%s\n", param1, param2);
-						fprintf(stdout, "EQ LF@LESSOREQUAL1 LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "LT LF@LESSOREQUAL ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
+						fprintf(stdout, "EQ LF@LESSOREQUAL1 ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 						fprintf(stdout, "OR LF@LESSOREQUAL_RES LF@LESSOREQUAL LF@LESSOREQUAL1\n");
 					}
 					param1 = "LESSOREQUAL_RES";
@@ -473,16 +550,28 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 						fprintf(stdout, "DEFVAR LF@MOREOREQUAL\n");
 						fprintf(stdout, "DEFVAR LF@MOREOREQUAL1\n");
 						fprintf(stdout, "DEFVAR LF@MOREOREQUAL_RES\n");
-						fprintf(stdout, "GT LF@MOREOREQUAL LF@%s LF@%s\n", param1, param2);
-						fprintf(stdout, "EQ LF@MOREOREQUAL1 LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "GT LF@MOREOREQUAL ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
+						fprintf(stdout, "EQ LF@MOREOREQUAL1 ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 						fprintf(stdout, "OR LF@MOREOREQUAL_RES LF@MOREOREQUAL LF@MOREOREQUAL1\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@MOREOREQUAL int@0\n");
 						fprintf(stdout, "MOVE LF@MOREOREQUAL1 int@0\n");
 						fprintf(stdout, "MOVE LF@MOREOREQUAL_RES int@0\n");
-						fprintf(stdout, "GT LF@MOREOREQUAL LF@%s LF@%s\n", param1, param2);
-						fprintf(stdout, "EQ LF@MOREOREQUAL1 LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "GT LF@MOREOREQUAL ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
+						fprintf(stdout, "EQ LF@MOREOREQUAL1 ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 						fprintf(stdout, "OR LF@MOREOREQUAL_RES LF@MOREOREQUAL LF@MOREOREQUAL1\n");
 					}
 					param1 = "MOREOREQUAL_RES";
@@ -495,13 +584,19 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR LF@NOTEQUAL\n");
 						fprintf(stdout, "DEFVAR LF@NOTEQUAL_RES\n");
-						fprintf(stdout, "EQ LF@NOTEQUAL LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@NOTEQUAL ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 						fprintf(stdout, "EQ LF@NOTEQUAL_RES LF@NOTEQUAL1\n");
 					}
 					else{
 						fprintf(stdout, "MOVE LF@NOTEQUAL int@0\n");
 						fprintf(stdout, "MOVE LF@NOTEQUAL_RES int@0\n");
-						fprintf(stdout, "EQ LF@NOTEQUAL LF@%s LF@%s\n", param1, param2);
+						fprintf(stdout, "EQ LF@NOTEQUAL ");
+						GEN_WRITE_VAR_LITERAL(token1, param1);
+						GEN_WRITE_VAR_LITERAL(token2, param2);
+						fprintf(stdout, "\n");
 						fprintf(stdout, "EQ LF@NOTEQUAL_RES LF@NOTEQUAL1\n");
 					}
 					param1 = "NOTEQUAL_RES";
@@ -513,42 +608,44 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 			}
 		}
 	}
-	if(!(ifSpotted(4)) && !(whileSpotted(4))){
-		if(end && type != 38 && param2 == NULL){
-			if(var_name != NULL){
-				fprintf(stdout, "MOVE LF@%s ", var_name);
+	if(end && type != 38 && param2 == NULL){
+		if(var_name != NULL){
+			fprintf(stdout, "MOVE LF@%s ", var_name);
+		}
+		else{
+			if(checkSEEN(1)){
+				counter1 = 1;
 			}
-			else{
-				if(checkSEEN(1)){
-					counter1 = 1;
-				}
-				fprintf(stdout, "MOVE LF@ret%d ", counter1);
-				counter1++;
-			}
-			GEN_WRITE_VAR_LITERAL(type, param1);
-			counter = 0;
+			fprintf(stdout, "MOVE LF@ret%d ", counter1);
+			counter1++;
 		}
-		else if(type == 38){
-			counter = 0;
-			type = 0;
-			oper = 0;
-		}
-		else if(end && oper != 0){
-			counter = 0;
-		}
+		GEN_WRITE_VAR_LITERAL(type, param1);
+		fprintf(stdout, "\n");
+		counter = 0;
 	}
-	else if((ifSpotted(4) || whileSpotted(4)) && tmp){
-		if(ifSpotted(4)){
-			fprintf(stdout, "JUMPIFNEQ else %s bool@true\n", param1);
+	else if(type == 38){
+		counter = 0;
+		type = 0;
+		oper = 0;
+	}
+	else if(end && oper != 0){
+		counter = 0;
+	}
+	if((ifSpotted(0) || whileSpotted(0)) && tmp){
+		if(ifORwhileWasTheLast(0) == 1){
+			fprintf(stdout, "JUMPIFNEQ else%d %s bool@true\n", ifSpotted(0), param1);
 			ifSpotted(0);
+			whileSpotted(0);
 			counter = 0;
 			type = 0;
 			oper = 0;
 			tmp = false;
 		}
-		else if(whileSpotted(4)){
-			fprintf(stdout, "LABEL while\n");
-			fprintf(stdout, "JUMPIFEQ end %s bool@true\n", param1);
+		if(ifORwhileWasTheLast(0) == 2){
+			fprintf(stdout, "LABEL while%d\n", whileSpotted(0));
+			fprintf(stdout, "JUMPIFEQ whileend%d %s bool@true\n", whileSpotted(0), param1);
+			whileSpotted(0);
+			ifSpotted(0);
 			counter = 0;
 			type = 0;
 			oper = 0;
@@ -575,12 +672,12 @@ fprintf(stdout, "LABEL $readi\n");
     fprintf(stdout, "PUSHS LF@ret2\n");
     fprintf(stdout, "JUMP $END_READI\n");
 
-	fprintf(stdout, "LABEL $readi_end\n");
+	fprintf(stdout, "LABEL $READI_END\n");
     fprintf(stdout, "PUSHS LF@ret1\n");
     fprintf(stdout, "MOVE LF@ret2 int@1\n");
     fprintf(stdout, "PUSHS LF@ret2\n");
 
-    fprintf(stdout, "LABEL $end_readi\n");
+    fprintf(stdout, "LABEL $END_READI\n");
 	fprintf(stdout, "POPFRAME\n");
 	fprintf(stdout, "RETURN\n\n");
 }
@@ -601,12 +698,12 @@ void GENERATION_READS(){
     fprintf(stdout, "PUSHS LF@ret2\n");
     fprintf(stdout, "JUMP $END_READS\n");
 
-	fprintf(stdout, "LABEL $reads_end\n");
+	fprintf(stdout, "LABEL $READS_END\n");
     fprintf(stdout, "PUSHS LF@ret1\n");
     fprintf(stdout, "MOVE LF@ret2 int@1\n");
     fprintf(stdout, "PUSHS LF@ret2\n");
 
-    fprintf(stdout, "LABEL $end_reads\n");
+    fprintf(stdout, "LABEL $END_READS\n");
 	fprintf(stdout, "POPFRAME\n");
 	fprintf(stdout, "RETURN\n\n");
 }
@@ -620,14 +717,14 @@ void GENERATION_READN(){
     fprintf(stdout, "READ LF@ret1 float\n");
 
     fprintf(stdout, "TYPE LF@ret_check LF@ret1\n");
-    fprintf(stdout, "JUMPIFNEQ $INPUTF_END LF@ret_check string@float\n");
+    fprintf(stdout, "JUMPIFNEQ $READN_END LF@ret_check string@float\n");
 
     fprintf(stdout, "PUSHS LF@ret\n");
     fprintf(stdout, "MOVE LF@ret2 int@0\n");
     fprintf(stdout, "PUSHS LF@ret2\n");
     fprintf(stdout, "JUMP $END_READN\n");
 
-	fprintf(stdout, "LABEL $readn_end\n");
+	fprintf(stdout, "LABEL $READN_END\n");
     fprintf(stdout, "MOVE LF@ret nil@nil\n");
     fprintf(stdout, "PUSHS LF@ret\n");
     fprintf(stdout, "MOVE LF@ret2 int@1\n");
@@ -697,30 +794,30 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "LABEL $SUBSTR_LEN\n");
 	fprintf(stdout, "MOVE LF@length_helper LF@length\n");
 
-	fprintf(stdout, "LABEL $for_loop\n");
+	fprintf(stdout, "LABEL $FOR_LOOP\n");
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_RET_0 LF@length_helper LF@from\n");
 	fprintf(stdout, "GETCHAR LF@char LF@string LF@from\n");
 	fprintf(stdout, "CONCAT LF@ret1 LF@ret1 LF@char\n");
 	fprintf(stdout, "ADD LF@from LF@from int@1\n");
 	fprintf(stdout, "JUMP $FOR_LOOP\n");
 
-	fprintf(stdout, "LABEL $substr_ret_0\n");
+	fprintf(stdout, "LABEL $SUBSTR_RET_0\n");
 	fprintf(stdout, "PUSHS LF@ret1\n");
 	fprintf(stdout, "MOVE LF@ret2 int@0\n");
 	fprintf(stdout, "PUSHS LF@ret2\n");
 	fprintf(stdout, "JUMP $END\n");
 
-	fprintf(stdout, "LABEL $substr_end\n");
+	fprintf(stdout, "LABEL $SUBSTR_END\n");
 	fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
 	fprintf(stdout, "PUSHS LF@ret1\n");
 	fprintf(stdout, "MOVE LF@ret2 int@1\n");
 	fprintf(stdout, "PUSHS LF@ret2\n");
 
-	fprintf(stdout, "LABEL $end\n");
+	fprintf(stdout, "LABEL $END\n");
 	fprintf(stdout, "POPFRAME\n");
 	fprintf(stdout, "RETURN\n\n");
 
-	fprintf(stdout, "LABEL $substr_empty\n");
+	fprintf(stdout, "LABEL $SUBSTR_EMPTY\n");
 	fprintf(stdout, "MOVE LF@ret1 string@\n");
 	fprintf(stdout, "PUSHS LF@ret1\n");
 	fprintf(stdout, "MOVE LF@ret2 int@0\n");
@@ -757,13 +854,13 @@ void GENERATION_ORD(){
 	fprintf(stdout, "PUSHS LF@ret2\n");
 	fprintf(stdout, "JUMP $ORD_RET\n");
 
-	fprintf(stdout, "LABEL $ord_end\n");
+	fprintf(stdout, "LABEL $ORD_END\n");
 	fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
 	fprintf(stdout, "PUSHS LF@ret1\n");
 	fprintf(stdout, "MOVE LF@ret2 int@1\n");
 	fprintf(stdout, "PUSHS LF@ret2\n");
 
-	fprintf(stdout, "LABEL $ord_ret\n");
+	fprintf(stdout, "LABEL $ORD_RET\n");
 	fprintf(stdout, "POPFRAME\n");
 	fprintf(stdout, "RETURN\n\n");
 }
@@ -791,14 +888,14 @@ fprintf(stdout, "MOVE LF@ret2 int@0\n");
 fprintf(stdout, "PUSHS LF@ret2\n");
 fprintf(stdout, "JUMP $CHR_RET\n");
 
-fprintf(stdout, "LABEL $chr_end\n");
+fprintf(stdout, "LABEL $CHR_END\n");
 
 fprintf(stdout, "MOVE LF@ret1 nil@nil\n");
 fprintf(stdout, "PUSHS LF@ret1\n");
 fprintf(stdout, "MOVE LF@ret2 int@1\n");
 fprintf(stdout, "PUSHS LF@ret2\n");
 
-fprintf(stdout, "LABEL $chr_ret\n");
+fprintf(stdout, "LABEL $CHR_RET\n");
 fprintf(stdout, "POPFRAME\n");
 fprintf(stdout, "RETURN\n\n");
 }
