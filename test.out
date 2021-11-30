@@ -192,34 +192,40 @@ RETURN
 LABEL $main
 CREATEFRAME
 PUSHFRAME
-DEFVAR LF@a
-POP: ATTR->type: 1|| ATTR->str: 5
-POP: ATTR->type: 1|| ATTR->str: 6
-POP: ATTR->type: 33|| ATTR->str: 
-DEFVAR LF@MUL_RES
-MUL LF@MUL_RES int@5 int@6 
-POP: ATTR->type: 1|| ATTR->str: 4
-POP: ATTR->type: 1|| ATTR->str: 7
-POP: ATTR->type: 33|| ATTR->str: 
-MOVE LF@MUL_RES int@0
-MUL LF@MUL_RES int@MUL_RES int@4 
-POP: ATTR->type: 1|| ATTR->str: 1
-POP: ATTR->type: 1|| ATTR->str: 3
-POP: ATTR->type: 33|| ATTR->str: 
-MOVE LF@MUL_RES int@0
-MUL LF@MUL_RES int@MUL_RES int@1 
-POP: ATTR->type: 1|| ATTR->str: 2
-POP: ATTR->type: 1|| ATTR->str: 12
-POP: ATTR->type: 30|| ATTR->str: 
-DEFVAR LF@SUM_RES
-ADD LF@SUM_RES int@MUL_RES int@2 
-POP: ATTR->type: 35|| ATTR->str: 
-POP: ATTR->type: 33|| ATTR->str: 
-POP: ATTR->type: 31|| ATTR->str: -1
-DEFVAR LF@SUB_RES
-DEC LF@SUB_RES int@SUM_RES 
-POP: ATTR->type: 30|| ATTR->str: 
-POP: ATTR->type: 1|| ATTR->str: 43
-POP: ATTR->type: 30|| ATTR->str: 
-WRITE LF@a$1 
+DEFVAR LF@a$1 
+DEFVAR LF@vysl$1 
+MOVE LF@vysl$1 int@0 
+WRITE string@Zadejte\032cislo\032pro\032vypocet\032faktorialu\010 
+CALL $readi
+MOVE LF@a$1 TF@ret1
+DEFVAR LF@EQUAL_RES$1 
+EQ LF@EQUAL_RES$1 LF@a$1 nil@nil 
+JUMPIFNEQ else1 LF@EQUAL_RES$1 bool@true
+WRITE string@a\032je\032nil\010 
+JUMP ifend1
+LABEL else1
+LABEL ifend1
+DEFVAR LF@LESS_RES$1 
+LT LF@LESS_RES$1 LF@a$1 int@0 
+LABEL while1
+JUMPIFEQ whileend1 LF@LESS_RES$1 bool@true
+WRITE string@Faktorial\032nelze\032spocitat\010 
+MOVE LF@vysl$1 int@1 
+DEFVAR LF@MORE_RES$1 
+GT LF@MORE_RES$1 LF@a$1 int@0 
+JUMPIFNEQ else2 LF@MORE_RES$1 bool@true
+DEFVAR LF@MUL_RES$1 
+MUL LF@MUL_RES$1 LF@vysl$1 LF@a$1 
+MOVE LF@vysl$1 LF@MUL_RES$1 
+DEFVAR LF@SUM_RES$1 
+DEC LF@SUM_RES$1 LF@a$1 int@1 
+MOVE LF@a$1 LF@SUB_RES$1 
+JUMP ifend2
+LABEL else2
+LABEL ifend2
+WRITE string@Vysledek\032je\058\032 
+WRITE LF@vysl$1 
 WRITE string@\010 
+JUMP while1
+LABEL whileend1
+CALL $main
