@@ -244,7 +244,7 @@ int getNextToken(string *attr){
             case 9:
                 // pokracovani operatoru *
                 if (isspace(c)) {state = 0; return MULTIPLY;}
-                else if (c == '(' || c == ',' || c == ')'){
+                else if (c == '(' || c == ',' || c == '#' || isalnum(c)){
                     ungetc(c, source);
                     state = 0;
                     return MULTIPLY;
@@ -259,7 +259,7 @@ int getNextToken(string *attr){
                 // pokracovani operatoru /
                 if (c == '/') state = 11;
                 else if (isspace(c)) {state = 0; return DIV;}
-                else if (c == '(' || c == ',' || c == ')'){
+                else if (c == '(' || c == ',' || c == '#' || isalnum(c)){
                     ungetc(c, source);
                     state = 0;
                     return DIV;
@@ -273,7 +273,7 @@ int getNextToken(string *attr){
             case 11:
                 // pokracovani operatoru //
                 if (isspace(c)) {state = 0; return MOD;}
-                else if (c == '(' || c == ',' || c == ')'){
+                else if (c == '(' || c == ',' || c == '#' || isalnum(c)){
                     ungetc(c, source);
                     state = 0;
                     return MOD;
@@ -297,7 +297,7 @@ int getNextToken(string *attr){
                 // pokracovani operatoru </<=
                 if (c == '=') {state = 0; return LESSOREQUAL;}
                 else if (isspace(c)) return LESS;
-                else if (c == '(' || c == ',' || c == ')'){
+                else if (c == '(' || c == ',' || c == '#' || isalnum(c)){
                     ungetc(c, source);
                     state = 0;
                     return LESS;
@@ -311,8 +311,8 @@ int getNextToken(string *attr){
             case 14:
                 // pokracovani operatoru >/>=
                 if (c == '=') {state = 0; return MOREOREQUAL;}
-                else if (isspace(c)) return MORE;
-                else if (c == '(' || c == ',' || c == ')'){
+                else if (isspace(c)){return MORE;}
+                else if (c == '(' || c == ','  || c == '#' || isalnum(c)){
                     ungetc(c, source);
                     state = 0;
                     return MORE;
@@ -378,14 +378,10 @@ int getNextToken(string *attr){
             case 18:
                 if (isspace(c)) return INT;
                 else if (c == '.') state = 19;
-                else if (c == ')' || c == ',' || isalpha(c)){
+                else if (!isdigit(c)){ 
                     ungetc(c, source);
                     state = 0;
                     return INT;
-                }
-                else if (!isdigit(c)){                    
-                    changeError(-10);
-                    return LEX_ERROR;
                 }
                 strAddChar(attr, c);
                 break;

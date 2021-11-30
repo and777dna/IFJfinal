@@ -1,9 +1,8 @@
-require"ifj21"
-function  fn()
+require "ifj21"
+
+function main()
+    local a:integer = 5*6+4*7-1*3*(2+12)+43
+    write(a, "\n")
 end
-function    main(a:integer,b:number,c:string)
-return a,b
-end
---[[]]
-main(5,5.0,"\n\t\\hello\"")
---komentar
+
+main()

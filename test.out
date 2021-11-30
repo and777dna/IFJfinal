@@ -1,0 +1,225 @@
+.IFJcode21
+JUMP $main
+
+LABEL $reads
+PUSHFRAME
+DEFVAR LF@ret1
+DEFVAR LF@ret2
+READ LF@ret1 string
+DEFVAR LF@ret_check
+TYPE LF@ret_check LF@ret1
+JUMPIFNEQ $READS_END LF@ret_check string@string
+PUSHS LF@ret1
+MOVE LF@ret2 int@0
+PUSHS LF@ret2
+JUMP $END_READS
+LABEL $READS_END
+PUSHS LF@ret1
+MOVE LF@ret2 int@1
+PUSHS LF@ret2
+LABEL $END_READS
+POPFRAME
+RETURN
+
+LABEL $readi
+PUSHFRAME
+DEFVAR LF@ret1
+DEFVAR LF@ret2
+READ LF@ret1 int
+DEFVAR LF@ret_check
+TYPE LF@ret_check LF@ret1
+JUMPIFNEQ $READI_END LF@ret_check string@int
+PUSHS LF@ret1
+MOVE LF@ret2 int@0
+PUSHS LF@ret2
+JUMP $END_READI
+LABEL $READI_END
+PUSHS LF@ret1
+MOVE LF@ret2 int@1
+PUSHS LF@ret2
+LABEL $END_READI
+POPFRAME
+RETURN
+
+LABEL $readn
+PUSHFRAME
+DEFVAR LF@ret
+DEFVAR LF@ret2
+DEFVAR LF@ret_check
+READ LF@ret1 float
+TYPE LF@ret_check LF@ret1
+JUMPIFNEQ $READN_END LF@ret_check string@float
+PUSHS LF@ret
+MOVE LF@ret2 int@0
+PUSHS LF@ret2
+JUMP $END_READN
+LABEL $READN_END
+MOVE LF@ret nil@nil
+PUSHS LF@ret
+MOVE LF@ret2 int@1
+PUSHS LF@ret2
+LABEL $END_READN
+POPFRAME
+RETURN
+
+LABEL $tointeger
+PUSHFRAME
+DEFVAR LF@ret1
+DEFVAR LF@param
+MOVE LF@param LF@f$0
+FLOAT2INT LF@ret1 LF@param
+PUSHS LF@ret1
+POPFRAME
+RETURN
+
+LABEL $substr
+PUSHFRAME
+DEFVAR LF@ret1
+DEFVAR LF@ret2
+DEFVAR LF@string
+DEFVAR LF@from
+DEFVAR LF@length_of_str
+DEFVAR LF@length
+DEFVAR LF@length_helper
+DEFVAR LF@char
+DEFVAR LF@new_strlen
+MOVE LF@ret1 string@
+MOVE LF@string LF@s$0
+MOVE LF@from LF@i$0
+MOVE LF@length_of_str LF@n$0
+MOVE LF@length_helper int@0
+STRLEN LF@length LF@string
+SUB LF@new_strlen LF@length int@1
+DEFVAR LF@result
+LT LF@result LF@length_of_str int@0
+JUMPIFEQ $SUBSTR_END LF@result bool@true
+EQ LF@result LF@length_of_str int@0
+JUMPIFEQ $SUBSTR_EMPTY LF@result bool@true
+LT LF@result LF@from int@0
+JUMPIFEQ $SUBSTR_END LF@result bool@true
+GT LF@result LF@from LF@new_strlen
+JUMPIFEQ $SUBSTR_END LF@result bool@true
+ADD LF@length_helper LF@length_helper LF@from
+ADD LF@length_helper LF@length_helper LF@length_of_str
+GT LF@result LF@length_helper LF@length
+JUMPIFEQ $SUBSTR_LEN LF@result bool@true
+JUMP $FOR_LOOP
+LABEL $SUBSTR_LEN
+MOVE LF@length_helper LF@length
+LABEL $FOR_LOOP
+JUMPIFEQ $SUBSTR_RET_0 LF@length_helper LF@from
+GETCHAR LF@char LF@string LF@from
+CONCAT LF@ret1 LF@ret1 LF@char
+ADD LF@from LF@from int@1
+JUMP $FOR_LOOP
+LABEL $SUBSTR_RET_0
+PUSHS LF@ret1
+MOVE LF@ret2 int@0
+PUSHS LF@ret2
+JUMP $END
+LABEL $SUBSTR_END
+MOVE LF@ret1 nil@nil
+PUSHS LF@ret1
+MOVE LF@ret2 int@1
+PUSHS LF@ret2
+LABEL $END
+POPFRAME
+RETURN
+
+LABEL $SUBSTR_EMPTY
+MOVE LF@ret1 string@
+PUSHS LF@ret1
+MOVE LF@ret2 int@0
+PUSHS LF@ret2
+JUMP $END
+
+LABEL $ord
+PUSHFRAME
+DEFVAR LF@string
+DEFVAR LF@int
+DEFVAR LF@length
+DEFVAR LF@right_int
+DEFVAR LF@ret1
+DEFVAR LF@ret2
+MOVE LF@string LF@s$0
+MOVE LF@int LF@i$0
+
+STRLEN LF@length LF@string
+SUB LF@length LF@length int@1
+GT LF@right_int LF@int LF@length
+JUMPIFEQ $ORD_END LF@right_int bool@true
+LT LF@right_int LF@int int@0
+JUMPIFEQ $ORD_END LF@right_int bool@true
+STRI2INT LF@ret1 LF@string LF@int
+PUSHS LF@ret1
+MOVE LF@ret2 int@0
+PUSHS LF@ret2
+JUMP $ORD_RET
+LABEL $ORD_END
+MOVE LF@ret1 nil@nil
+PUSHS LF@ret1
+MOVE LF@ret2 int@1
+PUSHS LF@ret2
+LABEL $ORD_RET
+POPFRAME
+RETURN
+
+LABEL $chr
+PUSHFRAME
+DEFVAR LF@int
+DEFVAR LF@right_int
+DEFVAR LF@ret1
+DEFVAR LF@ret2
+MOVE LF@int LF@i$0
+LT LF@right_int LF@int int@0
+JUMPIFEQ $CHR_END LF@right_int bool@true
+GT LF@right_int LF@int int@255
+JUMPIFEQ $CHR_END LF@right_int bool@true
+INT2CHAR LF@ret1 LF@int
+PUSHS LF@ret1
+MOVE LF@ret2 int@0
+PUSHS LF@ret2
+JUMP $CHR_RET
+LABEL $CHR_END
+MOVE LF@ret1 nil@nil
+PUSHS LF@ret1
+MOVE LF@ret2 int@1
+PUSHS LF@ret2
+LABEL $CHR_RET
+POPFRAME
+RETURN
+
+LABEL $main
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@a
+POP: ATTR->type: 1|| ATTR->str: 5
+POP: ATTR->type: 1|| ATTR->str: 6
+POP: ATTR->type: 33|| ATTR->str: 
+DEFVAR LF@MUL_RES
+MUL LF@MUL_RES int@5 int@6 
+POP: ATTR->type: 1|| ATTR->str: 4
+POP: ATTR->type: 1|| ATTR->str: 7
+POP: ATTR->type: 33|| ATTR->str: 
+MOVE LF@MUL_RES int@0
+MUL LF@MUL_RES int@MUL_RES int@4 
+POP: ATTR->type: 1|| ATTR->str: 1
+POP: ATTR->type: 1|| ATTR->str: 3
+POP: ATTR->type: 33|| ATTR->str: 
+MOVE LF@MUL_RES int@0
+MUL LF@MUL_RES int@MUL_RES int@1 
+POP: ATTR->type: 1|| ATTR->str: 2
+POP: ATTR->type: 1|| ATTR->str: 12
+POP: ATTR->type: 30|| ATTR->str: 
+DEFVAR LF@SUM_RES
+ADD LF@SUM_RES int@MUL_RES int@2 
+POP: ATTR->type: 35|| ATTR->str: 
+POP: ATTR->type: 33|| ATTR->str: 
+POP: ATTR->type: 31|| ATTR->str: -1
+DEFVAR LF@SUB_RES
+DEC LF@SUB_RES int@SUM_RES 
+POP: ATTR->type: 30|| ATTR->str: 
+POP: ATTR->type: 1|| ATTR->str: 43
+POP: ATTR->type: 30|| ATTR->str: 
+WRITE LF@a$1 
+WRITE string@\010 

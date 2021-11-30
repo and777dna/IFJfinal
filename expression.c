@@ -64,7 +64,7 @@ void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam,
     if(seznam != NULL){
         name = seznam->name;
     }
-    // printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
+    printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
     EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name);
     stack->top--;
 }
@@ -234,7 +234,33 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             token = tryGetToken();
             TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
         }
-        else{ 
+        else{
+            if(stack->attr[stack->top].type == ID || stack->attr[stack->top].type == INTEGER || stack->attr[stack->top].type == INT
+                || stack->attr[stack->top].type == FLOAT || stack->attr[stack->top].type == NUMBER){
+                if (token == INT){
+                    if(strstr(attr->str, "-") != NULL){
+                        char *saveptr;
+                        string foo;
+                        pop(stack, token, *attr, deep, seznam, end);
+                        foo.str = malloc(sizeof(attr->str));
+                        foo.str = strtok_r(attr->str, "-", &saveptr);
+                        if (precTable[stackVal][1] == '<'){
+                            push(stack, *attr, 31);
+                        }
+                        else if (precTable[stackVal][1] == '>'){
+                            pop(stack, token, *attr, deep, seznam, end);
+                            push(stack, *attr, 31);
+                        }
+                        else if (precTable[stackVal][1] == '='){
+                            pop(stack, token, *attr, deep, seznam, end);
+                            push(stack, *attr, 31);
+                        }
+                        attr->str = malloc(sizeof(saveptr));
+                        strcpy(attr->str, foo.str);
+                        return TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type); 
+                    }
+                }
+            }
             funcs tmp = findFunc(functree, attr->str);
             vars tmp2 = findVar(vartree, deep, attr->str);
             if (tmp != NULL || tmp2 != NULL){
@@ -252,7 +278,8 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
     else{
         end = true;
         int stackVal = stack->attr[stack->top].type - 30;
-        if (stack->attr[stack->top].type == ID || stack->attr[stack->top].type == INT || stack->attr[stack->top].type == FLOAT){
+        if (stack->attr[stack->top].type == ID || stack->attr[stack->top].type == INT 
+            || stack->attr[stack->top].type == FLOAT){
             stackVal = 7;
         }
         else if (stack->attr[stack->top].type == RETEZEC){
