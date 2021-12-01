@@ -180,6 +180,7 @@ void freeSeznam()
         }
         head = NULL;
     } 
+    seznam = NULL;
     return;
 }
 
@@ -193,7 +194,7 @@ int tryGetToken()
         changeError(1);
         return LEX_ERROR;
     }
-    printf("%d   %s\n", token, attr.str);  // to check the token
+    //printf("%d   %s\n", token, attr.str);  // to check the token
     return token;
 }
 
@@ -425,7 +426,7 @@ int functionIsOK()
                 insertFunc(name_func_save, &(table->func_tree), origin);
             }
             if(!(strcmp(attr.str, "main"))){
-                GEN_START_OF_FUNCTION(name_func_save, retnum);
+                GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree);
             }
             else if (tmp != NULL && tmp->origin == 1)
             {
@@ -480,7 +481,7 @@ int functionIsOK()
                     case COLUMN:
                         token = tryGetToken();
                         outputWasComplited = outputIsOK();
-                        GEN_START_OF_FUNCTION(name_func_save, retnum);
+                        GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree);
                         return outputWasComplited;
                         break;
                     default:
@@ -496,7 +497,7 @@ int functionIsOK()
             }
         }
         else {
-            changeError(7);
+            changeError(2);
             return SEM_ERROR;
         }
     }
@@ -530,6 +531,7 @@ int functionIsOK()
                                 break;
                             
                             default:
+                                return SYNTAX_OK;
                                 break;
                             }
                         }  
@@ -563,7 +565,12 @@ int functionBodyIsOK()
             if (token == ID)
             {
                 vars varcheck = findVar(table->var_tree, deep, attr.str);
+                funcs maybefunc = findFunc(table->func_tree, attr.str);
                 if (varcheck != NULL && varcheck->deepOfVar == deep){
+                    changeError(3);
+                    return SEM_ERROR_DEFINE;
+                }
+                else if (maybefunc != NULL){
                     changeError(3);
                     return SEM_ERROR_DEFINE;
                 }
@@ -770,6 +777,17 @@ int functionBodyIsOK()
                     return SYNTAX_ERROR;
                 }
                 token = tryGetToken();
+                if(maybefunc->in == NULL){
+                    if(token != RIGHT_BRACKET){
+                        changeError(5);
+                    }
+                }
+                if(maybefunc->in != NULL){
+                    fprintf(stdout, "CREATEFRAME\n");
+                    if(token == RIGHT_BRACKET){
+                        changeError(5);
+                    }
+                }
                 while (token != RIGHT_BRACKET)
                 {   
                     int typeCheck;
@@ -880,6 +898,9 @@ int functionBodyIsOK()
                                     if(maybefunc->in != NULL){
                                         maybefunc->in = maybefunc->in->first;
                                         int check;
+                                        if(maybefunc->in != NULL){
+                                            fprintf(stdout, "CREATEFRAME\n");
+                                        }
                                         while(token != RIGHT_BRACKET){
                                             if (token == ID){
                                                 vars varfind = findVar(table->var_tree, deep, attr.str);
@@ -956,7 +977,8 @@ int functionBodyIsOK()
                     }
                     else if(tmp2 != NULL){
                         checkSEEN(6);  
-                        token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
+                        strcpy_for_var(tmp2->name);
+                        token = express(token, &attr, table->var_tree, table->func_tree, deep, NULL, 3);
                         fprintf(stdout, "JUMP %s_RET\n", funnamesv.str);  
                         break;
                     }
@@ -966,7 +988,7 @@ int functionBodyIsOK()
                 }
                 else{
                     checkSEEN(6);
-                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
+                    token = express(token, &attr, table->var_tree, table->func_tree, deep, NULL, 3);
                     fprintf(stdout, "JUMP %s_RET\n", funnamesv.str);    
                     break;
                 }
@@ -1058,6 +1080,10 @@ int syntaxCheck(){
             funcs maybefunc = findFunc(table->func_tree, attr.str);
             if (maybefunc != NULL)
             {
+                if(maybefunc->out != NULL){
+                    changeError(5);
+                    return SEM_ERROR_FUNCPARAM;
+                }
                 token = tryGetToken();
                 if (token != LEFT_BRACKET)
                 {
@@ -1066,6 +1092,9 @@ int syntaxCheck(){
                     return SYNTAX_ERROR;
                 }
                 token = tryGetToken();
+                // if(maybefunc->in != NULL){
+                //     fprintf(stdout, "CREATEFRAME\n");
+                // }
                 while (token != RIGHT_BRACKET)
                 {
                     int typeCheck = token + 15;
@@ -1080,7 +1109,7 @@ int syntaxCheck(){
                         return SEM_ERROR_FUNCPARAM;
                     }
                     maybefunc->in = maybefunc->in->next;
-                    GEN_FUNC_MAIN_END(attr.str, token);
+                    //GEN_FUNC_MAIN_END(attr.str, token);
                     token = tryGetToken();
                 }
             }
@@ -1121,7 +1150,7 @@ int program()
                 changeError(error_flag);
             }
         }
-        else changeError(2);
+        else changeError(7);
     }
     else{
         changeError(2);

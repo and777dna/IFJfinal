@@ -1,6 +1,3 @@
-21   require
-3   ifj21
-13   function
 .IFJcode21
 JUMP $main
 
@@ -192,35 +189,65 @@ LABEL $CHR_RET
 POPFRAME
 RETURN
 
-0   main
 LABEL $main
 CREATEFRAME
 PUSHFRAME
-35   
-36   
-19   local
-0   x
-51   
-17   number
-DEFVAR LF@x$1 
-29   
-2   4.9
-19   local
-    savetype: type: 0 == token: 17
-MOVE LF@x$1 float@0x1.p+2 
-0   y
-51   
-18   string
-DEFVAR LF@y$1 
-29   
-3   hello\032there
-15   if
-    savetype: type: 0 == token: 18
-MOVE LF@y$1 string@hello\032there 
-0   x
-VAR: type: 17 == token: 0
-type: 3 == token: 0
-39   
-    savetype: type: 0 == token: 3
-0   y
-type: 17 == token: 0
+DEFVAR LF@a$1 
+MOVE LF@a$1 int@4 
+DEFVAR LF@b$1 
+MOVE LF@b$1 nil@nil 
+DEFVAR LF@c$1 
+MOVE LF@c$1 float@0x1p+2 
+DEFVAR LF@d$1 
+MOVE LF@d$1 int@4 
+DEFVAR LF@e$1 
+MOVE LF@e$1 string@ 
+DEFVAR LF@f$1 
+MOVE LF@f$1 string@abcd 
+DEFVAR LF@g$1 
+MOVE LF@g$1 nil@nil 
+DEFVAR LF@h$1 
+MOVE LF@h$1 float@0x1p+0 
+DEFVAR LF@i$1 
+MOVE LF@i$1 float@0x1p+0 
+DEFVAR LF@j$1 
+MOVE LF@j$1 float@0x1p+0 
+DEFVAR LF@k$1 
+MOVE LF@k$1 float@0x1p+0 
+DEFVAR LF@l$1 
+MOVE LF@l$1 float@0x1p+0 
+DEFVAR LF@m$1 
+MOVE LF@m$1 float@0x1p+0 
+DEFVAR LF@n$1 
+MOVE LF@n$1 float@0x1p+0 
+DEFVAR LF@o$1 
+MOVE LF@o$1 nil@nil 
+WRITE LF@a$1 
+WRITE string@\010 
+WRITE LF@b$1 
+WRITE string@\010 
+WRITE LF@c$1 
+WRITE string@\010 
+WRITE LF@d$1 
+WRITE string@\010 
+WRITE LF@e$1 
+WRITE string@\010 
+WRITE LF@f$1 
+WRITE string@\010 
+WRITE LF@h$1 
+WRITE string@\010 
+WRITE LF@i$1 
+WRITE string@\010 
+WRITE LF@j$1 
+WRITE string@\010 
+WRITE LF@k$1 
+WRITE string@\010 
+WRITE LF@l$1 
+WRITE string@\010 
+WRITE LF@m$1 
+WRITE string@\010 
+WRITE LF@n$1 
+WRITE string@\010 
+WRITE LF@o$1 
+WRITE string@\010 
+POPFRAME

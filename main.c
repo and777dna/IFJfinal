@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 int main(int argc, char *argv[]){
-
     symtable *table;
     table = initST(table);
     FILE *f = stdin;

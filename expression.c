@@ -55,7 +55,7 @@ void push(Stack_t *stack, string value, int type) {
     // printf("PUSH: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
 }
 
-void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end) { 
+void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end, vars vartree) { 
     if (stack->top == 0) {
         exit(STACK_UNDERFLOW);
     }
@@ -63,7 +63,13 @@ void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam,
     if(seznam != NULL){
         name = seznam->name;
     }
-    // printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
+    if(stack->attr[stack->top].type == 3){
+        vars tmp2 = findVar(vartree, deep, stack->attr[stack->top].attr);
+        if(tmp2 != NULL){
+            stack->attr[stack->top].type = 0;
+        }
+    }
+    //printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
     EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name);
     stack->top--;
 }
@@ -78,12 +84,12 @@ void implode(Stack_t *stack) {
 char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
 {
 //  +    -    \    *    /    (    )    i    $    =   ~=    <   <=    >   >=   str   #   ..   nil
-  {'>', '>', '<', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // +
-  {'>', '>', '<', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // -
+  {'>', '>', '>', '>', '>', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // +
+  {'>', '>', '>', '>', '>', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // -
   {'>', '>', '>', '<', '<', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // \    //space after '\' is important
   {'>', '>', '>', '>', '>', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // *
   {'>', '>', '>', '>', '>', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '#', '<', '#', '#'},  // /
-  {'<', '<', '<', '<', '<', '<', '=', '<', '#', '<', '<', '<', '<', '<', '<', '<', '<', '#', '#'},  // (
+  {'<', '<', '<', '<', '<', '<', '=', '<', '#', '<', '<', '<', '<', '<', '<', '<', '<', '<', '#'},  // (
   {'>', '>', '>', '>', '>', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '#', '#', '#', '#'},  // )
   {'>', '>', '>', '>', '>', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '#', '#', '#', '#'},  // i
   {'<', '<', '<', '<', '<', '<', '#', '<', '#', '<', '<', '<', '<', '<', '<', '<', '<', '<', '#'},  // $
@@ -94,16 +100,16 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '#'},  // >
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '#'},  // >=
   {'>', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '#', '#', '>', '#'},  // str
-  {'<', '<', '<', '<', '<', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '#', '#'},  // #
-  {'#', '#', '#', '#', '#', '#', '#', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '>', '#'},  // ..
+  {'<', '<', '<', '<', '<', '<', '>', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '#', '#'},  // #
+  {'#', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '>', '#'},  // ..
   {'#', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '#', '#', '#', '#', '#', '#', '#', '#'},  // nil
 };
 
 int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, bool end, int type){
     static int savetype = 0;
     if(savetype == 0){
-        printf("    savetype: type: %d == token: %d\n", savetype, type);
-        savetype = type+15;
+        //printf("    savetype: type: %d == token: %d\n", savetype, type);
+        savetype = type;
     }
     int checktype;
     if ((token < 10 || token > 25) && token != COMMA){
@@ -113,7 +119,8 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             
             if (type == STRING || type == INTEGER){
                 if (token != type-15 && token != ID && type != 3){
-                    if(stack->attr[stack->top].type != HASH && (token != 3 || token != STRING)){
+                    if(stack->attr[stack->top].type != HASH && (token != 3 && token != STRING) 
+                        && stack->attr[stack->top].type != RIGHT_BRACKET && stack->attr[stack->top].type != LEFT_BRACKET){
                         deleteStack(stack);
                         changeError(4);
                     }
@@ -160,6 +167,11 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
         if((stackVal == 2 || stackVal == 4) && attr->str == 0){
             return ZERO_DIVISION_ERROR;
         }
+        if(stack->attr[stack->top].type == HASH && (token == 3 || token == STRING)){
+            push(stack, *attr, token);
+            pop(stack, token, *attr, deep, seznam, end, vartree);
+            pop(stack, token, *attr, deep, seznam, end, vartree);
+        }
         if (precTable[stackVal][inputNum] == '<'){
             push(stack, *attr, token);
             token = tryGetToken();
@@ -179,7 +191,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                     if (checktype != INT && checktype != INTEGER && checktype != FLOAT && checktype != NUMBER && 
                         (checktype != NIL && (stack->attr[stack->top].type == EQUAL || stack->attr[stack->top].type == NOTEQUAL))){
                         deleteStack(stack);
-                        printf("type: %d == token: %d\n", savetype, token);
+                        //printf("type: %d == token: %d\n", savetype, token);
                         changeError(6);
                     }
                 }
@@ -228,7 +240,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 vars tmp2 = findVar(vartree, deep, stack->attr[stack->top].attr);
                 savetype = tmp2->type;
             }
-            pop(stack, token, *attr, deep, seznam, end);
+            pop(stack, token, *attr, deep, seznam, end, vartree);
             TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
         }
         else if (precTable[stackVal][inputNum] == '='){
@@ -240,7 +252,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 vars tmp2 = findVar(vartree, deep, stack->attr[stack->top].attr);
                 savetype = tmp2->type;
             }
-            pop(stack, token, *attr, deep, seznam, end);
+            pop(stack, token, *attr, deep, seznam, end, vartree);
             token = tryGetToken();
             TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
         }
@@ -251,18 +263,18 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                     if(strstr(attr->str, "-") != NULL){
                         char *saveptr;
                         string foo;
-                        pop(stack, token, *attr, deep, seznam, end);
+                        pop(stack, token, *attr, deep, seznam, end, vartree);
                         foo.str = malloc(sizeof(attr->str));
                         foo.str = strtok_r(attr->str, "-", &saveptr);
                         if (precTable[stackVal][1] == '<'){
                             push(stack, *attr, 31);
                         }
                         else if (precTable[stackVal][1] == '>'){
-                            pop(stack, token, *attr, deep, seznam, end);
+                            pop(stack, token, *attr, deep, seznam, end, vartree);
                             push(stack, *attr, 31);
                         }
                         else if (precTable[stackVal][1] == '='){
-                            pop(stack, token, *attr, deep, seznam, end);
+                            pop(stack, token, *attr, deep, seznam, end, vartree);
                             push(stack, *attr, 31);
                         }
                         attr->str = malloc(sizeof(saveptr));
@@ -275,7 +287,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             vars tmp2 = findVar(vartree, deep, attr->str);
             if (tmp != NULL || tmp2 != NULL){
                 token = ID;
-                pop(stack, token, *attr, deep, seznam, true);
+                pop(stack, token, *attr, deep, seznam, true, vartree);
                 savetype = 0;
                 return token;
             }
@@ -309,12 +321,12 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 }
                 EXPRESSION_FUNC("nil", token, false, name);
             }
-            pop(stack, token, *attr, deep, seznam, true);
+            pop(stack, token, *attr, deep, seznam, true, vartree);
             savetype = 0;
             return token;
         }
         else if (precTable[stackVal][8] == '='){
-            pop(stack, token, *attr, deep, seznam, true);
+            pop(stack, token, *attr, deep, seznam, true, vartree);
             savetype = 0;
             return token;
         }
@@ -340,24 +352,30 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
         }
         if (token == ID){
             vars tmp2 = findVar(vartree, deep, attr->str);
-            printf("VAR: type: %d == token: %d\n", tmp2->type, token);
+            if(tmp2 == NULL){
+                changeError(3);
+                return SEM_ERROR_DEFINE;
+            }
+            //printf("VAR: type: %d == token: %d\n", tmp2->type, token);
             if(tmp2->type == STRING){
                 token = 3;
             }
             else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
                 token = 0;
             }
-            printf("type: %d == token: %d\n", type, token);
+            //printf("type: %d == token: %d\n", type, token);
             if((tmp2->type != type && tmp2->type != type + 15) && (token >= 0 && token < 4) && type != 3){
-                printf("type: %d == tmp->type: %d\n", type, tmp2->type);
+                //printf("type: %d == tmp->type: %d\n", type, tmp2->type);
                 deleteStack(stack);
                 changeError(4);
             }
         }
         if (token != type-15 && token != ID && type != 3 && token != NIL && ((token >= 0 && token < 4) || (token > 15 && token <= 18))){ 
-            printf("type: %d == token: %d\n", type, token);
-            deleteStack(stack);
-            changeError(4);
+            if(!(type == NUMBER && (token == FLOAT || token == INT))){
+                //printf("type: %d == token: %d\n", type, token);
+                deleteStack(stack);
+                changeError(4);
+            }
         }
         push(stack, *attr, token);
         token = tryGetToken();
@@ -375,7 +393,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             if (stack != NULL){
                 end = true;
                 while (strcmp(stack->attr[stack->top].attr, "$") != 0){
-                    pop(stack, token, *attr, deep, seznam, end);
+                    pop(stack, token, *attr, deep, seznam, end, vartree);
                 }
             }
             token = tryGetToken();
@@ -389,7 +407,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             if (token == NIL){
                 if (stack != NULL){
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
-                        pop(stack, token, *attr, deep, seznam, end);
+                        pop(stack, token, *attr, deep, seznam, end, vartree);
                     }
                 }
                 token = tryGetToken();
@@ -399,7 +417,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             else if ((token >= 10 && token <= 25) || token == ID){
                 if (stack != NULL){
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
-                        pop(stack, token, *attr, deep, seznam, end);
+                        pop(stack, token, *attr, deep, seznam, end, vartree);
                     }
                 }
                 deleteStack(stack);
@@ -408,7 +426,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             else{
                 if (stack != NULL){
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
-                        pop(stack, token, *attr, deep, seznam, end);
+                        pop(stack, token, *attr, deep, seznam, end, vartree);
                     }
                 }
                 deleteStack(stack);

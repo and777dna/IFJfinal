@@ -202,7 +202,7 @@ int getNextToken(string *attr){
                     return LEX_ERROR;
                 }
                     // identifikator nebo klicove slovo
-                else if (isalnum(c) || c == '.')
+                else if (isalnum(c) || c == '_')
                     // identifikator pokracuje
                     strAddChar(attr, c);
                 else
@@ -379,6 +379,9 @@ int getNextToken(string *attr){
             case 18:
                 if (isspace(c)) return INT;
                 else if (c == '.') state = 19;
+                else if (c == 'e' || c == 'E'){
+                    state = 20;
+                }
                 else if (!isdigit(c)){ 
                     ungetc(c, source);
                     state = 0;

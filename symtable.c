@@ -295,6 +295,9 @@ void insertOutput(funcs func, int type, char *name)
         new_param->next = NULL;
         new_param->type = type;
         new_param->first = startOut;
+        if(new_param->first->next == NULL){
+            new_param->first->next = new_param; 
+        }
     }
     
 }

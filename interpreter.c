@@ -37,7 +37,7 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr){
 			fprintf(stdout, "int@%s ", attr);
 			break;
 		case FLOAT:
-			fprintf(stdout, "float@%#a ", (float)atoi(attr));
+			fprintf(stdout, "float@%a ", (float)atoi(attr));
 			break;
 		case RETEZEC:
 			fprintf(stdout, "string@%s ", attr);
@@ -57,13 +57,17 @@ void GEN_PRINT_WRITE(int token, string attr){
 	fprintf(stdout, "\n");
 }
 
-void GEN_START_OF_FUNCTION(char *attr, int value){
+void GEN_START_OF_FUNCTION(char *attr, int value, funcs func_tree){
+	funcs maybefunc = findFunc(func_tree, attr);
 	if(strcmp(attr, "main")){
 		fprintf(stdout, "LABEL $%s\n", attr);
-		fprintf(stdout, "PUSHFRAME \n");
+		//if(maybefunc->in != NULL){
+			fprintf(stdout, "PUSHFRAME\n");
+		//}
 		for(int i = 1; i <= value; i++){
 			char *tmp;
-			fprintf(stdout, "DEFVAR LF@ret%d$1\n", value);		
+			fprintf(stdout, "DEFVAR LF@ret%d$1\n", i);
+			fprintf(stdout, "MOVE LF@ret%d$1 nil@nil\n", i);
 		}
 	}
 	else {
@@ -71,6 +75,17 @@ void GEN_START_OF_FUNCTION(char *attr, int value){
 		fprintf(stdout, "CREATEFRAME\n");
 		fprintf(stdout, "PUSHFRAME\n");
 		main_flag = true;
+	}
+	if(maybefunc->in != NULL){
+		int counter = 1;
+		fprintf(stdout, "DEFVAR LF@param%d$1\n", counter);
+		fprintf(stdout, "MOVE LF@param%d$1 LF@in%d$1\n", counter, counter);
+		counter++;
+		while(maybefunc->in->next != NULL){
+			fprintf(stdout, "DEFVAR LF@param%d$1\n", counter);
+			fprintf(stdout, "MOVE LF@param%d$1 LF@in%d$1\n", counter, counter);
+			counter++;
+		}
 	}
 }
 
@@ -98,11 +113,16 @@ void GEN_FUNC_MAIN_END(char* name, int token){
 }
 
 void GEN_FUNC_CALL(char *name_func, SeznamOfVars *param){
+	
+	fprintf(stdout, "CREATEFRAME\n");
 	fprintf(stdout, "CALL $%s\n", name_func);
-	while(param != NULL){
+	if(param != NULL){
+		param = param->first;
+	}
+	while(param->name != NULL){
 		fprintf(stdout, "MOVE ");
 		GEN_WRITE_VAR_LITERAL(0, param->name);
-		fprintf(stdout, "TF@ret%d\n", count_end);
+		fprintf(stdout, "TF@ret%d$1\n", count_end);
 		if(param->next != NULL){
 			param = param->next;
 		}
@@ -768,13 +788,14 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 			if(var_name != NULL){
 				fprintf(stdout, "MOVE ");
 				GEN_WRITE_VAR_LITERAL(0, var_name);
+				var_name = NULL;
 			}
 			else{
 				if(checkSEEN(5)){
 					counter1 = 1;
 					checkSEEN(7);
 				}
-				fprintf(stdout, "MOVE LF@ret%d ", counter1);
+				fprintf(stdout, "MOVE LF@ret%d$1 ", counter1);
 				counter1++;
 			}
 			GEN_WRITE_VAR_LITERAL(type, param1);
@@ -1076,22 +1097,3 @@ void GEN_CALL_INBUILDS(){
     GENERATION_ORD();
     GENERATION_CHR();
 }
-
-// void FUNC_WHILE(string attr, int count, bool if_condition, bool for_condition){
-//     if(for_condition){
-//         fprintf(stdout, "LABEL $%s$for$%d\n", token->data, count);
-//     } else if (if_condition){
-//         fprintf(stdout, "LABEL $%s$if$%d$else\n", token->data, count);
-//     } else 
-//         fprintf(stdout, "LABEL $%s$if$%d$end\n", token->data, count);
-// }
-
-
-// LABEL while
-// JUMPIFEQ end GF@counter string@aaaaaaaaaaaaa
-// WRITE GF@counter
-// WRITE string@\010
-// CONCAT GF@counter GF@counter string@a
-// JUMP while
-
-// LABEL end
