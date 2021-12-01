@@ -30,8 +30,9 @@ int strAddChar(string *s1, char c)
     if (s1->length + 1 >= s1->allocSize)
     {
         // pamet nestaci, je potreba provest realokaci
-        if ((s1->str = (char*) realloc(s1->str, s1->length + STR_LEN_INC)) == NULL)
+        if ((s1->str = (char*) realloc(s1->str, sizeof(char*)*(s1->length + STR_LEN_INC))) == NULL){
             return STR_ERROR;
+        }
         s1->allocSize = s1->length + STR_LEN_INC;
     }
     s1->str[s1->length] = c;
@@ -86,7 +87,7 @@ int getNextToken(string *attr){
     int c;
     attr->allocSize = STR_LEN_INC;
     attr->length = 0;
-    attr->str = malloc(STR_LEN_INC);
+    attr->str = malloc(sizeof(char*) * STR_LEN_INC);
     // vymazeme obsah atributu a v pripade identifikatoru
     // budeme postupne do nej vkladat jeho nazev
     strClear(attr);

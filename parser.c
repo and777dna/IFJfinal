@@ -165,7 +165,7 @@ void freeSeznam()
         while(tmp != NULL)
         {
             SeznamOfVars *tmp2;
-            tmp2 = malloc(sizeof(struct seznam));
+            tmp2 = malloc(sizeof(tmp));
             if (tmp->next != NULL){
                 tmp2 = tmp->next;
             }
@@ -191,10 +191,9 @@ int tryGetToken()
     if ((token = getNextToken(&attr)) == -10)
     {
         changeError(1);
-        printf("Return: LEX_ERROR\n");
         return LEX_ERROR;
     }
-    //printf("%d   %s\n", token, attr.str);  // to check the token
+    printf("%d   %s\n", token, attr.str);  // to check the token
     return token;
 }
 
@@ -203,18 +202,18 @@ void changeError(int n)
     if(n == -10){
         fprintf(stderr, "%d\n", 1);
         freeFunc(table->func_tree);
+        free(table->var_tree);
         strFree(&attr);
         free(table);
-        free(table->var_tree);
         free(name_func_save);
         exit(1);
     }
     else{
         fprintf(stderr, "%d\n", n);
         freeFunc(table->func_tree);
+        free(table->var_tree);
         free(table);
         strFree(&attr);
-        free(table->var_tree);
         free(name_func_save);
         exit(n);
     }
@@ -237,7 +236,7 @@ int inputIsOK()
         if (token == COLUMN)
         {
             token = tryGetToken();
-            if (token == STRING || token == INTEGER || token == NUMBER)
+            if (token == STRING || token == INTEGER || token == NUMBER || token == NIL)
             {
                 insertInput(seznam->name, table->func_tree, name_func_save, token);
                 insertVar(&(table->var_tree), deep, seznam->name, token);
@@ -281,7 +280,7 @@ int GlobalinputIsOK()
         if(token == COMMA)
         {
             token = tryGetToken();
-            if (token == STRING || token == INTEGER || token == NUMBER)
+            if (token == STRING || token == INTEGER || token == NUMBER || token == NIL)
             {
                 return GlobalinputIsOK();
             }
@@ -308,7 +307,7 @@ int GlobalinputIsOK()
 
 int outputIsOK()
 {
-    if (token == STRING || token == INTEGER || token == NUMBER)
+    if (token == STRING || token == INTEGER || token == NUMBER || token == NIL)
     {
         retnum++;
         insertOutput(table->func_tree, token, name_func_save);
@@ -392,7 +391,7 @@ int GlobalCompareOut(funcs tmp)
         if ((token = tryGetToken()) == COMMA)
         {
             token = tryGetToken();
-            if (token == STRING || token == INTEGER || token == NUMBER)
+            if (token == STRING || token == INTEGER || token == NUMBER || token == NIL)
             {
                 tmp->out = tmp->out->next;
                 return GlobalCompareOut(tmp);
@@ -573,7 +572,7 @@ int functionBodyIsOK()
                 if (token == COLUMN)
                 {
                     token = tryGetToken();
-                    if (token == INTEGER || token == STRING || token == NUMBER)
+                    if (token == INTEGER || token == STRING || token == NUMBER || token == NIL)
                     {
                         seznam = seznam->first;
                         while(seznam != NULL){
@@ -618,7 +617,7 @@ int functionBodyIsOK()
                     if (token == COLUMN)
                     {
                         token = tryGetToken();
-                        if (token == INTEGER || token == STRING || token == NUMBER)
+                        if (token == INTEGER || token == STRING || token == NUMBER || token == NIL)
                         {
                             seznam = seznam->first;
                             while(seznam != NULL){
@@ -1123,6 +1122,9 @@ int program()
             }
         }
         else changeError(2);
+    }
+    else{
+        changeError(2);
     }
     DLL_Dispose(&listOfIf);
     DLL_Dispose(&listOfWhile);
