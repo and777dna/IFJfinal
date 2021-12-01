@@ -37,7 +37,7 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr){
 			fprintf(stdout, "int@%s ", attr);
 			break;
 		case FLOAT:
-			fprintf(stdout, "float@%s ", attr);
+			fprintf(stdout, "float@%#a ", (float)atoi(attr));
 			break;
 		case RETEZEC:
 			fprintf(stdout, "string@%s ", attr);
@@ -57,10 +57,14 @@ void GEN_PRINT_WRITE(int token, string attr){
 	fprintf(stdout, "\n");
 }
 
-void GEN_START_OF_FUNCTION(string attr){
-	if(strcmp(attr.str, "main")){
-		fprintf(stdout, "LABEL $%s\n", attr.str);
+void GEN_START_OF_FUNCTION(char *attr, int value){
+	if(strcmp(attr, "main")){
+		fprintf(stdout, "LABEL $%s\n", attr);
 		fprintf(stdout, "PUSHFRAME \n");
+		for(int i = 1; i <= value; i++){
+			char *tmp;
+			fprintf(stdout, "DEFVAR LF@ret%d$1\n", value);		
+		}
 	}
 	else {
 		fprintf(stdout, "LABEL $main\n");
@@ -72,7 +76,7 @@ void GEN_START_OF_FUNCTION(string attr){
 
 void GEN_DEFVAR_VAR(SeznamOfVars *param){
 	while(param != NULL){
-		fprintf(stdout, "DEFVAR ", param->name);
+		fprintf(stdout, "DEFVAR ");
 		GEN_WRITE_VAR_LITERAL(0, param->name);
 		fprintf(stdout, "\n");
 		if(param->next != NULL){
@@ -88,6 +92,7 @@ void GEN_FUNC_MAIN_END(char* name, int token){
     fprintf(stdout, "DEFVAR TF@in%d\n",count_start);
 	fprintf(stdout, "MOVE TF@in%d ",count_start);
 	GEN_WRITE_VAR_LITERAL(token, name);
+	fprintf(stdout, "\n");
 	count_start++;
 	return;
 }
@@ -111,9 +116,10 @@ void GEN_FUNC_CALL(char *name_func, SeznamOfVars *param){
 
 void GEN_END_OF_FUNCTION(string attr){
     if(!strcmp(attr.str, "main")){
-        fprintf(stdout, "POPFRAME\n\n");
-        fprintf(stdout, "JUMP $END_OF_PROGRAM\n");
-    } else {
+        fprintf(stdout, "POPFRAME\n");
+    } 
+	else{
+		fprintf(stdout, "LABEL %s_RET\n", attr.str);
         fprintf(stdout, "POPFRAME\n");
         fprintf(stdout, "RETURN \n\n");
     }
@@ -157,17 +163,23 @@ int whileSpotted(int spotted){
 bool checkSEEN(int token){
 	static bool seen[13];
 	static bool count = false;
+	static bool askforret = true;
 	switch (token)
 	{
+		case 5:
+			return askforret;
+			break;
+		case 6:
+			askforret = true;
+			break;
+		case 7:
+			askforret = false;
+			break;
 		case END:
 			for (int i = 0; i < 14; i++){
 				seen[i] = false;
 			}
 			count = true;
-			if(!main_flag){
-				fprintf(stdout, "POPFRAME\n");
-				fprintf(stdout, "RETURN\n\n");
-			}
 			return false;
 			break;
 		case INC:
@@ -339,23 +351,23 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 					oper = 0;
 					counter = 1;
 					break;
-				case DEC: //SUB_RES
+				case DEC:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "SUM_RES");
+						GEN_WRITE_VAR_LITERAL(0, "SUB_RES");
 						fprintf(stdout, "\n");
 						fprintf(stdout, "DEC ");
-						GEN_WRITE_VAR_LITERAL(0, "SUM_RES");
+						GEN_WRITE_VAR_LITERAL(0, "SUB_RES");
 						GEN_WRITE_VAR_LITERAL(token1, param1);
 						GEN_WRITE_VAR_LITERAL(token2, param2);
 						fprintf(stdout, "\n");					
 					}
 					else{
 						fprintf(stdout, "MOVE ");
-						GEN_WRITE_VAR_LITERAL(0, "SUM_RES");
+						GEN_WRITE_VAR_LITERAL(0, "SUB_RES");
 						fprintf(stdout, "int@0\n");
 						fprintf(stdout, "DEC ");
-						GEN_WRITE_VAR_LITERAL(0, "SUM_RES");
+						GEN_WRITE_VAR_LITERAL(0, "SUB_RES");
 						GEN_WRITE_VAR_LITERAL(token1, param1);
 						GEN_WRITE_VAR_LITERAL(token2, param2);
 						fprintf(stdout, "\n");					
@@ -365,7 +377,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 					oper = 0;
 					counter = 1;
 					break;
-				case MULTIPLY: //MUL_RES MUL
+				case MULTIPLY:
 					if(!(checkSEEN(oper))){
 						fprintf(stdout, "DEFVAR ");
 						GEN_WRITE_VAR_LITERAL(0, "MUL_RES");
@@ -518,6 +530,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 						fprintf(stdout, "\n");	
 						wasEQLTGT = true;				
 					}
+					wasEQLTGT = true;
 					param1 = "LESS_RES";
 					param2 = NULL;
 					oper = 0;
@@ -547,6 +560,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 						fprintf(stdout, "\n");
 						wasEQLTGT = true;					
 					}
+					wasEQLTGT = true;
 					param1 = "MORE_RES";
 					param2 = NULL;
 					oper = 0;
@@ -576,6 +590,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 						fprintf(stdout, "\n");
 						wasEQLTGT = true;					
 					}
+					wasEQLTGT = true;
 					param1 = "EQUAL_RES";
 					param2 = NULL;
 					oper = 0;
@@ -635,6 +650,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 						GEN_WRITE_VAR_LITERAL(0, "LESSOREQUAL1");
 						fprintf(stdout, "\n");
 					}
+					wasEQLTGT = true;
 					param1 = "LESSOREQUAL_RES";
 					param2 = NULL;
 					oper = 0;
@@ -694,6 +710,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 						GEN_WRITE_VAR_LITERAL(0, "MOREOREQUAL1");
 						fprintf(stdout, "\n");
 					}
+					wasEQLTGT = true;
 					param1 = "MOREOREQUAL_RES";
 					param2 = NULL;
 					oper = 0;
@@ -735,6 +752,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 						GEN_WRITE_VAR_LITERAL(0, "NOTEQUAL");
 						fprintf(stdout, "\n");
 					}
+					wasEQLTGT = true;
 					param1 = "NOTEQUAL_RES";
 					param2 = NULL;
 					oper = 0;
@@ -752,8 +770,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 				GEN_WRITE_VAR_LITERAL(0, var_name);
 			}
 			else{
-				if(checkSEEN(1)){
+				if(checkSEEN(5)){
 					counter1 = 1;
+					checkSEEN(7);
 				}
 				fprintf(stdout, "MOVE LF@ret%d ", counter1);
 				counter1++;
@@ -777,7 +796,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 	}
 	if((ifSpotted(0) || whileSpotted(0)) && tmp){
 		if(ifORwhileWasTheLast(0) == 1){
-			fprintf(stdout, "JUMPIFNEQ else%d ", ifSpotted(0), param1);
+			fprintf(stdout, "JUMPIFNEQ else%d ", DLL_GetValueCount(&listOfIf));
 			GEN_WRITE_VAR_LITERAL(0, param1);
 			fprintf(stdout, "bool@true\n");
 			ifSpotted(0);
@@ -788,8 +807,8 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 			tmp = false;
 		}
 		if(ifORwhileWasTheLast(0) == 2){
-			fprintf(stdout, "LABEL while%d\n", whileSpotted(0));
-			fprintf(stdout, "JUMPIFEQ whileend%d ", whileSpotted(0));
+			fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(&listOfWhile));
+			fprintf(stdout, "JUMPIFEQ whileend%d ", DLL_GetValueCount(&listOfWhile));
 			GEN_WRITE_VAR_LITERAL(0, param1);
 			fprintf(stdout, "bool@true\n");
 			whileSpotted(0);

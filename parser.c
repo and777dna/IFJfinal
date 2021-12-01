@@ -7,9 +7,11 @@
 //------------Global variables------------------------
 
 int token;          // globalni promenna, ve ktere bude ulozen aktualni token
-string attr;        // globalni promenna, ve ktere bude ulozen atribut tokenu
+string attr;
+string funnamesv;        // globalni promenna, ve ktere bude ulozen atribut tokenu
 char *name_func_save;
 int deep;
+int retnum = 0;
 symtable *table;
 int error_flag;
 bool if_spotted;
@@ -18,13 +20,90 @@ SeznamOfVars *seznam;
 SeznamOfVars *head;
 
 //-------------
+void DLL_Init( DLList *list ) {
+
+    list->firstElement = NULL;
+    list->activeElement = NULL;
+    list->lastElement = NULL;
+}
+
+void DLL_Dispose( DLList *list ) {
+    DLLElementPtr tmp;
+    tmp = list->firstElement;
+    while(tmp != NULL)
+    {
+        DLLElementPtr tmp2;
+        tmp2 = tmp->nextElement;
+        free(tmp);
+        tmp = tmp2;
+    }
+    list->lastElement = NULL;
+    list->firstElement = NULL;
+    list->activeElement = NULL;
+}
+
+void DLL_InsertLast( DLList *list) {
+    DLLElementPtr tmp = (DLLElementPtr)malloc(sizeof(struct ifstruct));
+    if(tmp == NULL){
+        return;
+    }
+    tmp->nextElement = NULL;
+    tmp->previousElement = list->lastElement;
+    if (tmp->previousElement != NULL)
+    {
+        tmp->count = tmp->previousElement->count + 1;
+    }
+    else
+    {
+        tmp->count = 1;
+    }
+    if(list->firstElement != NULL){
+        list->lastElement->nextElement = tmp;
+    }
+    else{
+        list->firstElement = tmp;
+    }
+    list->lastElement = tmp;
+}
+
+void DLL_Last( DLList *list ) {
+
+    list->activeElement = list->lastElement;
+
+}
+
+void DLL_Previous( DLList *list) {
+    if(list->activeElement != NULL){
+        if(list->activeElement == list->firstElement)
+            list->activeElement = NULL;
+        else
+            list->activeElement = list->activeElement->previousElement;    
+    }
+}
+
+void DLL_Next( DLList *list ) {
+    if(list->activeElement != NULL){
+        if(list->activeElement == list->lastElement)
+            list->activeElement = NULL;
+        else
+            list->activeElement = list->activeElement->nextElement;    
+    }
+}
+
+int DLL_GetValueCount( DLList *list) {
+    if(list->activeElement == NULL){
+        return 0;
+    }
+    //printf("AAAAAAAAAAAAAAAA  %d  AAAAAAAAAAAAAAAA\n", list->activeElement->count);
+    return list->activeElement->count;
+}
 
 void initSeznam()
 {
     seznam = malloc(sizeof(struct seznam));
     if (seznam == NULL)
     {
-        printf("Return: MEM_ALLOC_ERROR\n");
+        changeError(99);
         return;
     }
     seznam->name = NULL;
@@ -37,10 +116,11 @@ void strcpy_for_var(char *src)
 {
     SeznamOfVars *tmp = malloc(sizeof (struct seznam));
     if(tmp == NULL){
-        printf("Return: MEM_ALLOC_ERROR\n");
+        changeError(99);
         return;
     }
-    if (head == NULL){
+    if (seznam == NULL){
+        
         initSeznam();
     }
     tmp->name = calloc(strlen(src) + 1, sizeof(char));
@@ -70,28 +150,36 @@ void strcpy_for_var(char *src)
 char *strcpy_for_func(char *src, char *dst)
 {
     dst = malloc(strlen(src) + 1);
-    src = strcpy(dst, src);
-    return src;
+    strcpy(dst, src);
+    funnamesv.str = malloc(strlen(src) + 1);
+    funnamesv.str = strcpy(funnamesv.str, src);
+    return dst;
 }
 
 void freeSeznam()
 {
     if (seznam != NULL)
     {
-        SeznamOfVars *tmp = seznam;
+        SeznamOfVars *tmp;
+        tmp = seznam;
         while(tmp != NULL)
         {
             SeznamOfVars *tmp2;
-            tmp2 = tmp->next;
+            tmp2 = malloc(sizeof(struct seznam));
+            if (tmp->next != NULL){
+                tmp2 = tmp->next;
+            }
+            else{
+                free(tmp2);
+                head = NULL;
+                return;
+            }
             free(tmp);
             tmp = tmp2;
+            free(tmp2);
         }
-        seznam->name = NULL;
-        seznam->next = NULL;
+        head = NULL;
     } 
-    head = NULL;
-    free(seznam);
-    seznam = NULL;
     return;
 }
 
@@ -106,7 +194,7 @@ int tryGetToken()
         printf("Return: LEX_ERROR\n");
         return LEX_ERROR;
     }
-    // printf("%d   %s\n", token, attr.str);  // to check the token
+    //printf("%d   %s\n", token, attr.str);  // to check the token
     return token;
 }
 
@@ -153,7 +241,6 @@ int inputIsOK()
             {
                 insertInput(seznam->name, table->func_tree, name_func_save, token);
                 insertVar(&(table->var_tree), deep, seznam->name, token);
-                freeSeznam();
                 token = tryGetToken();
                 if (token == COMMA)
                 {
@@ -223,6 +310,7 @@ int outputIsOK()
 {
     if (token == STRING || token == INTEGER || token == NUMBER)
     {
+        retnum++;
         insertOutput(table->func_tree, token, name_func_save);
         token = tryGetToken();
         if (token == COMMA)
@@ -332,11 +420,13 @@ int functionIsOK()
         token = tryGetToken();
         if (token == ID){
             name_func_save = strcpy_for_func(attr.str, name_func_save);
-            GEN_START_OF_FUNCTION(attr);
             funcs tmp = findFunc(table->func_tree, name_func_save);
             if (tmp == NULL)
             {
                 insertFunc(name_func_save, &(table->func_tree), origin);
+            }
+            if(!(strcmp(attr.str, "main"))){
+                GEN_START_OF_FUNCTION(name_func_save, retnum);
             }
             else if (tmp != NULL && tmp->origin == 1)
             {
@@ -391,6 +481,7 @@ int functionIsOK()
                     case COLUMN:
                         token = tryGetToken();
                         outputWasComplited = outputIsOK();
+                        GEN_START_OF_FUNCTION(name_func_save, retnum);
                         return outputWasComplited;
                         break;
                     default:
@@ -466,8 +557,9 @@ int functionBodyIsOK()
         switch (token)
         {
         case LOCAL:
-            head = NULL;
-            //freeSeznam();
+            if(seznam != NULL){
+                freeSeznam();
+            }
             token = tryGetToken();
             if (token == ID)
             {
@@ -505,7 +597,9 @@ int functionBodyIsOK()
                             default:
                                 break;
                         }
-                        freeSeznam();
+                        if(seznam != NULL){
+                            freeSeznam();
+                        }
                     }
                 }
                 else if(token == COMMA){
@@ -615,8 +709,12 @@ int functionBodyIsOK()
             token = tryGetToken();
             break;
         case WHILE:
-            freeSeznam();
+            if(seznam != NULL){
+                freeSeznam();
+            }
             whileSpotted(1);
+            DLL_InsertLast(&listOfWhile);
+            DLL_Last(&listOfWhile);
             while_spotted = true;
             ifORwhileWasTheLast(2);
             token = tryGetToken();
@@ -630,8 +728,13 @@ int functionBodyIsOK()
             token = tryGetToken();
             break;
         case IF:
-            freeSeznam();
+            if(seznam != NULL){
+                freeSeznam();
+            }
             ifSpotted(1);
+            DLL_InsertLast(&listOfIf);
+            DLL_Last(&listOfIf);
+            //printf("JUMP ifend%d\n", DLL_GetValueCount(&listOfIf));
             ifORwhileWasTheLast(1);
             if_spotted = true; 
             token = tryGetToken();
@@ -645,15 +748,17 @@ int functionBodyIsOK()
             token = tryGetToken();
             break;
         case ELSE:
-            freeSeznam();
+            if(seznam != NULL){
+                freeSeznam();
+            }
             if(!(if_spotted) && deep == 0){
                 changeError(2);
                 return SYNTAX_ERROR;
             }
             // if_spotted = false;
             token = tryGetToken();
-            printf("JUMP ifend%d\n", ifSpotted(0));
-            printf("LABEL else%d\n", ifSpotted(0));
+            printf("JUMP ifend%d\n", DLL_GetValueCount(&listOfIf));
+            printf("LABEL else%d\n", DLL_GetValueCount(&listOfIf));
             break;    
         case ID:;
             funcs maybefunc = findFunc(table->func_tree, attr.str);
@@ -692,9 +797,9 @@ int functionBodyIsOK()
                     else{
                         maybefunc->in = maybefunc->in->next;
                     }
+                    GEN_FUNC_MAIN_END(attr.str, token);
                     token = tryGetToken();
                 }
-                GEN_FUNC_MAIN_END(attr.str, token);
                 GEN_FUNC_CALL(maybefunc->name, seznam);
                 token = tryGetToken();
             }
@@ -722,7 +827,9 @@ int functionBodyIsOK()
                                     token = tryGetToken();
                                     break;
                                 }
-                                freeSeznam();
+                                if(seznam != NULL){
+                                    freeSeznam();
+                                }
                                 break;
                             }
                             if (maybefunc != NULL){
@@ -813,7 +920,7 @@ int functionBodyIsOK()
                                         break;
                                     }
                                 }
-                                else {
+                                else{
                                     seznam = seznam->first;
                                     token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
                                     if (token == COMMA){
@@ -849,7 +956,9 @@ int functionBodyIsOK()
                         break;
                     }
                     else if(tmp2 != NULL){
+                        checkSEEN(6);  
                         token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
+                        fprintf(stdout, "JUMP %s_RET\n", funnamesv.str);  
                         break;
                     }
                     else {
@@ -857,10 +966,13 @@ int functionBodyIsOK()
                     }
                 }
                 else{
+                    checkSEEN(6);
                     token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3);
+                    fprintf(stdout, "JUMP %s_RET\n", funnamesv.str);    
                     break;
                 }
-            }      
+            } 
+            fprintf(stdout, "JUMP %s_RET\n", funnamesv.str);  
             break;
         case COMMA:
             break;
@@ -870,19 +982,23 @@ int functionBodyIsOK()
             }
             deep--;  
             if(seznam != NULL){
-                freeSeznam();
+                if(seznam != NULL){
+                    freeSeznam();
+                }
             }
             if (ifSpotted(0) && (ifORwhileWasTheLast(0) == 1))
             {
-                fprintf(stdout, "LABEL ifend%d\n", ifSpotted(0));
+                fprintf(stdout, "LABEL ifend%d\n", DLL_GetValueCount(&listOfIf));
                 if_spotted = false;
+                DLL_Previous(&listOfIf);
             }
             token = tryGetToken();
             if (whileSpotted(0) && (ifORwhileWasTheLast(0) == 2))
             {
-                fprintf(stdout, "JUMP while%d\n", whileSpotted(0));
-                fprintf(stdout, "LABEL whileend%d\n", whileSpotted(0));
+                fprintf(stdout, "JUMP while%d\n", DLL_GetValueCount(&listOfWhile));
+                fprintf(stdout, "LABEL whileend%d\n", DLL_GetValueCount(&listOfWhile));
                 while_spotted = false;
+                DLL_Previous(&listOfWhile);
             }
             if (if_spotted)
             {
@@ -891,7 +1007,7 @@ int functionBodyIsOK()
             else if (while_spotted)
             {
                 ifORwhileWasTheLast(2);
-            }            
+            }          
             break;
         default:
             changeError(2);
@@ -921,8 +1037,11 @@ int syntaxCheck(){
             }
             else{
                 checkSEEN(token);
+                GEN_END_OF_FUNCTION(funnamesv);
+                free(funnamesv.str);
                 table->var_tree = freeAllVars(table->var_tree);
                 deep = 0;
+                retnum = 0;
                 initSeznam();
             }
         }
@@ -970,7 +1089,7 @@ int syntaxCheck(){
                 changeError(2);
                 return SYNTAX_ERROR;
             }
-            GEN_FUNC_CALL(maybefunc->name, NULL);
+            // GEN_FUNC_CALL(maybefunc->name, NULL);
         }
         else{
             changeError(2);
@@ -984,6 +1103,8 @@ int syntaxCheck(){
 int program()
 {
     table->func_tree = insertInbuiltFuncs(table->func_tree);
+    DLL_Init(&listOfIf);
+    DLL_Init(&listOfWhile);
     deep = 0;
     error_flag = 0;
     int error_flag = 0;
@@ -1003,6 +1124,8 @@ int program()
         }
         else changeError(2);
     }
+    DLL_Dispose(&listOfIf);
+    DLL_Dispose(&listOfWhile);
     free(table->var_tree);
     free(name_func_save);
     return error_flag;

@@ -132,7 +132,32 @@ typedef struct seznam
     struct seznam *first;
 } SeznamOfVars;
 
+typedef struct ifstruct {
+	int count;
+	struct ifstruct *previousElement;
+	struct ifstruct *nextElement;
+} *DLLElementPtr;
+
+typedef struct {
+	DLLElementPtr firstElement;
+	DLLElementPtr activeElement;
+	DLLElementPtr lastElement;
+} DLList;
+
 void setTable(symtable *st);
+
+DLList listOfIf;
+DLList listOfWhile;
+
+void DLL_Init( DLList *list );
+void DLL_Dispose( DLList *list );
+void DLL_InsertLast( DLList *list);
+void DLL_Last( DLList *list );
+void DLL_SetValueEnd( DLList *list);
+void DLL_SetValueElse( DLList *list);
+void DLL_Previous( DLList *list);
+void DLL_Next( DLList *list );
+int DLL_GetValueCount( DLList *list);
 
 symtable *initST(symtable *ST);
 bool insertVar(vars *var_tree, int deep, char *name, int type);
@@ -169,7 +194,7 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr);
 void GEN_FUNC_MAIN_END(char *name_func, int token);
 void GEN_FUNC_MAIN_START(char *name);
 void GEN_PRINT_WRITE(int token, string attr);
-void GEN_START_OF_FUNCTION(string attr);
+void GEN_START_OF_FUNCTION(char* attr, int num);
 void GEN_FUNC_CALL(char *name, SeznamOfVars *param);
 void GEN_END_OF_FUNCTION(string attr);
 void GEN_CALL_INBUILDS();

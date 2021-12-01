@@ -14,26 +14,25 @@ Stack_t* createStack() {
     Stack_t *out;
     out = malloc(sizeof(Stack_t));
     if (out == NULL) {
-        printf("Return: MEM_ALLOC_ERROR\n");
         exit(OUT_OF_MEMORY);
     }
     out->size = INIT_SIZE;
     out->attr = malloc(out->size * sizeof(T));
     if (out->attr == NULL) {
         free(out);
-        printf("Return: MEM_ALLOC_ERROR\n");
+        free(out->attr);
         exit(OUT_OF_MEMORY);
     }
     out->top = 0;
     return out;
 }
  
-void deleteStack(Stack_t **stack) {
-    if (*stack != NULL){
-        free((*stack)->attr);
-        free(*stack);
-        *stack = NULL;
+void deleteStack(Stack_t *stack) {
+    if (stack != NULL){
+        free((stack)->attr);
     }
+    free(stack);
+    stack = NULL;
 }
 
 void resize(Stack_t *stack) {
@@ -53,6 +52,7 @@ void push(Stack_t *stack, string value, int type) {
     stack->attr[stack->top].attr = calloc(sizeof(value.str), sizeof(char));
     strcpy(stack->attr[stack->top].attr, value.str);
     stack->attr[stack->top].type = type;
+    return;
     // printf("PUSH: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
 }
 
@@ -64,7 +64,7 @@ void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam,
     if(seznam != NULL){
         name = seznam->name;
     }
-    printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
+    // printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
     EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name);
     stack->top--;
 }
@@ -101,7 +101,6 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
 };
 
 int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, bool end, int type){
-    
     static int savetype;
     int checktype;
     if ((token < 10 || token > 25) && token != COMMA){
@@ -111,11 +110,13 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             
             if (type == STRING || type == INTEGER){
                 if (token != type-15 && token != ID && type != 3){
+                    deleteStack(stack);
                     changeError(4);
                 }
             }
             else if(type == NUMBER){
                 if (token != INT || token != FLOAT && token != ID && type != 3){
+                    deleteStack(stack);
                     changeError(4);
                 }
             }
@@ -131,6 +132,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 inputNum = 18;
             }
             else{
+                deleteStack(stack);
                 changeError(8);
             }
         }
@@ -145,6 +147,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 stackVal = 18;
             }
             else{
+                deleteStack(stack);
                 changeError(8);
             }
         }
@@ -160,6 +163,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 if(token == ID){
                     vars tmp2 = findVar(vartree, deep, attr->str);
                     if (tmp2 == NULL){
+                        deleteStack(stack);
                         changeError(3);
                     }
                     else{
@@ -168,16 +172,19 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 }
                 if (savetype == NUMBER){
                     if (checktype != INT && checktype != INTEGER && checktype != FLOAT && checktype != NUMBER){
+                        deleteStack(stack);
                         changeError(6);
                     }
                 }
                 else if (savetype == STRING){
                     if (checktype == INT || checktype == INTEGER || checktype == FLOAT || checktype == NUMBER){
+                        deleteStack(stack);
                         changeError(6);
                     }
                 }
                 else if (savetype == INTEGER){
                     if (checktype == RETEZEC || checktype == STRING || checktype == FLOAT || checktype == NUMBER){
+                        deleteStack(stack);
                         changeError(6);
                     }
                 }
@@ -189,6 +196,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 }
                 vars tmp2 = findVar(vartree, deep, attr->str);
                 if (tmp2 == NULL){
+                    deleteStack(stack);
                     changeError(6);
                     return SEM_ERROR_EXPRESS;
                 }
@@ -203,6 +211,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                         stackVal = 18;
                     }
                     else{
+                        deleteStack(stack);
                         changeError(8);
                     }
                 }
@@ -268,6 +277,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 pop(stack, token, *attr, deep, seznam, true);
                 return token;
             }
+            deleteStack(stack);
             changeError(6);
             return SEM_ERROR_EXPRESS;
         }
@@ -331,11 +341,15 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
                 token = 0;
             }
-            if(tmp2->type != token && token != ID){
+            if((tmp2->type != type && tmp2->type != type + 15) && (token >= 0 && token < 4) && type != 3){
+                printf("type: %d == tmp->type: %d\n", type, tmp2->type);
+                deleteStack(stack);
                 changeError(4);
             }
         }
-        if (token != type-15 && token != ID && type != 3 && token != NIL){
+        if (token != type-15 && token != ID && type != 3 && token != NIL){ 
+            printf("type: %d == token: %d\n", type, token);
+            deleteStack(stack);
             changeError(4);
         }
         push(stack, *attr, token);
@@ -356,9 +370,6 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
                 while (strcmp(stack->attr[stack->top].attr, "$") != 0){
                     pop(stack, token, *attr, deep, seznam, end);
                 }
-                free((stack)->attr);
-                free(stack);
-                stack = NULL;
             }
             token = tryGetToken();
             if(seznam != NULL){
@@ -373,11 +384,9 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
                         pop(stack, token, *attr, deep, seznam, end);
                     }
-                    free((stack)->attr);
-                    free(stack);
-                    stack = NULL;
                 }
                 token = tryGetToken();
+                deleteStack(stack);
                 return token; 
             }
             else if ((token >= 10 && token <= 25) || token == ID){
@@ -385,10 +394,8 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
                         pop(stack, token, *attr, deep, seznam, end);
                     }
-                    free((stack)->attr);
-                    free(stack);
-                    stack = NULL;
                 }
+                deleteStack(stack);
                 return token; 
             }
             else{
@@ -396,16 +403,15 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
                         pop(stack, token, *attr, deep, seznam, end);
                     }
-                    free((stack)->attr);
-                    free(stack);
-                    stack = NULL;
                 }
+                deleteStack(stack);
                 changeError(6);
                 return SEM_ERROR_EXPRESS;
             }
         }
     }
     else{
+        deleteStack(stack);
         changeError(6);
         return SEM_ERROR_EXPRESS;
     }

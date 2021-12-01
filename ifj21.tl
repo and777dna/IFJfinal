@@ -1,8 +1,16 @@
 require "ifj21"
 
 function main()
-    local a:integer = 5*6+4*7-1*3*(2+12)+43
-    write(a, "\n")
+    local x:number = 4.9
+    local y:string = "hello there"
+
+    -- try to compare number and string
+    -- this should fail to compile
+    if x == y then
+        write("yes\n")
+    else
+        write("no\n")
+    end
 end
 
 main()

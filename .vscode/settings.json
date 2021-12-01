@@ -3,5 +3,6 @@
         "*.sh": "shellscript",
         "stdlib.h": "c",
         "string.h": "c"
-    }
+    },
+    "svn.ignoreMissingSvnWarning": true
 }
