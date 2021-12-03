@@ -146,9 +146,6 @@ typedef struct {
 
 void setTable(symtable *st);
 
-DLList listOfIf;
-DLList listOfWhile;
-
 void DLL_Init( DLList *list );
 void DLL_Dispose( DLList *list );
 void DLL_InsertLast( DLList *list);
@@ -187,7 +184,7 @@ int strGetLength(string *s);
 //hlavicka funkce simulujici lexikalni analyzator
 void setSourceFile(FILE *f);
 int getNextToken(string *attr);
-int express(int token, string *attr, vars var, funcs funcs, int deep, SeznamOfVars *seznam, int type);
+int express(int token, string *attr, vars var, funcs funcs, int deep, SeznamOfVars *seznam, int type, DLList *i, DLList *w);
 void changeError(int n);
 
 void GEN_WRITE_VAR_LITERAL(int token, char *attr);
@@ -203,4 +200,4 @@ int ifSpotted(int spotted);
 int whileSpotted(int spotted);
 bool checkSEEN(int token);
 int ifORwhileWasTheLast(int c);
-void EXPRESSION_FUNC(char *attr, int token, bool end, char *var_name);
+void EXPRESSION_FUNC(char *attr, int token, bool end, char *var_name, DLList *l, DLList *w);

@@ -55,7 +55,7 @@ void push(Stack_t *stack, string value, int type) {
     // printf("PUSH: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
 }
 
-void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end, vars vartree) { 
+void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end, vars vartree, DLList *i, DLList *w) { 
     if (stack->top == 0) {
         exit(STACK_UNDERFLOW);
     }
@@ -70,7 +70,7 @@ void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam,
         }
     }
     //printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
-    EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name);
+    EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name, i, w);
     stack->top--;
 }
 
@@ -105,7 +105,7 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'#', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '#', '#', '#', '#', '#', '#', '#', '#'},  // nil
 };
 
-int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, bool end, int type){
+int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, bool end, int type, DLList *i, DLList *w){
     static int savetype = 0;
     if(savetype == 0){
         //printf("    savetype: type: %d == token: %d\n", savetype, type);
@@ -169,8 +169,8 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
         }
         if(stack->attr[stack->top].type == HASH && (token == 3 || token == STRING)){
             push(stack, *attr, token);
-            pop(stack, token, *attr, deep, seznam, end, vartree);
-            pop(stack, token, *attr, deep, seznam, end, vartree);
+            pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
+            pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
         }
         if (precTable[stackVal][inputNum] == '<'){
             push(stack, *attr, token);
@@ -229,7 +229,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                     }
                 }
             }
-            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type, i, w);
         }
         else if (precTable[stackVal][inputNum] == '>'){
             if (stack->attr[stack->top].type == INTEGER || stack->attr[stack->top].type == NUMBER || 
@@ -240,8 +240,8 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 vars tmp2 = findVar(vartree, deep, stack->attr[stack->top].attr);
                 savetype = tmp2->type;
             }
-            pop(stack, token, *attr, deep, seznam, end, vartree);
-            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
+            pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type, i, w);
         }
         else if (precTable[stackVal][inputNum] == '='){
             if (stack->attr[stack->top].type == INTEGER || stack->attr[stack->top].type == NUMBER || 
@@ -252,9 +252,9 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 vars tmp2 = findVar(vartree, deep, stack->attr[stack->top].attr);
                 savetype = tmp2->type;
             }
-            pop(stack, token, *attr, deep, seznam, end, vartree);
+            pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
             token = tryGetToken();
-            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
+            TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type, i, w);
         }
         else{
             if(stack->attr[stack->top].type == ID || stack->attr[stack->top].type == INTEGER || stack->attr[stack->top].type == INT
@@ -263,23 +263,23 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                     if(strstr(attr->str, "-") != NULL){
                         char *saveptr;
                         string foo;
-                        pop(stack, token, *attr, deep, seznam, end, vartree);
+                        pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
                         foo.str = malloc(sizeof(attr->str));
                         foo.str = strtok_r(attr->str, "-", &saveptr);
                         if (precTable[stackVal][1] == '<'){
                             push(stack, *attr, 31);
                         }
                         else if (precTable[stackVal][1] == '>'){
-                            pop(stack, token, *attr, deep, seznam, end, vartree);
+                            pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
                             push(stack, *attr, 31);
                         }
                         else if (precTable[stackVal][1] == '='){
-                            pop(stack, token, *attr, deep, seznam, end, vartree);
+                            pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
                             push(stack, *attr, 31);
                         }
                         attr->str = malloc(sizeof(saveptr));
                         strcpy(attr->str, foo.str);
-                        return TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type); 
+                        return TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type, i, w); 
                     }
                 }
             }
@@ -287,7 +287,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             vars tmp2 = findVar(vartree, deep, attr->str);
             if (tmp != NULL || tmp2 != NULL){
                 token = ID;
-                pop(stack, token, *attr, deep, seznam, true, vartree);
+                pop(stack, token, *attr, deep, seznam, true, vartree, i, w);
                 savetype = 0;
                 return token;
             }
@@ -319,14 +319,14 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 if(seznam != NULL){
                     name = seznam->name;
                 }
-                EXPRESSION_FUNC("nil", token, false, name);
+                EXPRESSION_FUNC("nil", token, false, name, i, w);
             }
-            pop(stack, token, *attr, deep, seznam, true, vartree);
+            pop(stack, token, *attr, deep, seznam, true, vartree, i, w);
             savetype = 0;
             return token;
         }
         else if (precTable[stackVal][8] == '='){
-            pop(stack, token, *attr, deep, seznam, true, vartree);
+            pop(stack, token, *attr, deep, seznam, true, vartree, i, w);
             savetype = 0;
             return token;
         }
@@ -337,7 +337,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
     }
 }
 
-int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, int type)
+int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, int type, DLList *i, DLList *w)
 {
     bool end = false;
     Stack_t *stack = createStack();
@@ -388,26 +388,26 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
                 token = 0;
             }
         }
-        token = TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type);
+        token = TableCheck(stack, token, attr, vartree, functree, deep, seznam, end, type, i, w);
         if (token == COMMA){
             if (stack != NULL){
                 end = true;
                 while (strcmp(stack->attr[stack->top].attr, "$") != 0){
-                    pop(stack, token, *attr, deep, seznam, end, vartree);
+                    pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
                 }
             }
             token = tryGetToken();
             if(seznam != NULL){
                 seznam = seznam->next;
             }
-            token = express(token, attr, vartree, functree, deep, seznam, type);
+            token = express(token, attr, vartree, functree, deep, seznam, type, i, w);
         }
         else{
             end = true;
             if (token == NIL){
                 if (stack != NULL){
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
-                        pop(stack, token, *attr, deep, seznam, end, vartree);
+                        pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
                     }
                 }
                 token = tryGetToken();
@@ -417,7 +417,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             else if ((token >= 10 && token <= 25) || token == ID){
                 if (stack != NULL){
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
-                        pop(stack, token, *attr, deep, seznam, end, vartree);
+                        pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
                     }
                 }
                 deleteStack(stack);
@@ -426,7 +426,7 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             else{
                 if (stack != NULL){
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){
-                        pop(stack, token, *attr, deep, seznam, end, vartree);
+                        pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
                     }
                 }
                 deleteStack(stack);

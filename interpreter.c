@@ -312,7 +312,7 @@ bool checkSEEN(int token){
 	}
 }
 
-void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
+void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *listOfIf, DLList *listOfWhile){
 	static char *param1;
 	static char *param2;
 	static int oper = 0;
@@ -817,7 +817,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 	}
 	if((ifSpotted(0) || whileSpotted(0)) && tmp){
 		if(ifORwhileWasTheLast(0) == 1){
-			fprintf(stdout, "JUMPIFNEQ else%d ", DLL_GetValueCount(&listOfIf));
+			fprintf(stdout, "JUMPIFNEQ else%d ", DLL_GetValueCount(listOfIf));
 			GEN_WRITE_VAR_LITERAL(0, param1);
 			fprintf(stdout, "bool@true\n");
 			ifSpotted(0);
@@ -828,8 +828,8 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name){
 			tmp = false;
 		}
 		if(ifORwhileWasTheLast(0) == 2){
-			fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(&listOfWhile));
-			fprintf(stdout, "JUMPIFEQ whileend%d ", DLL_GetValueCount(&listOfWhile));
+			fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
+			fprintf(stdout, "JUMPIFEQ whileend%d ", DLL_GetValueCount(listOfWhile));
 			GEN_WRITE_VAR_LITERAL(0, param1);
 			fprintf(stdout, "bool@true\n");
 			whileSpotted(0);
