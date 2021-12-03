@@ -104,14 +104,10 @@ int getNextToken(string *attr){
                     state = 2;
                 else if (isalpha(c))    // identifikator nebo klicove slovo
                 {
-                    if (c >= 'A' && c <= 'Z'){                    
-                    changeError(-10);
-                    return LEX_ERROR;
-                    }
-                    else {
-                        strAddChar(attr, c);
-                        state = 7;}
-                } else if (c == '+')        // operator +
+                    strAddChar(attr, c);
+                    state = 7;
+                } 
+                else if (c == '+')        // operator +
                     state = 8;
                 else if (c == '*')          // operator *
                     state = 9;
@@ -382,7 +378,7 @@ int getNextToken(string *attr){
                 else if (c == 'e' || c == 'E'){
                     state = 20;
                 }
-                else if (!isdigit(c)){ 
+                else if (!isdigit(c)){   
                     ungetc(c, source);
                     state = 0;
                     return INT;
@@ -399,16 +395,19 @@ int getNextToken(string *attr){
                     state = 0;
                     return FLOAT;
                 }
-                else if (!isspace(c) && !isdigit(c) && c != 'e' && c != 'E'){                    
+                else if (!isspace(c) && !isdigit(c) && c != 'e' && c != 'E'){            
                     changeError(-10);
                     return LEX_ERROR;
                 }
-                else if (isspace(c)){state = 0; return FLOAT;}
+                else if (isspace(c)){
+                    state = 0; 
+                    return FLOAT;
+                }
                 strAddChar(attr, c);
                 break;
 
             case 20:
-                if (!isspace(c) && !isdigit(c) && c != '+' && c != '-' && c != ')'){                    
+                if (!isspace(c) && !isdigit(c) && c != '+' && c != '-' && c != ')' && c != ','){                    
                     changeError(-10);
                     return LEX_ERROR;
                 }

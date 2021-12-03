@@ -134,7 +134,7 @@ void strcpy_for_var(char *src)
         head->name = calloc(strlen(src) + 1, sizeof(char));
         strcpy(head->name, src);
         head->next = NULL;
-        seznam = tmp;
+        seznam = head;
         seznam->first = head;
     }
     else
@@ -428,7 +428,7 @@ int functionIsOK()
                 insertFunc(name_func_save, &(table->func_tree), origin);
             }
             if(!(strcmp(attr.str, "main"))){
-                GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree);
+                GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
             }
             else if (tmp != NULL && tmp->origin == 1)
             {
@@ -483,10 +483,13 @@ int functionIsOK()
                     case COLUMN:
                         token = tryGetToken();
                         outputWasComplited = outputIsOK();
-                        GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree);
+                        GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
                         return outputWasComplited;
                         break;
                     default:
+                        if((strcmp(name_func_save, "main"))){
+                            GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
+                        }
                         return SYNTAX_OK;
                         break;
                     }
@@ -819,7 +822,7 @@ int functionBodyIsOK()
                     GEN_FUNC_MAIN_END(attr.str, token);
                     token = tryGetToken();
                 }
-                GEN_FUNC_CALL(maybefunc->name, seznam);
+                GEN_FUNC_CALL(maybefunc->name, seznam, table->func_tree);
                 token = tryGetToken();
             }
             else{
@@ -911,7 +914,7 @@ int functionBodyIsOK()
                                             else{
                                                 check = token + 15;
                                             }
-                                            if (check == maybefunc->in->type){
+                                            if (check == maybefunc->in->type || check == NIL + 15){
                                                 if(maybefunc->in->next != NULL){
                                                     maybefunc->in = maybefunc->in->next;
                                                 }
@@ -929,7 +932,10 @@ int functionBodyIsOK()
                                         }
                                         seznam = seznam->first;
                                         token = tryGetToken();
-                                        GEN_FUNC_CALL(maybefunc->name, seznam);
+                                        GEN_FUNC_CALL(maybefunc->name, seznam, table->func_tree);
+                                        if(seznam != NULL){
+                                            freeSeznam();
+                                        }
                                         break;
                                     }
                                     else if(token != RIGHT_BRACKET){
@@ -938,7 +944,10 @@ int functionBodyIsOK()
                                     }
                                     else{
                                         token = tryGetToken();
-                                        GEN_FUNC_CALL(maybefunc->name, seznam);
+                                        GEN_FUNC_CALL(maybefunc->name, seznam, table->func_tree);
+                                        if(seznam != NULL){
+                                            freeSeznam();
+                                        }
                                         break;
                                     }
                                 }
@@ -970,7 +979,7 @@ int functionBodyIsOK()
             break;
         case RETURN:
             token = tryGetToken();
-            if (token == ID || token == INT || token == FLOAT || token == RETEZEC || token == LEFT_BRACKET){
+            if (token == ID || token == INT || token == FLOAT || token == RETEZEC || token == LEFT_BRACKET || token == NIL){
                 if (token == ID){
                     funcs tmp1 = findFunc(table->func_tree, attr.str);
                     vars tmp2 = findVar(table->var_tree, deep, attr.str);
@@ -1094,9 +1103,9 @@ int syntaxCheck(){
                     return SYNTAX_ERROR;
                 }
                 token = tryGetToken();
-                // if(maybefunc->in != NULL){
-                //     fprintf(stdout, "CREATEFRAME\n");
-                // }
+                if(maybefunc->in != NULL){
+                    fprintf(stdout, "CREATEFRAME\n");
+                }
                 while (token != RIGHT_BRACKET)
                 {
                     int typeCheck = token + 15;
@@ -1111,15 +1120,19 @@ int syntaxCheck(){
                         return SEM_ERROR_FUNCPARAM;
                     }
                     maybefunc->in = maybefunc->in->next;
-                    //GEN_FUNC_MAIN_END(attr.str, token);
+                    if(strcmp(maybefunc->name, "main")){
+                        GEN_FUNC_MAIN_END(attr.str, token);
+                    }
                     token = tryGetToken();
                 }
             }
+            if(strcmp(maybefunc->name, "main")){
+                GEN_FUNC_CALL(maybefunc->name, NULL, table->func_tree);
+            } 
             else if (maybefunc == NULL){
                 changeError(2);
                 return SYNTAX_ERROR;
             }
-            // GEN_FUNC_CALL(maybefunc->name, NULL);
         }
         else{
             changeError(2);

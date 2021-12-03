@@ -171,6 +171,10 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             push(stack, *attr, token);
             pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
             pop(stack, token, *attr, deep, seznam, end, vartree, i, w);
+            token = tryGetToken();
+            if ((token >= 10 || token <= 25) || token == COMMA){
+                return token;
+            }
         }
         if (precTable[stackVal][inputNum] == '<'){
             push(stack, *attr, token);
