@@ -723,10 +723,10 @@ int functionBodyIsOK()
             if(seznam != NULL){
                 freeSeznam();
             }
-            whileSpotted(1);
             DLL_InsertLast(&listOfWhile);
             DLL_Last(&listOfWhile);
             while_spotted = true;
+            whileSpotted(1);
             ifORwhileWasTheLast(2);
             token = tryGetToken();
             token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
@@ -766,7 +766,7 @@ int functionBodyIsOK()
                 changeError(2);
                 return SYNTAX_ERROR;
             }
-            // if_spotted = false;
+            //if_spotted = false;
             token = tryGetToken();
             printf("JUMP ifend%d\n", DLL_GetValueCount(&listOfIf));
             printf("LABEL else%d\n", DLL_GetValueCount(&listOfIf));
@@ -1018,14 +1018,14 @@ int functionBodyIsOK()
                     freeSeznam();
                 }
             }
-            if (ifSpotted(0) && (ifORwhileWasTheLast(0) == 1))
+            if ((ifORwhileWasTheLast(0) == 1))
             {
                 fprintf(stdout, "LABEL ifend%d\n", DLL_GetValueCount(&listOfIf));
                 if_spotted = false;
                 DLL_Previous(&listOfIf);
             }
             token = tryGetToken();
-            if (whileSpotted(0) && (ifORwhileWasTheLast(0) == 2))
+            if ((ifORwhileWasTheLast(0) == 2))
             {
                 fprintf(stdout, "JUMP while%d\n", DLL_GetValueCount(&listOfWhile));
                 fprintf(stdout, "LABEL whileend%d\n", DLL_GetValueCount(&listOfWhile));
@@ -1099,12 +1099,12 @@ int syntaxCheck(){
                 if (token != LEFT_BRACKET)
                 {
                     changeError(2);
-                    changeError(2);
                     return SYNTAX_ERROR;
                 }
                 token = tryGetToken();
                 if(maybefunc->in != NULL){
-                    fprintf(stdout, "CREATEFRAME\n");
+                    //fprintf(stdout, "CREATEFRAME\n");
+                    maybefunc->in = maybefunc->in->first;
                 }
                 while (token != RIGHT_BRACKET)
                 {
@@ -1116,6 +1116,7 @@ int syntaxCheck(){
                     }
                     else if (typeCheck != maybefunc->in->type)
                     {
+                        //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAA %d != %d\n", typeCheck, maybefunc->in->type);
                         changeError(5);
                         return SEM_ERROR_FUNCPARAM;
                     }
@@ -1129,7 +1130,10 @@ int syntaxCheck(){
             if(strcmp(maybefunc->name, "main")){
                 GEN_FUNC_CALL(maybefunc->name, NULL, table->func_tree);
             } 
-            else if (maybefunc == NULL){
+            // if(!(strcmp(maybefunc->name, "main"))){
+            //     fprintf(stdout, "RETURN\n");
+            // }
+            if (maybefunc == NULL){
                 changeError(2);
                 return SYNTAX_ERROR;
             }
