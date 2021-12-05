@@ -383,6 +383,7 @@ int express(char *funcname, int token, string *attr, vars vartree, funcs functre
             || (tmp->out->type == INTEGER && (token == NIL || token == INT || token == ID))
             || (tmp->out->type == NUMBER && token != RETEZEC) || (tmp->out->type == NIL && token == NIL)))
         {
+            printf("AAAAAAAAAAAAAAAAAAAAAAA\n");
             changeError(5);
         }
         if (token == NIL)

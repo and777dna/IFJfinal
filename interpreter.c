@@ -59,8 +59,7 @@ void GEN_PRINT_WRITE(int token, string attr, vars vartree, int deep){
 		{
 			fprintf(stdout, "WRITE string@nil\n");
 			return;
-		}
-		
+		}	
 	}
     fprintf(stdout, "WRITE ");
     GEN_WRITE_VAR_LITERAL(token, attr.str);
@@ -77,7 +76,7 @@ void GEN_MAIN_GLOBAL(char *name, int token){
 	return;
 }
 
-void GEN_START_OF_FUNCTION(char *attr, int value, funcs func_tree, SeznamOfVars *seznam){
+void GEN_START_OF_FUNCTION(char *attr, int value, funcs func_tree, SeznamOfVars *seznam, bool mainWas){
 	funcs maybefunc = findFunc(func_tree, attr);
 	if(strcmp(attr, "main")){
 		fprintf(stdout, "LABEL $%s\n", attr);
@@ -91,9 +90,38 @@ void GEN_START_OF_FUNCTION(char *attr, int value, funcs func_tree, SeznamOfVars 
 		}
 	}
 	else {
-		fprintf(stdout, "LABEL $main\n");
+		if (mainWas)
+		{
+			fprintf(stdout, "LABEL $main\n");
+		}
+		else
+		{
+			fprintf(stdout, "JUMP back\n\n");
+			fprintf(stdout, "LABEL $main\n");
+			fprintf(stdout, "JUMP start\n");
+			fprintf(stdout, "LABEL back\n");
+		}
+		
 		fprintf(stdout, "CREATEFRAME\n");
 		fprintf(stdout, "PUSHFRAME\n");
+		fprintf(stdout, "DEFVAR LF@MUL_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@SUB_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@SUM_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@DIV_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@IDIV_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@HASH_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@DOTDOT_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@LESS_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@MORE_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@EQUAL_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@LESSOREQUAL_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@LESSOREQUAL$1\n");
+		fprintf(stdout, "DEFVAR LF@LESSOREQUAL1$1\n");
+		fprintf(stdout, "DEFVAR LF@MOREOREQUAL_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@MOREOREQUAL$1\n");
+		fprintf(stdout, "DEFVAR LF@MOREOREQUAL1$1\n");
+		fprintf(stdout, "DEFVAR LF@NOTEQUAL_RES$1\n");
+		fprintf(stdout, "DEFVAR LF@NOTEQUAL$1\n");
 		// if(maybefunc->in != NULL){
 		// 	fprintf(stdout, "CALL $GLOBALVAR\n");
 		// }
@@ -164,11 +192,10 @@ void GEN_FUNC_MAIN_END(char* name, int token){
 
 void GEN_FUNC_CALL(char *name_func, SeznamOfVars *param, funcs func_tree){
 	funcs maybefunc = findFunc(func_tree, name_func);
-	{
-		if(maybefunc->in == NULL){
-			fprintf(stdout, "CREATEFRAME\n");
-		}
+	if(maybefunc->in == NULL){
+		fprintf(stdout, "CREATEFRAME\n");
 	}
+	
 	fprintf(stdout, "CALL $%s\n", name_func);
 
 	if(param != NULL){
@@ -419,9 +446,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 			{
 				case INC:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "SUM_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "SUM_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -452,9 +479,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case DEC:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "SUB_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "SUB_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -485,9 +512,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case MULTIPLY:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "MUL_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "MUL_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -518,9 +545,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case DIV:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "DIV_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "DIV_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -551,9 +578,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case MOD:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "IDIV_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "IDIV_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -584,9 +611,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case HASH:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "HASH_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "HASH_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -616,9 +643,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case DOTDOT:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "DOTDOT_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "DOTDOT_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -649,9 +676,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case LESS:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "LESS_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "LESS_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -687,9 +714,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
                 case MORE:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "MORE_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "MORE_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -725,9 +752,9 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case EQUAL:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "EQUAL_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "EQUAL_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -763,15 +790,15 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case LESSOREQUAL:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "LESSOREQUAL");
-						fprintf(stdout, "\n");
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "LESSOREQUAL1");
-						fprintf(stdout, "\n");
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "LESSOREQUAL_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "LESSOREQUAL");
+						// fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "LESSOREQUAL1");
+						// fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "LESSOREQUAL_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -833,15 +860,15 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case MOREOREQUAL:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "MOREOREQUAL");
-						fprintf(stdout, "\n");
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "MOREOREQUAL1");
-						fprintf(stdout, "\n");
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "MOREOREQUAL_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "MOREOREQUAL");
+						// fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "MOREOREQUAL1");
+						// fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "MOREOREQUAL_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
@@ -903,12 +930,12 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					break;
 				case NOTEQUAL:
 					if(!(checkSEEN(oper))){
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "NOTEQUAL");
-						fprintf(stdout, "\n");
-						fprintf(stdout, "DEFVAR ");
-						GEN_WRITE_VAR_LITERAL(0, "NOTEQUAL_RES");
-						fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "NOTEQUAL");
+						// fprintf(stdout, "\n");
+						// fprintf(stdout, "DEFVAR ");
+						// GEN_WRITE_VAR_LITERAL(0, "NOTEQUAL_RES");
+						// fprintf(stdout, "\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}

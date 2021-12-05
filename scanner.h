@@ -193,7 +193,7 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr);
 void GEN_FUNC_MAIN_END(char *name_func, int token);
 void GEN_FUNC_MAIN_START(char *name);
 void GEN_PRINT_WRITE(int token, string attr, vars vartree, int deep);
-void GEN_START_OF_FUNCTION(char* attr, int num, funcs f, SeznamOfVars *seznam);
+void GEN_START_OF_FUNCTION(char* attr, int num, funcs f, SeznamOfVars *seznam, bool mainWas);
 void GEN_FUNC_CALL(char *name, SeznamOfVars *param, funcs func_tree);
 void GEN_END_OF_FUNCTION(string attr);
 void GEN_CALL_INBUILDS();

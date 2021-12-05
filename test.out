@@ -75,10 +75,9 @@ RETURN
 LABEL $substr
 PUSHFRAME
 DEFVAR LF@ret1$1
-DEFVAR LF@ret2$1
 DEFVAR LF@string$1
 DEFVAR LF@from$1
-DEFVAR LF@length_of_str$1
+DEFVAR LF@konec$1
 DEFVAR LF@length$1
 DEFVAR LF@length_helper$1
 DEFVAR LF@char$1
@@ -86,42 +85,41 @@ DEFVAR LF@new_strlen$1
 MOVE LF@ret1$1 string@
 MOVE LF@string$1 LF@in1$1
 MOVE LF@from$1 LF@in2$1
-MOVE LF@length_of_str$1 LF@in3$1
+SUB LF@from$1 LF@from$1 int@1
+MOVE LF@konec$1 LF@in3$1
 MOVE LF@length_helper$1 int@0
 STRLEN LF@length$1 LF@string$1
 SUB LF@new_strlen$1 LF@length$1 int@1
 DEFVAR LF@result$1
-LT LF@result$1 LF@length_of_str$1 int@0
+LT LF@result$1 LF@konec$1 int@0
 JUMPIFEQ $SUBSTR_END LF@result$1 bool@true
-EQ LF@result$1 LF@length_of_str$1 int@0
+EQ LF@result$1 LF@konec$1 int@0
 JUMPIFEQ $SUBSTR_EMPTY LF@result$1 bool@true
+GT LF@result$1 LF@konec$1 LF@new_strlen$1
+JUMPIFEQ $SUBSTR_END LF@result$1 bool@true
 LT LF@result$1 LF@from$1 int@0
 JUMPIFEQ $SUBSTR_END LF@result$1 bool@true
 GT LF@result$1 LF@from$1 LF@new_strlen$1
 JUMPIFEQ $SUBSTR_END LF@result$1 bool@true
 ADD LF@length_helper$1 LF@length_helper$1 LF@from$1
-ADD LF@length_helper$1 LF@length_helper$1 LF@length_of_str$1
+ADD LF@length_helper$1 LF@length_helper$1 LF@konec$1
 GT LF@result$1 LF@length_helper$1 LF@length$1
 JUMPIFEQ $SUBSTR_LEN LF@result$1 bool@true
 JUMP $FOR_LOOP
 LABEL $SUBSTR_LEN
 MOVE LF@length_helper$1 LF@length$1
 LABEL $FOR_LOOP
-JUMPIFEQ $SUBSTR_RET_0 LF@length_helper$1 LF@from$1
+JUMPIFEQ $SUBSTR_RET_0 LF@konec$1 LF@from$1
 GETCHAR LF@char$1 LF@string$1 LF@from$1
 CONCAT LF@ret1$1 LF@ret1$1 LF@char$1
 ADD LF@from$1 LF@from$1 int@1
 JUMP $FOR_LOOP
 LABEL $SUBSTR_RET_0
 PUSHS LF@ret1$1
-MOVE LF@ret2$1 int@0
-PUSHS LF@ret2$1
 JUMP $END
 LABEL $SUBSTR_END
-MOVE LF@ret1$1 nil@nil
+MOVE LF@ret1$1 string@
 PUSHS LF@ret1$1
-MOVE LF@ret2$1 int@1
-PUSHS LF@ret2$1
 LABEL $END
 POPFRAME
 RETURN
@@ -129,8 +127,6 @@ RETURN
 LABEL $SUBSTR_EMPTY
 MOVE LF@ret1$1 string@
 PUSHS LF@ret1$1
-MOVE LF@ret2$1 int@0
-PUSHS LF@ret2$1
 JUMP $END
 
 LABEL $ord
@@ -188,72 +184,53 @@ LABEL $CHR_RET
 POPFRAME
 RETURN
 
+LABEL $bar
+PUSHFRAME
+DEFVAR LF@a$1
+MOVE LF@a$1 LF@in1$1
+WRITE string@nil
+WRITE string@\010 
+LABEL bar_RET
+POPFRAME
+RETURN 
+
+LABEL $foo
+PUSHFRAME
+WRITE string@in\032foo\010 
+LABEL foo_RET
+POPFRAME
+RETURN 
+
+LABEL start
+AAAAAAAAAAAAAAAAA
+CREATEFRAME
+CALL $foo
+DEFVAR TF@in1$1
+MOVE TF@in1$1 int@314159 
+CALL $bar
+JUMP back
+
 LABEL $main
+JUMP start
+LABEL back
 CREATEFRAME
 PUSHFRAME
-DEFVAR LF@s1$1 
-MOVE LF@s1$1 nil@nil 
-MOVE LF@s1$1 string@Toto\032je\032nejaky\032text 
-DEFVAR LF@s2$1 
-MOVE LF@s2$1 nil@nil 
-DEFVAR LF@DOTDOT_RES$1 
-CONCAT LF@DOTDOT_RES$1 LF@s1$1 string@\044\032ktery\032jeste\032trochu\032obohatime 
-MOVE LF@s2$1 LF@DOTDOT_RES$1 
-WRITE LF@s1$1 
-WRITE string@\010 
-WRITE LF@s2$1 
-DEFVAR LF@s1len$1 
-MOVE LF@s1len$1 nil@nil 
-DEFVAR LF@HASH_RES$1 
-STRLEN LF@HASH_RES$1 LF@s1$1 
-MOVE LF@s1len$1 LF@HASH_RES$1 
-DEFVAR LF@s1len4$1 
-MOVE LF@s1len4$1 nil@nil 
-MOVE LF@s1len4$1 LF@s1len$1 
-DEFVAR LF@SUB_RES$1 
-SUB LF@SUB_RES$1 LF@s1len$1 int@4 
-MOVE LF@s1len$1 LF@SUB_RES$1 
-CREATEFRAME
-DEFVAR TF@in1$1
-MOVE TF@in1$1 LF@s2$1 
-DEFVAR TF@in2$1
-MOVE TF@in2$1 LF@s1len$1 
-DEFVAR TF@in3$1
-MOVE TF@in3$1 LF@s1len4$1 
-CALL $substr
-MOVE LF@s1$1 TF@ret1$1
-DEFVAR LF@SUM_RES$1 
-ADD LF@SUM_RES$1 LF@s1len$1 int@1 
-MOVE LF@s1len$1 LF@SUM_RES$1 
-WRITE string@4\032znaky\032od 
-WRITE LF@s1len$1 
-WRITE string@\046\032znaku\032v\032\034 
-WRITE LF@s2$1 
-WRITE string@\034\058 
-WRITE LF@s1$1 
-WRITE string@\010 
-WRITE string@Zadejte\032serazenou\032posloupnost\032vsech\032malych\032pismen\032a\045h\044\032 
-WRITE string@pricemz\032se\032pismena\032nesmeji\032v\032posloupnosti\032opakovat\058\032 
-CREATEFRAME
-CALL $reads
-MOVE LF@s1$1 TF@ret1$1
-DEFVAR LF@NOTEQUAL$1 
-DEFVAR LF@NOTEQUAL_RES$1 
-EQ LF@NOTEQUAL$1 LF@s1$1 nil@nil 
-NOT LF@NOTEQUAL_RES$1 LF@NOTEQUAL$1 
-JUMPIFNEQ else1 LF@NOTEQUAL_RES$1 bool@true
-LABEL while1
-EQ LF@NOTEQUAL$1 LF@s1$1 string@abcdefgh 
-NOT LF@NOTEQUAL_RES$1 LF@NOTEQUAL$1 
-JUMPIFEQ whileend1 LF@NOTEQUAL_RES$1 bool@false
-WRITE string@\010 
-WRITE string@Spatne\032zadana\032posloupnost\044\032zkuste\032znovu\058 
-CREATEFRAME
-CALL $reads
-MOVE LF@s1$1 TF@ret1$1
-JUMP while1
-LABEL whileend1
-JUMP ifend1
-LABEL else1
-LABEL ifend1
+DEFVAR LF@MUL_RES$1
+DEFVAR LF@SUB_RES$1
+DEFVAR LF@SUM_RES$1
+DEFVAR LF@DIV_RES$1
+DEFVAR LF@IDIV_RES$1
+DEFVAR LF@HASH_RES$1
+DEFVAR LF@DOTDOT_RES$1
+DEFVAR LF@LESS_RES$1
+DEFVAR LF@MORE_RES$1
+DEFVAR LF@EQUAL_RES$1
+DEFVAR LF@LESSOREQUAL_RES$1
+DEFVAR LF@LESSOREQUAL$1
+DEFVAR LF@LESSOREQUAL1$1
+DEFVAR LF@MOREOREQUAL_RES$1
+DEFVAR LF@MOREOREQUAL$1
+DEFVAR LF@MOREOREQUAL1$1
+DEFVAR LF@NOTEQUAL_RES$1
+DEFVAR LF@NOTEQUAL$1
 POPFRAME

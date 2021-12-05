@@ -10,9 +10,13 @@ int token;          // globalni promenna, ve ktere bude ulozen aktualni token
 string attr;
 string funnamesv;        // globalni promenna, ve ktere bude ulozen atribut tokenu
 char *name_func_save;
+char *nameFirstFunc = NULL;
+char *nameLastFunc = NULL;
+bool barfoo = false;
 int deep;
 int retnum = 0;
 symtable *table;
+bool mainWasFirst = true;
 int error_flag;
 bool if_spotted;
 bool while_spotted;
@@ -483,12 +487,12 @@ int functionIsOK()
                     case COLUMN:
                         token = tryGetToken();
                         outputWasComplited = outputIsOK();
-                        GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
+                        GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam, mainWasFirst);
                         return outputWasComplited;
                         break;
                     default:
                         //if((strcmp(name_func_save, "main"))){
-                            GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
+                            GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam, mainWasFirst);
                         //}
                         return SYNTAX_OK;
                         break;
@@ -1100,9 +1104,23 @@ int syntaxCheck(){
             funcs maybefunc = findFunc(table->func_tree, attr.str);
             if (maybefunc != NULL)
             {
-                if(maybefunc->out != NULL){
-                    changeError(5);
-                    return SEM_ERROR_FUNCPARAM;
+                // if(maybefunc->out != NULL){
+                //     changeError(5);
+                //     return SEM_ERROR_FUNCPARAM;
+                // }
+                if((strcmp(maybefunc->name, "main"))){
+                    mainWasFirst = false;
+                    if (!barfoo)
+                    {
+                        nameFirstFunc = maybefunc->name;
+                        barfoo = true;
+                        printf("LABEL start\n");
+                    }
+                    else
+                    {
+                        nameLastFunc = maybefunc->name;
+                    }
+                    
                 }
                 token = tryGetToken();
                 if (token != LEFT_BRACKET)
@@ -1129,6 +1147,15 @@ int syntaxCheck(){
                         changeError(5);
                         return SEM_ERROR_FUNCPARAM;
                     }
+                    if (maybefunc->in->next == NULL)
+                    {
+                        if(strcmp(maybefunc->name, "main")){
+                            GEN_FUNC_MAIN_END(attr.str, token);
+                        }
+                        token = tryGetToken();
+                        break;
+                    }
+                    
                     maybefunc->in = maybefunc->in->next;
                     if(strcmp(maybefunc->name, "main")){
                         GEN_FUNC_MAIN_END(attr.str, token);
@@ -1137,6 +1164,10 @@ int syntaxCheck(){
                 }
             }
             if(strcmp(maybefunc->name, "main")){
+                if (maybefunc->in == NULL)
+                {
+                    //printf("AAAAAAAAAAAAAAAAA\n");
+                }
                 GEN_FUNC_CALL(maybefunc->name, NULL, table->func_tree);
             } 
             // if(!(strcmp(maybefunc->name, "main"))){
