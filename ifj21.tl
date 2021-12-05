@@ -1,26 +1,39 @@
--- Program 1: Vypocet faktorialu (iterativne)
-
 require "ifj21"
-function main() -- uzivatelska funkce bez parametru
-    local a : integer
-    local vysl : integer = 0
-    write("Zadejte cislo pro vypocet faktorialu\n")
-    a = readi()
-    if a == nil then
-        write("a je nil\n") return
-    else
-    end
-    if a < 0 then
-        write("Faktorial nelze spocitat\n")
-    else
-        vysl = 1
-        while a > 0 do
-            vysl = vysl * a
-            a = a - 1 -- dva prikazy
-        end
-        write("Vysledek je: ", vysl, "\n")
-    end
+
+function strfn():string,string,string
+    return "hello there", "", nil
+end
+
+function intfn():integer,integer
+    return 4, nil
+end
+
+function numfn():number,number,number,number,number,number,number,number
+    return 1.1, 1, 1.1e1, 1.1e+1, 1.1e-1, 1e1, 1e+1, 1e-1
+end
+
+function main()
+    local str1 : string
+    local str2 : string
+    local str3 : string
+    local int1 : integer
+    local int2 : integer
+    local num1 : number
+    local num2 : number
+    local num3 : number
+    local num4 : number
+    local num5 : number
+    local num6 : number
+    local num7 : number
+    local num8 : number
+
+    str1, str2, str3 = strfn()
+    int1, int2 = intfn()
+    num1, num2, num3, num4, num5, num6, num7, num8 = numfn()
+
+    write(str1, "\n", str2, "\n", str3, "\n", int1, "\n", int2,
+    "\n", num1, "\n", num2, "\n", num3, "\n", num4, "\n", num5,
+    "\n", num6, "\n", num7, "\n", num8, "\n")
 end
 
 main()
--- prikaz hlavniho tela programu

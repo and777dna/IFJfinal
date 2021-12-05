@@ -37,6 +37,7 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->R = NULL;
         (*var_tree)->next = NULL;
         (*var_tree)->type = type;
+        (*var_tree)->nil = true;
         // printf("Added %s'\n", (*var_tree)->name);
         return true;
     }
@@ -272,34 +273,30 @@ void insertOutput(funcs func, int type, char *name)
         {
             return;
         }
-        if (function->out == NULL)
-        {
-            return;
-        }
-        startOut = malloc(sizeof (struct outputFunc));
-        startOut->next = NULL;
-        startOut->type = type;
+        function->out->nil = false;
         function->out->next = NULL;
         function->out->type = type;
+        startOut = function->out;
         function->out->first = startOut;
         return;
     }
-    else
+    outPar new_param = function->out;
+    
+    while (new_param->next != NULL)
     {
-        while (function->out->next != NULL)
-        {
-            function->out = function->out->next;
-        }
-        function->out->next = malloc(sizeof(struct outputFunc));
-        outPar new_param = function->out->next;
-        new_param->next = NULL;
-        new_param->type = type;
-        new_param->first = startOut;
-        if(new_param->first->next == NULL){
-            new_param->first->next = new_param; 
-        }
+        new_param = new_param->next;
+    }
+    new_param->next = malloc(sizeof(struct outputFunc));
+    new_param = new_param->next;
+    new_param->next = NULL;
+    new_param->nil = false;
+    new_param->type = type;
+    new_param->first = startOut;
+    if(new_param->first->next == NULL){
+        new_param->first->next = new_param; 
     }
     
+    return;
 }
 
 void freeFunc (funcs func)

@@ -86,6 +86,7 @@ typedef struct inputFunc
 typedef struct outputFunc
 {
     int type;
+    bool nil;
     struct outputFunc *next;
     struct outputFunc *first;
 } * outPar;
@@ -105,7 +106,8 @@ typedef struct Var_tree
 {
     int deepOfVar;
     char *name;
-    int type; // 16 : int, 22 : str, 19 : number
+    int type; 
+    bool nil;
     struct Var_tree *L;
     struct Var_tree *R;
     struct Var_tree *next;
@@ -184,13 +186,13 @@ int strGetLength(string *s);
 //hlavicka funkce simulujici lexikalni analyzator
 void setSourceFile(FILE *f);
 int getNextToken(string *attr);
-int express(int token, string *attr, vars var, funcs funcs, int deep, SeznamOfVars *seznam, int type, DLList *i, DLList *w);
+int express(char *funcname, int token, string *attr, vars var, funcs funcs, int deep, SeznamOfVars *seznam, int type, DLList *i, DLList *w);
 void changeError(int n);
 
 void GEN_WRITE_VAR_LITERAL(int token, char *attr);
 void GEN_FUNC_MAIN_END(char *name_func, int token);
 void GEN_FUNC_MAIN_START(char *name);
-void GEN_PRINT_WRITE(int token, string attr);
+void GEN_PRINT_WRITE(int token, string attr, vars vartree, int deep);
 void GEN_START_OF_FUNCTION(char* attr, int num, funcs f, SeznamOfVars *seznam);
 void GEN_FUNC_CALL(char *name, SeznamOfVars *param, funcs func_tree);
 void GEN_END_OF_FUNCTION(string attr);

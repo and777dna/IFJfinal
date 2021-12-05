@@ -307,15 +307,34 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
     else{
         end = true;
         int stackVal = stack->attr[stack->top].type - 30;
+        vars tmppp = NULL;
+        if (seznam)
+        {
+            tmppp = findVar(vartree, deep, seznam->name);
+        }
         if (stack->attr[stack->top].type == ID || stack->attr[stack->top].type == INT 
             || stack->attr[stack->top].type == FLOAT){
             stackVal = 7;
+            if (tmppp)
+            {
+                tmppp->nil = false;
+            }
+            
         }
         else if (stack->attr[stack->top].type == RETEZEC){
             stackVal = 15;
+            if (tmppp)
+            {
+                tmppp->nil = false;
+            }
         }
         else if (stack->attr[stack->top].type == NIL){
+
             stackVal = 18;
+            if (tmppp)
+            {
+                tmppp->nil = true;
+            }
         }
         if (precTable[stackVal][8] == '>'){
             if (token == NIL){
@@ -341,13 +360,38 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
     }
 }
 
-int express(int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, int type, DLList *i, DLList *w)
+int express(char *funcname, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, int type, DLList *i, DLList *w)
 {
     bool end = false;
+    static int counter = 0;
+    funcs tmp;
     Stack_t *stack = createStack();
     string buk;
     buk.str = "$";
     push(stack, buk, 38);
+    if (funcname)
+    {
+        //printf("AAAAAAAAAAAAA %s AAAA %d AAAAAAAAAAa\n", attr->str, token);
+        tmp = findFunc(functree, funcname);
+        tmp->out = tmp->out->first;
+        for (int i = 0; i < counter; i++)
+        {
+            tmp->out = tmp->out->next;
+        }
+        //printf("\nOOUTPUT %d %d %d\n", counter, tmp->out->type, token);
+        if (!((tmp->out->type == STRING && (token == NIL || token == RETEZEC || token == ID))
+            || (tmp->out->type == INTEGER && (token == NIL || token == INT || token == ID))
+            || (tmp->out->type == NUMBER && token != RETEZEC) || (tmp->out->type == NIL && token == NIL)))
+        {
+            changeError(5);
+        }
+        if (token == NIL)
+        {
+            tmp->out->nil = true;
+        }
+        counter++;
+    }
+    //printf("AAAAAAAAAAAAA%sAAAA%dAAAAAAAAAAa\n", attr->str, token);
     if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT || token == HASH || token == NIL)
     {
         funcs tmp = findFunc(functree, attr->str);
@@ -404,10 +448,11 @@ int express(int token, string *attr, vars vartree, funcs functree, int deep, Sez
             if(seznam != NULL){
                 seznam = seznam->next;
             }
-            token = express(token, attr, vartree, functree, deep, seznam, type, i, w);
+            token = express(funcname, token, attr, vartree, functree, deep, seznam, type, i, w);
         }
         else{
             end = true;
+            counter = 0;
             if (token == NIL){
                 if (stack != NULL){
                     while (strcmp(stack->attr[stack->top].attr, "$") != 0){

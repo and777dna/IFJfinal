@@ -603,7 +603,7 @@ int functionBodyIsOK()
                         {
                             case ASSIGNED:
                                 token = tryGetToken();
-                                token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, type, &listOfIf, &listOfWhile);
+                                token = express(NULL, token, &attr, table->var_tree, table->func_tree, deep, seznam, type, &listOfIf, &listOfWhile);
                                 break;
                             default:
                                 break;
@@ -650,7 +650,7 @@ int functionBodyIsOK()
                                 case ASSIGNED:
                                     token = tryGetToken();
                                     seznam = seznam->first;
-                                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, type, &listOfIf, &listOfWhile);
+                                    token = express(NULL, token, &attr, table->var_tree, table->func_tree, deep, seznam, type, &listOfIf, &listOfWhile);
                                     break;
                                 default:
                                     break;
@@ -681,7 +681,7 @@ int functionBodyIsOK()
                         changeError(3);
                         return SEM_ERROR_DEFINE;
                     }
-                    GEN_PRINT_WRITE(token, attr);
+                    GEN_PRINT_WRITE(token, attr, table->var_tree, deep);
                     token = tryGetToken();
                     if(token == COMMA){
                         token = tryGetToken();
@@ -699,7 +699,7 @@ int functionBodyIsOK()
                 case RETEZEC:
                 case FLOAT:
                 case NIL:
-                    GEN_PRINT_WRITE(token, attr);
+                    GEN_PRINT_WRITE(token, attr, table->var_tree, deep);
                     token = tryGetToken();
                     if(token == COMMA){
                         token = tryGetToken();
@@ -730,7 +730,7 @@ int functionBodyIsOK()
             whileSpotted(1);
             ifORwhileWasTheLast(2);
             token = tryGetToken();
-            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
+            token = express(NULL, token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
             if (token != DO)
             {
                 changeError(2);
@@ -750,7 +750,7 @@ int functionBodyIsOK()
             ifORwhileWasTheLast(1);
             if_spotted = true; 
             token = tryGetToken();
-            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
+            token = express(NULL, token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
             if (token != THEN)
             {
                 changeError(2);
@@ -845,7 +845,7 @@ int functionBodyIsOK()
                             funcs maybefunc = findFunc(table->func_tree, attr.str);
                             if (maybefunc == NULL){
                                 seznam = seznam->first;
-                                token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
+                                token = express(NULL, token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
                                 if (token == COMMA){
                                     token = tryGetToken();
                                     break;
@@ -860,8 +860,15 @@ int functionBodyIsOK()
                                 maybefunc->out = maybefunc->out->first;
                                 while(seznam != NULL && maybefunc->out != NULL){
                                     vars varfind = findVar(table->var_tree, deep, seznam->name);
+                                    if (maybefunc->out->nil)
+                                    {
+                                        varfind->nil = true;
+                                    }
+                                    else
+                                    {
+                                        varfind->nil = false;
+                                    }
                                     if (maybefunc->out->next == NULL){
-                                        vars varfind = findVar(table->var_tree, deep, seznam->name);
                                         if(varfind->type == maybefunc->out->type){
                                             if((seznam->next == NULL && maybefunc->out->next != NULL) 
                                             || (seznam->next != NULL && maybefunc->out->next == NULL)){
@@ -885,6 +892,7 @@ int functionBodyIsOK()
                                                 changeError(5);
                                                 return SEM_ERROR_FUNCPARAM;
                                         }
+                                        
                                     }
                                     else{
                                         changeError(5);
@@ -954,7 +962,7 @@ int functionBodyIsOK()
                                 }
                                 else{
                                     seznam = seznam->first;
-                                    token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
+                                    token = express(NULL, token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
                                     if (token == COMMA){
                                         token = tryGetToken();
                                         break;
@@ -964,7 +972,7 @@ int functionBodyIsOK()
                         }
                         else{
                             seznam = seznam->first;
-                            token = express(token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
+                            token = express(NULL, token, &attr, table->var_tree, table->func_tree, deep, seznam, 3, &listOfIf, &listOfWhile);
                             if (token == COMMA){
                                 token = tryGetToken();
                                 break;
@@ -990,7 +998,7 @@ int functionBodyIsOK()
                     else if(tmp2 != NULL){
                         checkSEEN(6);  
                         strcpy_for_var(tmp2->name);
-                        token = express(token, &attr, table->var_tree, table->func_tree, deep, NULL, 3, &listOfIf, &listOfWhile);
+                        token = express(name_func_save, token, &attr, table->var_tree, table->func_tree, deep, NULL, 3, &listOfIf, &listOfWhile);
                         fprintf(stdout, "JUMP %s_RET\n", funnamesv.str);  
                         break;
                     }
@@ -1000,7 +1008,7 @@ int functionBodyIsOK()
                 }
                 else{
                     checkSEEN(6);
-                    token = express(token, &attr, table->var_tree, table->func_tree, deep, NULL, 3, &listOfIf, &listOfWhile);
+                    token = express(name_func_save, token, &attr, table->var_tree, table->func_tree, deep, NULL, 3, &listOfIf, &listOfWhile);
                     fprintf(stdout, "JUMP %s_RET\n", funnamesv.str);    
                     break;
                 }

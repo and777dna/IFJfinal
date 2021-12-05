@@ -51,7 +51,17 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr){
 	}
 }
 
-void GEN_PRINT_WRITE(int token, string attr){
+void GEN_PRINT_WRITE(int token, string attr, vars vartree, int deep){
+	vars tmp = findVar(vartree, deep, attr.str);
+	if (tmp)
+	{
+		if (tmp->nil == true)
+		{
+			fprintf(stdout, "WRITE string@nil\n");
+			return;
+		}
+		
+	}
     fprintf(stdout, "WRITE ");
     GEN_WRITE_VAR_LITERAL(token, attr.str);
 	fprintf(stdout, "\n");
