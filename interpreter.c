@@ -1115,11 +1115,10 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "LABEL $substr\n");
 	fprintf(stdout, "PUSHFRAME\n");
 	fprintf(stdout, "DEFVAR LF@ret1$1\n");//string
-	fprintf(stdout, "DEFVAR LF@ret2$1\n");//int
 
 	fprintf(stdout, "DEFVAR LF@string$1\n");
 	fprintf(stdout, "DEFVAR LF@from$1\n");
-	fprintf(stdout, "DEFVAR LF@length_of_str$1\n");
+	fprintf(stdout, "DEFVAR LF@konec$1\n");
 	fprintf(stdout, "DEFVAR LF@length$1\n");
 
 	fprintf(stdout, "DEFVAR LF@length_helper$1\n");
@@ -1129,7 +1128,8 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "MOVE LF@ret1$1 string@\n");
 	fprintf(stdout, "MOVE LF@string$1 LF@in1$1\n");
 	fprintf(stdout, "MOVE LF@from$1 LF@in2$1\n");
-	fprintf(stdout, "MOVE LF@length_of_str$1 LF@in3$1\n");
+	fprintf(stdout, "SUB LF@from$1 LF@from$1 int@1\n");
+	fprintf(stdout, "MOVE LF@konec$1 LF@in3$1\n");
 
 	fprintf(stdout, "MOVE LF@length_helper$1 int@0\n");
 
@@ -1137,11 +1137,14 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "SUB LF@new_strlen$1 LF@length$1 int@1\n");//new_strlen = length - 1
 
 	fprintf(stdout, "DEFVAR LF@result$1\n");
-	fprintf(stdout, "LT LF@result$1 LF@length_of_str$1 int@0\n"); //n < O
+	fprintf(stdout, "LT LF@result$1 LF@konec$1 int@0\n"); //n < O
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result$1 bool@true\n");
 
-	fprintf(stdout, "EQ LF@result$1 LF@length_of_str$1 int@0\n"); //n == O
+	fprintf(stdout, "EQ LF@result$1 LF@konec$1 int@0\n"); //n == O
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_EMPTY LF@result$1 bool@true\n");
+
+	fprintf(stdout, "GT LF@result$1 LF@konec$1 LF@new_strlen$1\n");//i >= length - 1
+	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result$1 bool@true\n");
 
 	fprintf(stdout, "LT LF@result$1 LF@from$1 int@0\n"); //i < O
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result$1 bool@true\n");
@@ -1150,7 +1153,7 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result$1 bool@true\n");
 
 	fprintf(stdout, "ADD LF@length_helper$1 LF@length_helper$1 LF@from$1\n");
-	fprintf(stdout, "ADD LF@length_helper$1 LF@length_helper$1 LF@length_of_str$1\n");//i + n
+	fprintf(stdout, "ADD LF@length_helper$1 LF@length_helper$1 LF@konec$1\n");//i + n
 
 	fprintf(stdout, "GT LF@result$1 LF@length_helper$1 LF@length$1\n");//i + n > n ? n : i+n
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_LEN LF@result$1 bool@true\n");
@@ -1159,7 +1162,7 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "MOVE LF@length_helper$1 LF@length$1\n");
 
 	fprintf(stdout, "LABEL $FOR_LOOP\n");
-	fprintf(stdout, "JUMPIFEQ $SUBSTR_RET_0 LF@length_helper$1 LF@from$1\n");
+	fprintf(stdout, "JUMPIFEQ $SUBSTR_RET_0 LF@konec$1 LF@from$1\n");
 	fprintf(stdout, "GETCHAR LF@char$1 LF@string$1 LF@from$1\n");
 	fprintf(stdout, "CONCAT LF@ret1$1 LF@ret1$1 LF@char$1\n");
 	fprintf(stdout, "ADD LF@from$1 LF@from$1 int@1\n");
@@ -1167,15 +1170,11 @@ void GENERATION_SUBSTR(){
 
 	fprintf(stdout, "LABEL $SUBSTR_RET_0\n");
 	fprintf(stdout, "PUSHS LF@ret1$1\n");
-	fprintf(stdout, "MOVE LF@ret2$1 int@0\n");
-	fprintf(stdout, "PUSHS LF@ret2$1\n");
 	fprintf(stdout, "JUMP $END\n");
 
 	fprintf(stdout, "LABEL $SUBSTR_END\n");
-	fprintf(stdout, "MOVE LF@ret1$1 nil@nil\n");
+	fprintf(stdout, "MOVE LF@ret1$1 string@\n");
 	fprintf(stdout, "PUSHS LF@ret1$1\n");
-	fprintf(stdout, "MOVE LF@ret2$1 int@1\n");
-	fprintf(stdout, "PUSHS LF@ret2$1\n");
 
 	fprintf(stdout, "LABEL $END\n");
 	fprintf(stdout, "POPFRAME\n");
@@ -1184,8 +1183,6 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "LABEL $SUBSTR_EMPTY\n");
 	fprintf(stdout, "MOVE LF@ret1$1 string@\n");
 	fprintf(stdout, "PUSHS LF@ret1$1\n");
-	fprintf(stdout, "MOVE LF@ret2$1 int@0\n");
-	fprintf(stdout, "PUSHS LF@ret2$1\n");
 	fprintf(stdout, "JUMP $END\n\n");
 }
 
