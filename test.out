@@ -1,0 +1,234 @@
+.IFJcode21
+JUMP $main
+
+LABEL $reads
+PUSHFRAME
+DEFVAR LF@ret1$1
+DEFVAR LF@ret2$1
+READ LF@ret1$1 string
+DEFVAR LF@ret_check$1
+TYPE LF@ret_check$1 LF@ret1$1
+JUMPIFNEQ $READS_END LF@ret_check$1 string@string
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@0
+PUSHS LF@ret2$1
+JUMP $END_READS
+LABEL $READS_END
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@1
+PUSHS LF@ret2$1
+LABEL $END_READS
+POPFRAME
+RETURN
+
+LABEL $readi
+PUSHFRAME
+DEFVAR LF@ret1$1
+DEFVAR LF@ret2$1
+READ LF@ret1$1 int
+DEFVAR LF@ret_check$1
+TYPE LF@ret_check$1 LF@ret1$1
+JUMPIFNEQ $READI_END LF@ret_check$1 string@int
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@0
+PUSHS LF@ret2$1
+JUMP $END_READI
+LABEL $READI_END
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@1
+PUSHS LF@ret2$1
+LABEL $END_READI
+POPFRAME
+RETURN
+
+LABEL $readn
+PUSHFRAME
+DEFVAR LF@ret1$1
+DEFVAR LF@ret2$1
+DEFVAR LF@ret_check$1
+READ LF@ret1$1 float
+TYPE LF@ret_check$1 LF@ret1$1
+JUMPIFNEQ $READN_END LF@ret_check$1 string@float
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@0
+PUSHS LF@ret2$1
+JUMP $END_READN
+LABEL $READN_END
+MOVE LF@ret1$1 nil@nil
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@1
+PUSHS LF@ret2$1
+LABEL $END_READN
+POPFRAME
+RETURN
+
+LABEL $tointeger
+PUSHFRAME
+DEFVAR LF@ret1$1
+DEFVAR LF@param1$1
+MOVE LF@param1$1 LF@f$1
+FLOAT2INT LF@ret1$1 LF@param1$1
+PUSHS LF@ret1$1
+POPFRAME
+RETURN
+
+LABEL $substr
+PUSHFRAME
+DEFVAR LF@ret1$1
+DEFVAR LF@ret2$1
+DEFVAR LF@string$1
+DEFVAR LF@from$1
+DEFVAR LF@length_of_str$1
+DEFVAR LF@length$1
+DEFVAR LF@length_helper$1
+DEFVAR LF@char$1
+DEFVAR LF@new_strlen$1
+MOVE LF@ret1$1 string@
+MOVE LF@string$1 LF@in1$1
+MOVE LF@from$1 LF@in2$1
+MOVE LF@length_of_str$1 LF@in3$1
+MOVE LF@length_helper$1 int@0
+STRLEN LF@length$1 LF@string$1
+SUB LF@new_strlen$1 LF@length$1 int@1
+DEFVAR LF@result$1
+LT LF@result$1 LF@length_of_str$1 int@0
+JUMPIFEQ $SUBSTR_END LF@result$1 bool@true
+EQ LF@result$1 LF@length_of_str$1 int@0
+JUMPIFEQ $SUBSTR_EMPTY LF@result$1 bool@true
+LT LF@result$1 LF@from$1 int@0
+JUMPIFEQ $SUBSTR_END LF@result$1 bool@true
+GT LF@result$1 LF@from$1 LF@new_strlen$1
+JUMPIFEQ $SUBSTR_END LF@result$1 bool@true
+ADD LF@length_helper$1 LF@length_helper$1 LF@from$1
+ADD LF@length_helper$1 LF@length_helper$1 LF@length_of_str$1
+GT LF@result$1 LF@length_helper$1 LF@length$1
+JUMPIFEQ $SUBSTR_LEN LF@result$1 bool@true
+JUMP $FOR_LOOP
+LABEL $SUBSTR_LEN
+MOVE LF@length_helper$1 LF@length$1
+LABEL $FOR_LOOP
+JUMPIFEQ $SUBSTR_RET_0 LF@length_helper$1 LF@from$1
+GETCHAR LF@char$1 LF@string$1 LF@from$1
+CONCAT LF@ret1$1 LF@ret1$1 LF@char$1
+ADD LF@from$1 LF@from$1 int@1
+JUMP $FOR_LOOP
+LABEL $SUBSTR_RET_0
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@0
+PUSHS LF@ret2$1
+JUMP $END
+LABEL $SUBSTR_END
+MOVE LF@ret1$1 nil@nil
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@1
+PUSHS LF@ret2$1
+LABEL $END
+POPFRAME
+RETURN
+
+LABEL $SUBSTR_EMPTY
+MOVE LF@ret1$1 string@
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@0
+PUSHS LF@ret2$1
+JUMP $END
+
+LABEL $ord
+PUSHFRAME
+DEFVAR LF@string$1
+DEFVAR LF@int$1
+DEFVAR LF@length$1
+DEFVAR LF@right_int$1
+DEFVAR LF@ret1$1
+DEFVAR LF@ret2$1
+MOVE LF@string$1 LF@s$1
+MOVE LF@int$1 LF@i$1
+STRLEN LF@length$1 LF@string$1
+SUB LF@length$1 LF@length$1 int@1
+GT LF@right_int$1 LF@int$1 LF@length$1
+JUMPIFEQ $ORD_END LF@right_int$1 bool@true
+LT LF@right_in$1t LF@int$1 int@0
+JUMPIFEQ $ORD_END LF@right_int$1 bool@true
+STRI2INT LF@ret1$1 LF@string$1 LF@int$1
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@0
+PUSHS LF@ret2$1
+JUMP $ORD_RET
+LABEL $ORD_END
+MOVE LF@ret1$1 nil@nil
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@1
+PUSHS LF@ret2$1
+LABEL $ORD_RET
+POPFRAME
+RETURN
+
+LABEL $chr
+PUSHFRAME
+DEFVAR LF@int$1
+DEFVAR LF@right_int$1
+DEFVAR LF@ret1$1
+DEFVAR LF@ret2$1
+MOVE LF@int$1 LF@i$0
+LT LF@right_int$1 LF@int$1 int@0
+JUMPIFEQ $CHR_END LF@right_int$1 bool@true
+GT LF@right_int$1 LF@int$1 int@255
+JUMPIFEQ $CHR_END LF@right_int$1 bool@true
+INT2CHAR LF@ret1$1 LF@int$1
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@0
+PUSHS LF@ret2$1
+JUMP $CHR_RET
+LABEL $CHR_END
+MOVE LF@ret1$1 nil@nil
+PUSHS LF@ret1$1
+MOVE LF@ret2$1 int@1
+PUSHS LF@ret2$1
+LABEL $CHR_RET
+POPFRAME
+RETURN
+
+LABEL $main
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@a$1 
+MOVE LF@a$1 nil@nil 
+DEFVAR LF@vysl$1 
+MOVE LF@vysl$1 nil@nil 
+MOVE LF@vysl$1 int@0 
+WRITE string@Zadejte\032cislo\032pro\032vypocet\032faktorialu\010 
+CREATEFRAME
+CALL $readi
+MOVE LF@a$1 TF@ret1$1
+DEFVAR LF@EQUAL_RES$1 
+EQ LF@EQUAL_RES$1 LF@a$1 nil@nil 
+JUMPIFNEQ else1 LF@EQUAL_RES$1 bool@true
+WRITE string@a\032je\032nil\010 
+JUMP main_RET
+JUMP ifend1
+LABEL else1
+LABEL ifend1
+DEFVAR LF@LESS_RES$1 
+LT LF@LESS_RES$1 LF@a$1 int@0 
+JUMPIFNEQ else2 LF@LESS_RES$1 bool@true
+WRITE string@Faktorial\032nelze\032spocitat\010 
+JUMP ifend2
+LABEL else2
+MOVE LF@vysl$1 int@1 
+DEFVAR LF@MORE_RES$1 
+LABEL while1
+GT LF@MORE_RES$1 LF@a$1 int@0 
+JUMPIFEQ whileend1 LF@MORE_RES$1 bool@false
+DEFVAR LF@MUL_RES$1 
+MUL LF@MUL_RES$1 LF@vysl$1 LF@a$1 
+MOVE LF@vysl$1 LF@MUL_RES$1 
+DEFVAR LF@SUB_RES$1 
+SUB LF@SUB_RES$1 LF@a$1 int@1 
+MOVE LF@a$1 LF@SUB_RES$1 
+JUMP while1
+LABEL whileend1
+WRITE string@Vysledek\032je\058\032 
+WRITE LF@vysl$1 
+WRITE string@\010 
+LABEL ifend2
+POPFRAME

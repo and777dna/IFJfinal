@@ -448,7 +448,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
-						fprintf(stdout, "DEC ");
+						fprintf(stdout, "SUB ");
 						GEN_WRITE_VAR_LITERAL(0, "SUB_RES");
 						GEN_WRITE_VAR_LITERAL(token1, param1);
 						GEN_WRITE_VAR_LITERAL(token2, param2);
@@ -461,7 +461,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
 						}
-						fprintf(stdout, "DEC ");
+						fprintf(stdout, "SUB ");
 						GEN_WRITE_VAR_LITERAL(0, "SUB_RES");
 						GEN_WRITE_VAR_LITERAL(token1, param1);
 						GEN_WRITE_VAR_LITERAL(token2, param2);
@@ -1044,7 +1044,7 @@ void GENERATION_READS(){
     fprintf(stdout, "READ LF@ret1$1 string\n");
     fprintf(stdout, "DEFVAR LF@ret_check$1\n");
 
-    fprintf(stdout, "TYPE LF@ret_check LF@ret1$1\n");
+    fprintf(stdout, "TYPE LF@ret_check$1 LF@ret1$1\n");
     fprintf(stdout, "JUMPIFNEQ $READS_END LF@ret_check$1 string@string\n");
 
     fprintf(stdout, "PUSHS LF@ret1$1\n");
@@ -1117,13 +1117,13 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "DEFVAR LF@new_strlen$1\n");
 
 	fprintf(stdout, "MOVE LF@ret1$1 string@\n");
-	fprintf(stdout, "MOVE LF@string$1 LF@s$1\n");
-	fprintf(stdout, "MOVE LF@from$1 LF@i$1\n");
-	fprintf(stdout, "MOVE LF@length_of_str$1 LF@n$1\n");
+	fprintf(stdout, "MOVE LF@string$1 LF@in1$1\n");
+	fprintf(stdout, "MOVE LF@from$1 LF@in2$1\n");
+	fprintf(stdout, "MOVE LF@length_of_str$1 LF@in3$1\n");
 
 	fprintf(stdout, "MOVE LF@length_helper$1 int@0\n");
 
-	fprintf(stdout, "STRLEN LF@length$1 LF@string\n");//length = STRLEN(STRING)
+	fprintf(stdout, "STRLEN LF@length$1 LF@string$1\n");//length = STRLEN(STRING)
 	fprintf(stdout, "SUB LF@new_strlen$1 LF@length$1 int@1\n");//new_strlen = length - 1
 
 	fprintf(stdout, "DEFVAR LF@result$1\n");
@@ -1136,13 +1136,13 @@ void GENERATION_SUBSTR(){
 	fprintf(stdout, "LT LF@result$1 LF@from$1 int@0\n"); //i < O
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result$1 bool@true\n");
 
-	fprintf(stdout, "GT LF@result LF@from$1 LF@new_strlen$1\n");//i >= length - 1
+	fprintf(stdout, "GT LF@result$1 LF@from$1 LF@new_strlen$1\n");//i >= length - 1
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_END LF@result$1 bool@true\n");
 
-	fprintf(stdout, "ADD LF@length_helper LF@length_helper$1 LF@from$1\n");
-	fprintf(stdout, "ADD LF@length_helper LF@length_helper$1 LF@length_of_str$1\n");//i + n
+	fprintf(stdout, "ADD LF@length_helper$1 LF@length_helper$1 LF@from$1\n");
+	fprintf(stdout, "ADD LF@length_helper$1 LF@length_helper$1 LF@length_of_str$1\n");//i + n
 
-	fprintf(stdout, "GT LF@result LF@length_helper$1 LF@length$1\n");//i + n > n ? n : i+n
+	fprintf(stdout, "GT LF@result$1 LF@length_helper$1 LF@length$1\n");//i + n > n ? n : i+n
 	fprintf(stdout, "JUMPIFEQ $SUBSTR_LEN LF@result$1 bool@true\n");
 	fprintf(stdout, "JUMP $FOR_LOOP\n");
 	fprintf(stdout, "LABEL $SUBSTR_LEN\n");

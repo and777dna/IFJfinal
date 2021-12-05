@@ -427,9 +427,9 @@ int functionIsOK()
             {
                 insertFunc(name_func_save, &(table->func_tree), origin);
             }
-            if(!(strcmp(attr.str, "main"))){
-                GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
-            }
+            // if(!(strcmp(attr.str, "main"))){
+            //     GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
+            // }
             else if (tmp != NULL && tmp->origin == 1)
             {
                 tmp->origin = 2;
@@ -487,9 +487,9 @@ int functionIsOK()
                         return outputWasComplited;
                         break;
                     default:
-                        if((strcmp(name_func_save, "main"))){
+                        //if((strcmp(name_func_save, "main"))){
                             GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
-                        }
+                        //}
                         return SYNTAX_OK;
                         break;
                     }
@@ -698,6 +698,7 @@ int functionBodyIsOK()
                 case INT:
                 case RETEZEC:
                 case FLOAT:
+                case NIL:
                     GEN_PRINT_WRITE(token, attr);
                     token = tryGetToken();
                     if(token == COMMA){
