@@ -46,7 +46,22 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr){
 		    fprintf(stdout, "nil@nil ");
             break;
         case ID:
-            fprintf(stdout, "LF@%s$%d ", attr, 1);
+			if (strcmp(attr, "SUM_RES") && strcmp(attr, "MUL_RES") 
+			&& strcmp(attr, "SUB_RES") && strcmp(attr, "DIV_RES") 
+			&& strcmp(attr, "IDIV_RES") && strcmp(attr, "HASH_RES") 
+			&& strcmp(attr, "DOTDOT_RES") && strcmp(attr, "LESS_RES")
+			&& strcmp(attr, "MORE_RES") && strcmp(attr, "EQUAL_RES")
+			&& strcmp(attr, "LESSOREQUAL_RES") && strcmp(attr, "LESSOREQUAL")
+			&& strcmp(attr, "LESSOREQUAL1") && strcmp(attr, "MOREOREQUAL_RES")
+			&& strcmp(attr, "MOREOREQUAL") && strcmp(attr, "MOREOREQUAL1")
+			&& strcmp(attr, "NOTEQUAL_RES") && strcmp(attr, "NOTEQUAL"))
+			{
+				fprintf(stdout, "LF@%s$%d ", attr, 1);
+			}
+			else
+			{
+				fprintf(stdout, "GF@%s$%d ", attr, 1);
+			}
 			break;
 	}
 }
@@ -114,24 +129,6 @@ void GEN_START_OF_FUNCTION(char *attr, int value, funcs func_tree, SeznamOfVars 
 		
 		fprintf(stdout, "CREATEFRAME\n");
 		fprintf(stdout, "PUSHFRAME\n");
-		fprintf(stdout, "DEFVAR LF@MUL_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@SUB_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@SUM_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@DIV_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@IDIV_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@HASH_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@DOTDOT_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@LESS_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@MORE_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@EQUAL_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@LESSOREQUAL_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@LESSOREQUAL$1\n");
-		fprintf(stdout, "DEFVAR LF@LESSOREQUAL1$1\n");
-		fprintf(stdout, "DEFVAR LF@MOREOREQUAL_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@MOREOREQUAL$1\n");
-		fprintf(stdout, "DEFVAR LF@MOREOREQUAL1$1\n");
-		fprintf(stdout, "DEFVAR LF@NOTEQUAL_RES$1\n");
-		fprintf(stdout, "DEFVAR LF@NOTEQUAL$1\n");
 		// if(maybefunc->in != NULL){
 		// 	fprintf(stdout, "CALL $GLOBALVAR\n");
 		// }
@@ -470,7 +467,7 @@ void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *li
 					}
 					else{
 						// fprintf(stdout, "MOVE ");
-						// GEN_WRITE_VAR_LITERAL(0, "SUM_RES");
+						// GEN_WRITE_VAR_LITERAL(5, "SUM_RES");
 						// fprintf(stdout, "int@0\n");
 						if(ifORwhileWasTheLast(0) == 2 && whileSpotted(2)){
 							fprintf(stdout, "LABEL while%d\n", DLL_GetValueCount(listOfWhile));
