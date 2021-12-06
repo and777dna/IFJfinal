@@ -1,4 +1,5 @@
 .IFJcode21
+DEFVAR GF@NILEQ$1
 JUMP $main
 
 LABEL $reads
@@ -188,21 +189,38 @@ LABEL $bar
 PUSHFRAME
 DEFVAR LF@a$1
 MOVE LF@a$1 LF@in1$1
+EQ GF@NILEQ$1 LF@a$1 nil@nil
+JUMPIFEQ writenil0 GF@NILEQ$1 bool@true
+WRITE LF@a$1 
+JUMP endwrite0
+LABEL writenil0
 WRITE string@nil
+LABEL endwrite0
+EQ GF@NILEQ$1 string@\010 nil@nil
+JUMPIFEQ writenil1 GF@NILEQ$1 bool@true
 WRITE string@\010 
+JUMP endwrite1
+LABEL writenil1
+WRITE string@nil
+LABEL endwrite1
 LABEL bar_RET
 POPFRAME
 RETURN 
 
 LABEL $foo
 PUSHFRAME
+EQ GF@NILEQ$1 string@in\032foo\010 nil@nil
+JUMPIFEQ writenil2 GF@NILEQ$1 bool@true
 WRITE string@in\032foo\010 
+JUMP endwrite2
+LABEL writenil2
+WRITE string@nil
+LABEL endwrite2
 LABEL foo_RET
 POPFRAME
 RETURN 
 
 LABEL start
-AAAAAAAAAAAAAAAAA
 CREATEFRAME
 CALL $foo
 DEFVAR TF@in1$1

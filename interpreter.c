@@ -52,18 +52,28 @@ void GEN_WRITE_VAR_LITERAL(int token, char *attr){
 }
 
 void GEN_PRINT_WRITE(int token, string attr, vars vartree, int deep){
-	vars tmp = findVar(vartree, deep, attr.str);
-	if (tmp)
-	{
-		if (tmp->nil == true)
-		{
-			fprintf(stdout, "WRITE string@nil\n");
-			return;
-		}	
-	}
+	// vars tmp = findVar(vartree, deep, attr.str);
+	// if (tmp)
+	// {
+	// 	if (tmp->nil == true)
+	// 	{
+	// 		fprintf(stdout, "WRITE string@nil\n");
+	// 		return;
+	// 	}	
+	// }
+	static int i = 0;
+	fprintf(stdout, "EQ GF@NILEQ$1 ");
+	GEN_WRITE_VAR_LITERAL(token, attr.str);
+	fprintf(stdout, "nil@nil\n");
+	fprintf(stdout, "JUMPIFEQ writenil%d GF@NILEQ$1 bool@true\n", i);
     fprintf(stdout, "WRITE ");
     GEN_WRITE_VAR_LITERAL(token, attr.str);
 	fprintf(stdout, "\n");
+	fprintf(stdout, "JUMP endwrite%d\n", i);
+	fprintf(stdout, "LABEL writenil%d\n", i);
+	fprintf(stdout, "WRITE string@nil\n");
+	fprintf(stdout, "LABEL endwrite%d\n", i);
+	i++;
 	return;
 }
 

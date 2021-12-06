@@ -1202,6 +1202,7 @@ int program()
         {
             token = tryGetToken();
             fprintf(stdout, ".IFJcode21\n");
+            fprintf(stdout, "DEFVAR GF@NILEQ$1\n");
             fprintf(stdout, "JUMP $main\n\n");
             GEN_CALL_INBUILDS();
             error_flag = syntaxCheck();
