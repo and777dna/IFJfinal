@@ -1,14 +1,15 @@
 require "ifj21"
 
-function main()
-    local a : integer = 1
+global foo : function(string):string
 
-    while a <= 3 do
-        local b : integer = 1
-        write (a, " ", b, "\n")
-        a = a + 1
-        b = b + 1
-    end
+function main()
+	local a : string = foo("hello")
+	write(a, "\n")
+end
+
+function foo(str : string): string
+	return (str.." there")
 end
 
 main()
+

@@ -38,7 +38,6 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->next = NULL;
         (*var_tree)->type = type;
         (*var_tree)->nil = true;
-        // printf("Added %s'\n", (*var_tree)->name);
         return true;
     }
     else if ((*var_tree != NULL)&&(deep > (*var_tree)->deepOfVar))
@@ -61,7 +60,6 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         (*var_tree)->R = NULL;
         (*var_tree)->next = tmp;
         (*var_tree)->type = type;
-        // printf("Added %s'\n", (*var_tree)->name);
         return true;
     }
     else if (strcmp(name, (*var_tree)->name) < 0)
@@ -73,7 +71,6 @@ bool insertVar(vars *var_tree, int deep, char *name, int type)     /// insert(&(
         insertVar(&((*var_tree)->R), deep, name, type);
     }
     else{
-        //printf("yze est %s'\n", (*var_tree)->name);
         return false;
     }
 }
@@ -82,13 +79,11 @@ vars findVarFromTree(vars var_tree, int deep, char *name)
 {
     if (var_tree == NULL)
     {
-        //printf("VAR_NOT FIND\n");
         return NULL;
     }
     
     if (strcmp(name, var_tree->name) == 0)
     {
-        //printf("nasel %s %d\n", var_tree->name, var_tree->deepOfVar);
         return var_tree;
     }
     else if (strcmp(name, var_tree->name) < 0)
@@ -106,7 +101,6 @@ vars findVar(vars var_tree, int deep, char *name)
     vars tmp = var_tree;
     if (var_tree != NULL)
     {
-        //printf("deepVar\\\\\\%d        deep %d \n", var_tree->deepOfVar, deep);
         if (deep >= var_tree->deepOfVar)
         {
             tmp = findVarFromTree(tmp, deep, name);
@@ -121,13 +115,11 @@ vars findVar(vars var_tree, int deep, char *name)
         }
         else
         {
-            //printf("VARno with deep %d and deepvar %d\n", deep, var_tree->deepOfVar);
             return NULL;
         }    
     }
     else
     {
-        //printf("VARno\n");
         return NULL;
     }    
     
@@ -178,7 +170,6 @@ funcs insertFunc(char *name, funcs *func, int orig)
         (*func)->R = NULL;
         (*func)->in = NULL;
         (*func)->out = NULL;
-        // printf("dobavil %s\n", (*func)->name);
         return (*func);
     }
     else if (strcmp((*func)->name, name) < 0)
@@ -198,7 +189,6 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
 {
     if (func_tree != NULL)
     {
-        // printf("%s func--------------functree %s\n", name, func_tree->name);
         if (strcmp(func_tree->name, name) < 0)
         {
             findFunc(func_tree->L, name);
@@ -209,12 +199,10 @@ funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, 
         }
         else if (strcmp(func_tree->name, name) == 0)
         {
-            // printf("nasel func %s\n", func_tree->name);
             return func_tree;
         }
     }
-    else{
-        // printf("FUNCno\n");  
+    else{ 
         return NULL;
     }
     
@@ -301,9 +289,14 @@ void insertOutput(funcs func, int type, char *name)
 
 void freeFunc (funcs func)
 {
+    static bool orig = false;
     if (func == NULL)
     {
         return;
+    }
+    if(func->origin == 1){
+        func->origin = 2;
+        orig = true;
     }
     freeFunc(func->L);
     freeFunc(func->R);
@@ -322,9 +315,10 @@ void freeFunc (funcs func)
         tmp4 = tmp3->next;
         free(tmp);
         tmp3 = tmp4;
-    }   
-    
-    // free(func);
+    }
+    if(orig){
+        changeError(15);
+    }
     func = NULL;
     return;
     

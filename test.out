@@ -18,6 +18,7 @@ DEFVAR GF@MOREOREQUAL$1
 DEFVAR GF@MOREOREQUAL1$1
 DEFVAR GF@NOTEQUAL_RES$1
 DEFVAR GF@NOTEQUAL$1
+DEFVAR GF@INTTONUM$1
 JUMP $main
 
 LABEL $reads
@@ -208,15 +209,11 @@ CREATEFRAME
 PUSHFRAME
 DEFVAR LF@a$1 
 MOVE LF@a$1 nil@nil 
-MOVE LF@a$1 int@1 
-LABEL while1
-LT GF@LESSOREQUAL$1 LF@a$1 int@3 
-EQ GF@LESSOREQUAL1$1 LF@a$1 int@3 
-OR GF@LESSOREQUAL_RES$1 GF@LESSOREQUAL$1 GF@LESSOREQUAL1$1 
-JUMPIFEQ whileend1 GF@LESSOREQUAL_RES$1 bool@false
-DEFVAR LF@b$1 
-MOVE LF@b$1 nil@nil 
-MOVE LF@b$1 int@1 
+CREATEFRAME
+DEFVAR TF@in1$1
+MOVE TF@in1$1 string@hello 
+CALL $foo
+MOVE LF@a$1 TF@ret1$1
 EQ GF@NILEQ$1 LF@a$1 nil@nil
 JUMPIFEQ writenil0 GF@NILEQ$1 bool@true
 WRITE LF@a$1 
@@ -224,31 +221,23 @@ JUMP endwrite0
 LABEL writenil0
 WRITE string@nil
 LABEL endwrite0
-EQ GF@NILEQ$1 string@\032 nil@nil
+EQ GF@NILEQ$1 string@\010 nil@nil
 JUMPIFEQ writenil1 GF@NILEQ$1 bool@true
-WRITE string@\032 
+WRITE string@\010 
 JUMP endwrite1
 LABEL writenil1
 WRITE string@nil
 LABEL endwrite1
-EQ GF@NILEQ$1 LF@b$1 nil@nil
-JUMPIFEQ writenil2 GF@NILEQ$1 bool@true
-WRITE LF@b$1 
-JUMP endwrite2
-LABEL writenil2
-WRITE string@nil
-LABEL endwrite2
-EQ GF@NILEQ$1 string@\010 nil@nil
-JUMPIFEQ writenil3 GF@NILEQ$1 bool@true
-WRITE string@\010 
-JUMP endwrite3
-LABEL writenil3
-WRITE string@nil
-LABEL endwrite3
-ADD GF@SUM_RES$1 LF@a$1 int@1 
-MOVE LF@a$1 GF@SUM_RES$1 
-ADD GF@SUM_RES$1 LF@b$1 int@1 
-MOVE LF@b$1 GF@SUM_RES$1 
-JUMP while1
-LABEL whileend1
 POPFRAME
+LABEL $foo
+PUSHFRAME
+DEFVAR LF@ret1$1
+MOVE LF@ret1$1 nil@nil
+DEFVAR LF@str$1
+MOVE LF@str$1 LF@in1$1
+CONCAT GF@DOTDOT_RES$1 LF@str$1 string@\032there 
+JUMP foo_RET
+LABEL foo_RET
+POPFRAME
+RETURN 
+

@@ -52,7 +52,6 @@ void push(Stack_t *stack, string value, int type) {
     strcpy(stack->attr[stack->top].attr, value.str);
     stack->attr[stack->top].type = type;
     return;
-    // printf("PUSH: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
 }
 
 void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end, vars vartree, DLList *i, DLList *w) { 
@@ -69,8 +68,7 @@ void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam,
             stack->attr[stack->top].type = 0;
         }
     }
-    //printf("POP: ATTR->type: %d|| ATTR->str: %s\n", stack->attr[stack->top].type, stack->attr[stack->top].attr);
-    EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name, i, w);
+    EXPRESSION_FUNC(stack->attr[stack->top].attr, stack->attr[stack->top].type, end, name, i, w, vartree, deep);
     stack->top--;
 }
 
@@ -99,7 +97,7 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '#'},  // <=
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '#'},  // >
   {'<', '<', '<', '<', '<', '<', '>', '<', '>', '#', '#', '#', '#', '#', '#', '<', '<', '#', '#'},  // >=
-  {'>', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '#', '#', '>', '#'},  // str
+  {'>', '>', '#', '#', '#', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '#', '#', '>', '#'},  // str
   {'<', '<', '<', '<', '<', '<', '>', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '#', '#'},  // #
   {'#', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '>', '>', '>', '>', '<', '#', '>', '#'},  // ..
   {'#', '#', '#', '#', '#', '#', '>', '#', '>', '>', '>', '#', '#', '#', '#', '#', '#', '#', '#'},  // nil
@@ -108,7 +106,6 @@ char precTable[PREC_TABLE_SIZE][PREC_TABLE_SIZE] =
 int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs functree, int deep, SeznamOfVars *seznam, bool end, int type, DLList *i, DLList *w){
     static int savetype = 0;
     if(savetype == 0){
-        //printf("    savetype: type: %d == token: %d\n", savetype, type);
         savetype = type;
     }
     int checktype;
@@ -195,7 +192,6 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                     if (checktype != INT && checktype != INTEGER && checktype != FLOAT && checktype != NUMBER && 
                         (checktype != NIL && (stack->attr[stack->top].type == EQUAL || stack->attr[stack->top].type == NOTEQUAL))){
                         deleteStack(stack);
-                        //printf("type: %d == token: %d\n", savetype, token);
                         changeError(6);
                     }
                 }
@@ -342,7 +338,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 if(seznam != NULL){
                     name = seznam->name;
                 }
-                EXPRESSION_FUNC("nil", token, false, name, i, w);
+                EXPRESSION_FUNC("nil", token, false, name, i, w, vartree, deep);
             }
             pop(stack, token, *attr, deep, seznam, true, vartree, i, w);
             savetype = 0;
@@ -354,6 +350,9 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
             return token;
         }
         else{
+            if(stackVal == 8){
+                return token;
+            }
             changeError(6);
             return SEM_ERROR_EXPRESS;
         }
@@ -371,19 +370,17 @@ int express(char *funcname, int token, string *attr, vars vartree, funcs functre
     push(stack, buk, 38);
     if (funcname)
     {
-        //printf("AAAAAAAAAAAAA %s AAAA %d AAAAAAAAAAa\n", attr->str, token);
         tmp = findFunc(functree, funcname);
         tmp->out = tmp->out->first;
         for (int i = 0; i < counter; i++)
         {
             tmp->out = tmp->out->next;
         }
-        //printf("\nOOUTPUT %d %d %d\n", counter, tmp->out->type, token);
         if (!((tmp->out->type == STRING && (token == NIL || token == RETEZEC || token == ID))
             || (tmp->out->type == INTEGER && (token == NIL || token == INT || token == ID))
-            || (tmp->out->type == NUMBER && token != RETEZEC) || (tmp->out->type == NIL && token == NIL)))
+            || (tmp->out->type == NUMBER && token != RETEZEC) || (tmp->out->type == NIL && token == NIL) ||
+            (token == RIGHT_BRACKET || token == LEFT_BRACKET)))
         {
-            printf("AAAAAAAAAAAAAAAAAAAAAAA\n");
             changeError(5);
         }
         if (token == NIL)
@@ -392,7 +389,6 @@ int express(char *funcname, int token, string *attr, vars vartree, funcs functre
         }
         counter++;
     }
-    //printf("AAAAAAAAAAAAA%sAAAA%dAAAAAAAAAAa\n", attr->str, token);
     if (token == ID || token == RETEZEC || token == LEFT_BRACKET || token == INT || token == FLOAT || token == HASH || token == NIL)
     {
         funcs tmp = findFunc(functree, attr->str);
@@ -405,23 +401,19 @@ int express(char *funcname, int token, string *attr, vars vartree, funcs functre
                 changeError(3);
                 return SEM_ERROR_DEFINE;
             }
-            //printf("VAR: type: %d == token: %d\n", tmp2->type, token);
             if(tmp2->type == STRING){
                 token = 3;
             }
             else if (tmp2->type == INTEGER || tmp2->type == NUMBER){
                 token = 0;
             }
-            //printf("type: %d == token: %d\n", type, token);
             if((tmp2->type != type && tmp2->type != type + 15) && (token >= 0 && token < 4) && type != 3){
-                //printf("type: %d == tmp->type: %d\n", type, tmp2->type);
                 deleteStack(stack);
                 changeError(4);
             }
         }
         if (token != type-15 && token != ID && type != 3 && token != NIL && ((token >= 0 && token < 4) || (token > 15 && token <= 18))){ 
             if(!(type == NUMBER && (token == FLOAT || token == INT))){
-                //printf("type: %d == token: %d\n", type, token);
                 deleteStack(stack);
                 changeError(4);
             }

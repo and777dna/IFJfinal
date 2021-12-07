@@ -203,4 +203,4 @@ bool ifSpotted(int spotted);
 bool whileSpotted(int spotted);
 bool checkSEEN(int token);
 int ifORwhileWasTheLast(int c);
-void EXPRESSION_FUNC(char *attr, int token, bool end, char *var_name, DLList *l, DLList *w);
+void EXPRESSION_FUNC(char *attr, int token, bool end, char *var_name, DLList *l, DLList *w, vars vartree, int deep);

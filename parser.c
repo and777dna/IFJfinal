@@ -100,7 +100,6 @@ int DLL_GetValueCount( DLList *list) {
     if(list->activeElement == NULL){
         return 0;
     }
-    //printf("AAAAAAAAAAAAAAAA  %d  AAAAAAAAAAAAAAAA\n", list->activeElement->count);
     return list->activeElement->count;
 }
 
@@ -212,8 +211,14 @@ void changeError(int n)
         free(table->var_tree);
         strFree(&attr);
         free(table);
-        free(name_func_save);
         exit(1);
+    }
+    else if(n == 15){
+        fprintf(stderr, "%d\n", 3);
+        free(table->var_tree);
+        free(table);
+        strFree(&attr);
+        exit(3);
     }
     else{
         fprintf(stderr, "%d\n", n);
@@ -221,7 +226,6 @@ void changeError(int n)
         free(table->var_tree);
         free(table);
         strFree(&attr);
-        free(name_func_save);
         exit(n);
     }
 }
@@ -400,12 +404,14 @@ int GlobalCompareOut(funcs tmp)
             token = tryGetToken();
             if (token == STRING || token == INTEGER || token == NUMBER || token == NIL)
             {
+                retnum++;
                 tmp->out = tmp->out->next;
                 return GlobalCompareOut(tmp);
             }
             changeError(2);
             return SYNTAX_ERROR;
         }
+        retnum++;
         return SYNTAX_OK;
         break;
     default:
@@ -431,9 +437,6 @@ int functionIsOK()
             {
                 insertFunc(name_func_save, &(table->func_tree), origin);
             }
-            // if(!(strcmp(attr.str, "main"))){
-            //     GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam);
-            // }
             else if (tmp != NULL && tmp->origin == 1)
             {
                 tmp->origin = 2;
@@ -454,10 +457,12 @@ int functionIsOK()
                     token = tryGetToken();
                     globalCheck = GlobalCompareOut(tmp);
                     freeSeznam();
+                    GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam, mainWasFirst);
                     return globalCheck;
                 }
                 else if (token != COLUMN && tmp->out == NULL)
                 {
+                    GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam, mainWasFirst);
                     return SYNTAX_OK;
                 }
                 else{
@@ -491,9 +496,7 @@ int functionIsOK()
                         return outputWasComplited;
                         break;
                     default:
-                        //if((strcmp(name_func_save, "main"))){
-                            GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam, mainWasFirst);
-                        //}
+                        GEN_START_OF_FUNCTION(name_func_save, retnum, table->func_tree, seznam, mainWasFirst);
                         return SYNTAX_OK;
                         break;
                     }
@@ -750,7 +753,6 @@ int functionBodyIsOK()
             ifSpotted(1);
             DLL_InsertLast(&listOfIf);
             DLL_Last(&listOfIf);
-            //printf("JUMP ifend%d\n", DLL_GetValueCount(&listOfIf));
             ifORwhileWasTheLast(1);
             if_spotted = true; 
             token = tryGetToken();
@@ -771,7 +773,6 @@ int functionBodyIsOK()
                 changeError(2);
                 return SYNTAX_ERROR;
             }
-            //if_spotted = false;
             token = tryGetToken();
             printf("JUMP ifend%d\n", DLL_GetValueCount(&listOfIf));
             printf("LABEL else%d\n", DLL_GetValueCount(&listOfIf));
@@ -1104,10 +1105,6 @@ int syntaxCheck(){
             funcs maybefunc = findFunc(table->func_tree, attr.str);
             if (maybefunc != NULL)
             {
-                // if(maybefunc->out != NULL){
-                //     changeError(5);
-                //     return SEM_ERROR_FUNCPARAM;
-                // }
                 if((strcmp(maybefunc->name, "main"))){
                     mainWasFirst = false;
                     if (!barfoo)
@@ -1130,7 +1127,6 @@ int syntaxCheck(){
                 }
                 token = tryGetToken();
                 if(maybefunc->in != NULL){
-                    //fprintf(stdout, "CREATEFRAME\n");
                     maybefunc->in = maybefunc->in->first;
                 }
                 while (token != RIGHT_BRACKET)
@@ -1143,7 +1139,6 @@ int syntaxCheck(){
                     }
                     else if (typeCheck != maybefunc->in->type)
                     {
-                        //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAA %d != %d\n", typeCheck, maybefunc->in->type);
                         changeError(5);
                         return SEM_ERROR_FUNCPARAM;
                     }
@@ -1164,15 +1159,8 @@ int syntaxCheck(){
                 }
             }
             if(strcmp(maybefunc->name, "main")){
-                if (maybefunc->in == NULL)
-                {
-                    //printf("AAAAAAAAAAAAAAAAA\n");
-                }
                 GEN_FUNC_CALL(maybefunc->name, NULL, table->func_tree);
-            } 
-            // if(!(strcmp(maybefunc->name, "main"))){
-            //     fprintf(stdout, "RETURN\n");
-            // }
+            }
             if (maybefunc == NULL){
                 changeError(2);
                 return SYNTAX_ERROR;
@@ -1221,6 +1209,7 @@ int program()
             fprintf(stdout, "DEFVAR GF@MOREOREQUAL1$1\n");
             fprintf(stdout, "DEFVAR GF@NOTEQUAL_RES$1\n");
             fprintf(stdout, "DEFVAR GF@NOTEQUAL$1\n");
+            fprintf(stdout, "DEFVAR GF@INTTONUM$1\n");
             fprintf(stdout, "JUMP $main\n\n");
             GEN_CALL_INBUILDS();
             error_flag = syntaxCheck();
