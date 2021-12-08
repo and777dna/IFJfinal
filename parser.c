@@ -1,3 +1,14 @@
+/**
+ * @file parser.c
+ * 
+ * @brief Parser implementation
+ * 
+ * IFJ Projekt 2021, Tým 133
+ * 
+ * @author <xnarus00> Alexey Narush
+ * @author <xkravc02> Kravchuk Marina
+*/
+
 #include "scanner.h"
 #include "parser.h"
 #include <stdlib.h>
@@ -6,9 +17,9 @@
 
 //------------Global variables------------------------
 
-int token;          // globalni promenna, ve ktere bude ulozen aktualni token
+int token;
 string attr;
-string funnamesv;        // globalni promenna, ve ktere bude ulozen atribut tokenu
+string funnamesv;
 char *name_func_save;
 char *nameFirstFunc = NULL;
 char *nameLastFunc = NULL;
@@ -199,7 +210,7 @@ int tryGetToken()
         changeError(1);
         return LEX_ERROR;
     }
-    printf("%d   %s\n", token, attr.str);  // to check the token
+    //printf("%d   %s\n", token, attr.str);  // to check the token
     return token;
 }
 
@@ -775,8 +786,8 @@ int functionBodyIsOK()
                 return SYNTAX_ERROR;
             }
             token = tryGetToken();
-            printf("JUMP ifend%d\n", DLL_GetValueCount(&listOfIf));
-            printf("LABEL else%d\n", DLL_GetValueCount(&listOfIf));
+            fprintf(stdout, "JUMP ifend%d\n", DLL_GetValueCount(&listOfIf));
+            fprintf(stdout, "LABEL else%d\n", DLL_GetValueCount(&listOfIf));
             break;    
         case ID:;
             funcs maybefunc = findFunc(table->func_tree, attr.str);
@@ -1112,7 +1123,7 @@ int syntaxCheck(){
                     {
                         nameFirstFunc = maybefunc->name;
                         barfoo = true;
-                        printf("LABEL start\n");
+                        fprintf(stdout, "LABEL start\n");
                     }
                     else
                     {

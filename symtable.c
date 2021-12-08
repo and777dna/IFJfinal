@@ -1,3 +1,14 @@
+/**
+ * @file main.c
+ * 
+ * @brief Implementation of binary search tree
+ * 
+ * IFJ Projekt 2021, Tým 133
+ * 
+ * @author <xkravc02> Kravchuk Marina
+*/
+
+
 #include "scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -180,9 +191,6 @@ funcs insertFunc(char *name, funcs *func, int orig)
     {
         insertFunc(name, &((*func)->R), orig);
     }
-    else
-        printf("chyba\n");
-    
 }
 
 funcs findFunc(funcs func_tree, char *name)              //find(sym->func_tree, name)

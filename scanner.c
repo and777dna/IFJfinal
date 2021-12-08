@@ -1,3 +1,15 @@
+/**
+ * @file parser.c
+ * 
+ * @brief Lexical analyzer
+ * 
+ * IFJ Projekt 2021, Tým 133
+ * 
+ * @author <xnarus00> Alexey Narush
+ * @author <xkravc02> Kravchuk Marina
+ * @author <xsarti00> Sartin Andrei
+*/
+
 #include "scanner.h"
 #include <stdio.h>
 #include <string.h>

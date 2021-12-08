@@ -1,3 +1,14 @@
+/**
+ * @file main.c
+ * 
+ * @brief Main function implementation
+ * 
+ * IFJ Projekt 2021, Tým 133
+ * 
+ * @author <xnarus00> Alexey Narush
+ * @author <xkravc02> Kravchuk Marina
+*/
+
 #include "scanner.h"
 #include "parser.h"
 #include <stdlib.h>

@@ -1,3 +1,17 @@
+/**
+ * @file parser.c
+ * 
+ * @brief IFJcode21 generation
+ * 
+ * IFJ Projekt 2021, Tým 133
+ * 
+ * @author <xnarus00> Alexey Narush
+ * @author <xkravc02> Kravchuk Marina
+ * @author <xsarti00> Sartin Andrei
+ * @author <xtiuri02> Tiurin Danil
+*/
+
+
 #include "expression.h"
 #include "stdbool.h"
 #include "parser.h"
