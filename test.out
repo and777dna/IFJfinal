@@ -1,3 +1,6 @@
+21   require
+3   ifj21
+13   function
 .IFJcode21
 DEFVAR GF@NILEQ$1
 DEFVAR GF@MUL_RES$1
@@ -204,40 +207,137 @@ LABEL $CHR_RET
 POPFRAME
 RETURN
 
-LABEL $main
-CREATEFRAME
-PUSHFRAME
-DEFVAR LF@a$1 
-MOVE LF@a$1 nil@nil 
-CREATEFRAME
-DEFVAR TF@in1$1
-MOVE TF@in1$1 string@hello 
-CALL $foo
-MOVE LF@a$1 TF@ret1$1
-EQ GF@NILEQ$1 LF@a$1 nil@nil
-JUMPIFEQ writenil0 GF@NILEQ$1 bool@true
-WRITE LF@a$1 
-JUMP endwrite0
-LABEL writenil0
-WRITE string@nil
-LABEL endwrite0
-EQ GF@NILEQ$1 string@\010 nil@nil
-JUMPIFEQ writenil1 GF@NILEQ$1 bool@true
-WRITE string@\010 
-JUMP endwrite1
-LABEL writenil1
-WRITE string@nil
-LABEL endwrite1
-POPFRAME
-LABEL $foo
+0   sqrt
+35   
+0   n
+51   
+17   number
+52   
+0   eps
+51   
+17   number
+36   
+51   
+17   number
+19   local
+LABEL $sqrt
 PUSHFRAME
 DEFVAR LF@ret1$1
 MOVE LF@ret1$1 nil@nil
-DEFVAR LF@str$1
-MOVE LF@str$1 LF@in1$1
-CONCAT GF@DOTDOT_RES$1 LF@str$1 string@\032there 
-JUMP foo_RET
-LABEL foo_RET
-POPFRAME
-RETURN 
-
+DEFVAR LF@n$1
+MOVE LF@n$1 LF@in1$1
+DEFVAR LF@eps$1
+MOVE LF@eps$1 LF@in2$1
+0   x
+51   
+17   number
+DEFVAR LF@x$1 
+MOVE LF@x$1 nil@nil 
+29   
+0   n
+15   if
+MOVE LF@x$1 LF@n$1 
+0   n
+39   
+20   nil
+EQ GF@EQUAL_RES$1 LF@n$1 nil@nil 
+JUMPIFNEQ else1 GF@EQUAL_RES$1 bool@true
+23   then
+22   return
+20   nil
+11   else
+MOVE LF@ret1$1 nil@nil 
+JUMP sqrt_RET
+12   end
+JUMP ifend1
+LABEL else1
+LABEL ifend1
+15   if
+0   n
+41   
+1   0
+23   then
+LT GF@LESS_RES$1 LF@n$1 int@0 
+JUMPIFNEQ else2 GF@LESS_RES$1 bool@true
+22   return
+20   nil
+11   else
+MOVE LF@ret1$1 nil@nil 
+JUMP sqrt_RET
+12   end
+JUMP ifend2
+LABEL else2
+LABEL ifend2
+24   while
+1   1
+10   do
+19   local
+0   root
+51   
+17   number
+DEFVAR LF@root$1 
+MOVE LF@root$1 nil@nil 
+29   
+2   0.5
+33   
+35   
+0   x
+30   
+0   n
+32   
+INT2FLOAT GF@INTTONUM$1 float@0x1p-1 
+LABEL while1
+ADD GF@SUM_RES$1 int@1 float@0x0p+0 
+0   x
+36   
+LABEL while1
+DIV GF@DIV_RES$1 GF@SUM_RES$1 LF@x$1 
+15   if
+35   
+35   
+0   root
+31   
+0   x
+36   
+SUB GF@SUB_RES$1 GF@DIV_RES$1 
+41   
+0   eps
+36   
+LT GF@LESS_RES$1 GF@SUB_RES$1 LF@eps$1 
+JUMPIFNEQ else3 GF@LESS_RES$1 bool@true
+23   then
+15   if
+35   
+35   
+1   0
+31   
+0   eps
+36   
+SUB GF@SUB_RES$1 int@0 
+41   
+35   
+0   root
+31   
+0   x
+36   
+SUB GF@SUB_RES$1 GF@SUB_RES$1 LF@root$1 
+36   
+23   then
+22   return
+0   x
+11   else
+JUMP sqrt_RET
+12   end
+JUMP ifend4
+LABEL else4
+LABEL ifend4
+11   else
+12   end
+JUMP ifend3
+LABEL else3
+0   x
+JUMP while1
+LABEL whileend1
+29   
+0   root
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAA

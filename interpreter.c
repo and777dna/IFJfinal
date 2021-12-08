@@ -265,6 +265,7 @@ bool checkSEEN(int token){
 				seen[i] = false;
 			}
 			count = true;
+			count_start = 1;
 			return false;
 			break;
 		case INC:

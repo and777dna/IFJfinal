@@ -199,7 +199,7 @@ int tryGetToken()
         changeError(1);
         return LEX_ERROR;
     }
-    //printf("%d   %s\n", token, attr.str);  // to check the token
+    printf("%d   %s\n", token, attr.str);  // to check the token
     return token;
 }
 
