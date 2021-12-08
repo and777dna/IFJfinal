@@ -183,9 +183,9 @@ void freeSeznam()
             tmp = tmp2;
             free(tmp2);
         }
-        head = NULL;
-    } 
-    seznam = NULL;
+        free(head);
+    }
+    free(seznam);
     return;
 }
 
@@ -346,7 +346,7 @@ int GlobalCompare(funcs tmp)
     case ID:
     strcpy_for_var(attr.str);
         tmp->in->name = attr.str;
-        if (token = tryGetToken() == COLUMN)
+        if ((token = tryGetToken()) == COLUMN)
         {
             token = tryGetToken();
             if (token != tmp->in->type)
@@ -385,6 +385,7 @@ int GlobalCompare(funcs tmp)
         return SYNTAX_ERROR;
         break;
     }
+    return SYNTAX_ERROR;
 }
 
 int GlobalCompareOut(funcs tmp)
@@ -479,7 +480,7 @@ int functionIsOK()
             token = tryGetToken();
             if (token == LEFT_BRACKET){
                 token = tryGetToken();
-                if (inputWasComplited = inputIsOK())
+                if ((inputWasComplited = inputIsOK()))
                 {
                     changeError(5);
                     return SEM_ERROR_FUNCPARAM;
@@ -1224,6 +1225,7 @@ int program()
     }
     DLL_Dispose(&listOfIf);
     DLL_Dispose(&listOfWhile);
+    freeFunc(table->func_tree);
     free(table->var_tree);
     free(name_func_save);
     return error_flag;

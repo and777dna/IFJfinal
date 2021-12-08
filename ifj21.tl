@@ -12,4 +12,3 @@ function foo(str : string): string
 end
 
 main()
-

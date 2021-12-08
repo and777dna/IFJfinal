@@ -10,7 +10,7 @@
 
 //--------------Stack-----------
 
-Stack_t* createStack() {
+Stack_t* createStack(){
     Stack_t *out;
     out = malloc(sizeof(Stack_t));
     if (out == NULL) {
@@ -27,24 +27,27 @@ Stack_t* createStack() {
     return out;
 }
  
-void deleteStack(Stack_t *stack) {
-    if (stack != NULL){
-        free((stack)->attr);
+void deleteStack(Stack_t *stack){
+    while(stack->top != 0){
+        free(stack->attr[stack->top].attr);
+        stack->top--;
     }
     stack = NULL;
+    return;
 }
 
-void resize(Stack_t *stack) {
+void resize(Stack_t *stack){
     stack->size *= MULTIPLIER;
     stack->attr = realloc(stack->attr, stack->size * sizeof(T));
-    if (stack->attr == NULL) {
+    if (stack->attr == NULL){
+        deleteStack(stack);
         changeError(99);
         exit(STACK_OVERFLOW);
     }
 }
 
-void push(Stack_t *stack, string value, int type) {
-    if (stack->top >= stack->size) {
+void push(Stack_t *stack, string value, int type){
+    if (stack->top >= stack->size){
         resize(stack);
     }
     stack->top++;
@@ -54,8 +57,8 @@ void push(Stack_t *stack, string value, int type) {
     return;
 }
 
-void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end, vars vartree, DLList *i, DLList *w) { 
-    if (stack->top == 0) {
+void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam, bool end, vars vartree, DLList *i, DLList *w){ 
+    if (stack->top == 0){
         exit(STACK_UNDERFLOW);
     }
     char *name = NULL;
@@ -72,7 +75,7 @@ void pop(Stack_t *stack, int token, string attr, int deep, SeznamOfVars *seznam,
     stack->top--;
 }
 
-void implode(Stack_t *stack) {
+void implode(Stack_t *stack){
     stack->size = stack->top;
     stack->attr = realloc(stack->attr, stack->size * sizeof(T));
 }
@@ -124,7 +127,7 @@ int TableCheck(Stack_t *stack, int token, string *attr, vars vartree, funcs func
                 }
             }
             else if(type == NUMBER){
-                if (token != INT || token != FLOAT && token != ID && type != 3){
+                if (token != INT || (token != FLOAT && token != ID && type != 3)){
                     deleteStack(stack);
                     changeError(4);
                 }
@@ -381,6 +384,7 @@ int express(char *funcname, int token, string *attr, vars vartree, funcs functre
             || (tmp->out->type == NUMBER && token != RETEZEC) || (tmp->out->type == NIL && token == NIL) ||
             (token == RIGHT_BRACKET || token == LEFT_BRACKET)))
         {
+            deleteStack(stack);
             changeError(5);
         }
         if (token == NIL)
@@ -398,6 +402,7 @@ int express(char *funcname, int token, string *attr, vars vartree, funcs functre
         if (token == ID){
             vars tmp2 = findVar(vartree, deep, attr->str);
             if(tmp2 == NULL){
+                deleteStack(stack);
                 changeError(3);
                 return SEM_ERROR_DEFINE;
             }

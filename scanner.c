@@ -388,6 +388,10 @@ int getNextToken(string *attr){
 
             case 19:
                 if (c == 'e' || c == 'E'){
+                    char *point = strstr(attr->str, ".");   
+                    if(strlen(point) <= 1){
+                        changeError(-10);
+                    }
                     state = 20;
                 }
                 else if (c == ')' || c == ','){

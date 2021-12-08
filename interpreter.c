@@ -84,7 +84,6 @@ void GEN_START_OF_FUNCTION(char *attr, int value, funcs func_tree, SeznamOfVars 
 		fprintf(stdout, "LABEL $%s\n", attr);
 		fprintf(stdout, "PUSHFRAME\n");
 		for(int i = 1; i <= value; i++){
-			char *tmp;
 			fprintf(stdout, "DEFVAR LF@ret%d$1\n", i);
 			fprintf(stdout, "MOVE LF@ret%d$1 nil@nil\n", i);
 		}
@@ -232,9 +231,7 @@ bool ifSpotted(int spotted){
 	else if (spotted == 0){
 		here = false;
 	}
-	else{
-		return here;
-	}
+	return here;
 }
 
 bool whileSpotted(int spotted){
@@ -245,9 +242,7 @@ bool whileSpotted(int spotted){
 	else if (spotted == 0){
 		here = false;
 	}
-	else{
-		return here;
-	}
+	return here;
 }
 
 bool checkSEEN(int token){
@@ -380,6 +375,7 @@ bool checkSEEN(int token){
 			return count;
 			break;
 	}
+	return false;
 }
 
 void EXPRESSION_FUNC(char *attr, int token, bool end, char* var_name, DLList *listOfIf, DLList *listOfWhile, vars vartree, int deep){

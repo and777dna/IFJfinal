@@ -269,7 +269,6 @@ void insertOutput(funcs func, int type, char *name)
         return;
     }
     outPar new_param = function->out;
-    
     while (new_param->next != NULL)
     {
         new_param = new_param->next;
@@ -298,9 +297,12 @@ void freeFunc (funcs func)
         func->origin = 2;
         orig = true;
     }
-    freeFunc(func->L);
-    freeFunc(func->R);
     inPar tmp = func->in;
+    if(func->in != NULL){
+        if(func->in->first != NULL){
+            tmp = func->in->first;
+        }
+    }
     while(tmp != NULL)
     {
         inPar tmp2;
@@ -309,12 +311,23 @@ void freeFunc (funcs func)
         tmp = tmp2;
     }  
     outPar tmp3 = func->out;
-    while(tmp != NULL)
+    if(func->out != NULL){
+        if(func->out->first != NULL){
+            tmp3 = func->out->first;
+        }
+    }
+    while(tmp3 != NULL)
     {
         outPar tmp4;
         tmp4 = tmp3->next;
-        free(tmp);
+        free(tmp3);
         tmp3 = tmp4;
+    }
+    if(func->L != NULL){
+        freeFunc(func->L);
+    }
+    if(func->R != NULL){
+        freeFunc(func->R);
     }
     if(orig){
         changeError(15);
